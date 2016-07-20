@@ -1,0 +1,27 @@
+MPI_T_CVAR_GET_INFO(…. datatype …)
+  //MPI_T_STRING
+
+MPI_T_CVAR_HANDLE_ALLOC(cvar_index, obj_handle, handle, count)
+	//count is number of strings or ignored (options)
+
+MPI_T_CVAR_READ(handle, buf)
+	
+//option 1: always assume one string and ignore count
+MPI_T_CVAR_READ_STR(handle, char* buf, int * len) //forces a copy
+
+//option 2: more general, count is number of strings
+//array of strings, array of lengths 
+	//example, string for each queue
+//common case will be count == 1, single pointer, single int
+MPI_T_CVAR_READ_STR(handle, char * const strs[], int lens[]) 
+    //(array lengths) count comes from handle alloc
+
+MPI_T_CVAR_WRITE_STR(handle, const char * const strs[]) 
+     //implementation knows count and they are C strings
+	//rationale: this nearly identical function is added for better type checking, not a void * like for MPI_T_CVAR_WRITE
+
+MPI_T_PVAR_READ_STR(session, handle, char * const strs[], int lens[])
+  	
+MPI_T_PVAR_READRESET_STR(session, handle, char * const strs[], int lens[])
+
+MPI_T_PVAR_WRITE_STR(session, handle, const char * const strs[])

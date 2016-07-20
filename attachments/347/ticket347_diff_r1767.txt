@@ -1,0 +1,42 @@
+Index: appLang-Const.tex
+===================================================================
+--- appLang-Const.tex	(Revision 1766)
++++ appLang-Const.tex	(Revision 1767)
+@@ -1432,6 +1432,9 @@
+ 
+ The following info keys are reserved. They are strings. \\[3pt]
+ \infoskip{access\_style} \\
++\infoskip{accumulate\_ops}\\
++\infoskip{accumulate\_ordering}\\
++\infoskip{alloc\_shared\_noncontig}\\
+ \infoskip{appnum} \\
+ \infoskip{arch} \\
+ \infoskip{cb\_block\_size} \\
+@@ -1452,6 +1455,7 @@
+ \infoskip{no\_locks} \\
+ \infoskip{num\_io\_nodes} \\
+ \infoskip{path} \\
++\infoskip{same\_size}\\
+ \infoskip{soft} \\
+ \infoskip{striping\_factor} \\
+ \infoskip{striping\_unit} \\
+@@ -1463,13 +1467,15 @@
+ The following info values are reserved. They are strings. \\[3pt]
+ \infoskip{false} \\
+ \infoskip{random} \\
++\infoskip{rar}\\
++\infoskip{raw}\\
+ \infoskip{read\_mostly} \\
+ \infoskip{read\_once} \\
+ \infoskip{reverse\_sequential} \\
++\infoskip{same\_op}\\
+ \infoskip{sequential} \\
+ \infoskip{true} \\
++\infoskip{war}\\
++\infoskip{waw}\\
+ \infoskip{write\_mostly} \\
+-\infoskip{write\_once} \\
+-
+- 
+-
++\infoskip{write\_once}

@@ -1,0 +1,13 @@
+Index: terms-2.tex
+===================================================================
+--- terms-2.tex	(Revision 1919)
++++ terms-2.tex	(Revision 1920)
+@@ -464,7 +464,7 @@
+ will be outside the regular range.   
+ The range of regular values, such as \mpiarg{tag}, can
+ be queried using environmental inquiry
+-functions (Chapter~7 of the \mpii/ document).
++functions, see \namedref{Chapter}{chap:environment}.
+ The range of other values, such as \mpiarg{source}, depends on values given by
+ other \mpi/ routines (in the case of \mpiarg{source} it is the communicator
+ size).

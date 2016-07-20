@@ -1,0 +1,46 @@
+Index: chap-inquiry/inquiry.tex
+===================================================================
+--- chap-inquiry/inquiry.tex	(revision 288)
++++ chap-inquiry/inquiry.tex	(working copy)
+@@ -669,7 +669,12 @@
+ In Fortran, the user routine should be of the form:
+ 
+ \begchangefinii
+-\mpifsubbind{COMM\_ERRHANDLER\_FN(COMM, ERROR\_CODE, \ldots ) \fargs INTEGER COMM, ERROR\_CODE}
++\MPIdeleteBegin{2.2}{1}
++%\mpifsubbind{COMM\_ERRHANDLER\_FN(COMM, ERROR\_CODE, \ldots ) \fargs INTEGER COMM, ERROR\_CODE}
++\MPIdeleteEnd{2.2}
++\MPIupdateBegin{2.2}{1}
++\mpifsubbind{COMM\_ERRHANDLER\_FN(COMM, ERROR\_CODE) \fargs INTEGER COMM, ERROR\_CODE}
++\MPIupdateEnd{2.2}
+ \endchangefinii
+ \mpiiidotiMergeFromTWOdotZEROend%      MPI-2.1 - end of take lines
+ \mpiiidotiMergeFromONEdotTHREEbegin%   MPI-2.1 - take lines: MPI-1.1, Chap. 7, p.195 l.15 (MPI-2.0 p.32 l.32-37), File 1.3/inquiry.tex, lines 377-384
+@@ -820,7 +825,12 @@
+ In Fortran, the user routine should be of the form:
+ 
+ \begchangefinii
+-\mpifsubbind{WIN\_ERRHANDLER\_FN(WIN, ERROR\_CODE, \ldots ) \fargs INTEGER WIN, ERROR\_CODE}
++\MPIdeleteBegin{2.2}{1}
++%\mpifsubbind{WIN\_ERRHANDLER\_FN(WIN, ERROR\_CODE, \ldots ) \fargs INTEGER WIN, ERROR\_CODE}
++\MPIdeleteEnd{2.2}
++\MPIupdateBegin{2.2}{1}
++\mpifsubbind{WIN\_ERRHANDLER\_FN(WIN, ERROR\_CODE) \fargs INTEGER WIN, ERROR\_CODE}
++\MPIupdateEnd{2.2}
+ \endchangefinii
+ 
+ In C++, the user routine should be of the form:
+@@ -898,7 +908,12 @@
+ In Fortran, the user routine should be of the form:
+ 
+ \begchangefinii
+-\mpifsubbind{FILE\_ERRHANDLER\_FN(FILE, ERROR\_CODE, \ldots ) \fargs INTEGER FILE, ERROR\_CODE}
++\MPIdeleteBegin{2.2}{1}
++%\mpifsubbind{FILE\_ERRHANDLER\_FN(FILE, ERROR\_CODE, \ldots ) \fargs INTEGER FILE, ERROR\_CODE}
++\MPIdeleteEnd{2.2}
++\MPIupdateBegin{2.2}{1}
++\mpifsubbind{FILE\_ERRHANDLER\_FN(FILE, ERROR\_CODE) \fargs INTEGER FILE, ERROR\_CODE}
++\MPIupdateEnd{2.2}
+ \endchangefinii
+ 
+ In C++, the user routine should be of the form:

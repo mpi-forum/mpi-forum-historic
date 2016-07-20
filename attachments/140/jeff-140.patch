@@ -1,0 +1,1091 @@
+Index: chap-io/io-2.tex
+===================================================================
+--- chap-io/io-2.tex	(revision 769)
++++ chap-io/io-2.tex	(working copy)
+@@ -202,7 +202,7 @@
+ 
+ \cdeclindex{MPI\_Info}\cdeclindex{MPI::Info}%
+ \cdeclmainindex{MPI\_File}\cdeclmainindex{MPI::File}%
+-\mpibind{MPI\_File\_open(MPI\_Comm~comm, char~*filename, int~amode, MPI\_Info~info, MPI\_File~*fh)}
++\mpibind{MPI\_File\_open(MPI\_Comm~comm, \MPIupdate{3.0}{140}{const }char~*filename, int~amode, MPI\_Info~info, MPI\_File~*fh)}
+ \mpifbind{MPI\_FILE\_OPEN(COMM, FILENAME, AMODE, INFO, FH, IERROR)\fargs CHARACTER*(*) FILENAME \\ INTEGER COMM, AMODE, INFO, FH, IERROR}
+ \mpicppemptybind{MPI::File::Open(const~MPI::Intracomm\&~comm, const~char*~filename, int~amode, const~MPI::Info\&~info)}{static MPI::File}
+ 
+@@ -426,7 +426,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Info}\cdeclindex{MPI::Info}%
+-\mpibind{MPI\_File\_delete(char~*filename, MPI\_Info~info)}
++\mpibind{MPI\_File\_delete(\MPIupdate{3.0}{140}{const }char~*filename, MPI\_Info~info)}
+ \mpifbind{MPI\_FILE\_DELETE(FILENAME, INFO, IERROR)\fargs CHARACTER*(*) FILENAME \\ INTEGER INFO, IERROR}
+ \mpicppemptybind{MPI::File::Delete(const~char*~filename, const~MPI::Info\&~info)}{static void}
+ 
+@@ -1004,7 +1004,7 @@
+ \cdeclindex{MPI\_Info}\cdeclindex{MPI::Info}%
+ \cdeclindex{MPI\_File}\cdeclindex{MPI::File}%
+ \cdeclindex{MPI\_Offset}\cdeclindex{MPI::Offset}%
+-\mpibind{MPI\_File\_set\_view(MPI\_File~fh, MPI\_Offset~disp, MPI\_Datatype~etype, MPI\_Datatype~filetype, char~*datarep, MPI\_Info~info)}
++\mpibind{MPI\_File\_set\_view(MPI\_File~fh, MPI\_Offset~disp, MPI\_Datatype~etype, MPI\_Datatype~filetype, \MPIupdate{3.0}{140}{const }char~*datarep, MPI\_Info~info)}
+ \mpifbind{MPI\_FILE\_SET\_VIEW(FH, DISP, ETYPE, FILETYPE, DATAREP, INFO, IERROR)\fargs INTEGER FH, ETYPE, FILETYPE, INFO, IERROR \\ CHARACTER*(*) DATAREP \\ INTEGER(KIND=MPI\_OFFSET\_KIND) DISP}
+ \mpicppemptybind{MPI::File::Set\_view(MPI::Offset~disp, const~MPI::Datatype\&~etype, const~MPI::Datatype\&~filetype, const~char*~datarep, const~MPI::Info\&~info)}{void}
+ 
+@@ -1540,7 +1540,7 @@
+ \cdeclindex{MPI\_File}\cdeclindex{MPI::File}%
+ \cdeclindex{MPI\_Status}\cdeclindex{MPI::Status}%
+ \cdeclindex{MPI\_Offset}\cdeclindex{MPI::Offset}%
+-\mpibind{MPI\_File\_write\_at(MPI\_File~fh, MPI\_Offset~offset, void~*buf, int~count, MPI\_Datatype~datatype, MPI\_Status~*status)}
++\mpibind{MPI\_File\_write\_at(MPI\_File~fh, MPI\_Offset~offset, \MPIupdate{3.0}{140}{const }void~*buf, int~count, MPI\_Datatype~datatype, MPI\_Status~*status)}
+ \mpifbind{MPI\_FILE\_WRITE\_AT(FH, OFFSET, BUF, COUNT, DATATYPE, STATUS, IERROR)\fargs <type> BUF(*) \\ INTEGER FH, COUNT, DATATYPE, STATUS(MPI\_STATUS\_SIZE), IERROR \\ INTEGER(KIND=MPI\_OFFSET\_KIND) OFFSET}
+ \mpicppemptybind{MPI::File::Write\_at(MPI::Offset~offset, const~void*~buf, int~count, const~MPI::Datatype\&~datatype, MPI::Status\&~status)}{void}
+ \mpicppemptybind{MPI::File::Write\_at(MPI::Offset~offset, const~void*~buf, int~count, const~MPI::Datatype\&~datatype)}{void}
+@@ -1562,7 +1562,7 @@
+ \cdeclindex{MPI\_File}\cdeclindex{MPI::File}%
+ \cdeclindex{MPI\_Status}\cdeclindex{MPI::Status}%
+ \cdeclindex{MPI\_Offset}\cdeclindex{MPI::Offset}%
+-\mpibind{MPI\_File\_write\_at\_all(MPI\_File~fh, MPI\_Offset~offset, void~*buf, int~count, MPI\_Datatype~datatype, MPI\_Status~*status)}          
++\mpibind{MPI\_File\_write\_at\_all(MPI\_File~fh, MPI\_Offset~offset, \MPIupdate{3.0}{140}{const }void~*buf, int~count, MPI\_Datatype~datatype, MPI\_Status~*status)}          
+ \mpifbind{MPI\_FILE\_WRITE\_AT\_ALL(FH, OFFSET, BUF, COUNT, DATATYPE, STATUS, IERROR)\fargs <type> BUF(*) \\ INTEGER FH, COUNT, DATATYPE, STATUS(MPI\_STATUS\_SIZE), IERROR \\ INTEGER(KIND=MPI\_OFFSET\_KIND) OFFSET}    
+ \mpicppemptybind{MPI::File::Write\_at\_all(MPI::Offset~offset, const~void*~buf, int~count, const~MPI::Datatype\&~datatype, MPI::Status\&~status)}{void}
+ \mpicppemptybind{MPI::File::Write\_at\_all(MPI::Offset~offset, const~void*~buf, int~count, const~MPI::Datatype\&~datatype)}{void}
+@@ -1605,7 +1605,7 @@
+ \cdeclindex{MPI\_Request}\cdeclindex{MPI::Request}%
+ \cdeclindex{MPI\_File}\cdeclindex{MPI::File}%
+ \cdeclindex{MPI\_Offset}\cdeclindex{MPI::Offset}%
+-\mpibind{MPI\_File\_iwrite\_at(MPI\_File~fh, MPI\_Offset~offset, void~*buf, int~count, MPI\_Datatype~datatype, MPI\_Request~*request)}
++\mpibind{MPI\_File\_iwrite\_at(MPI\_File~fh, MPI\_Offset~offset, \MPIupdate{3.0}{140}{const }void~*buf, int~count, MPI\_Datatype~datatype, MPI\_Request~*request)}
+ \mpifbind{MPI\_FILE\_IWRITE\_AT(FH, OFFSET, BUF, COUNT, DATATYPE, REQUEST, IERROR)\fargs <type>  BUF(*) \\ INTEGER FH, COUNT, DATATYPE, REQUEST, IERROR \\ INTEGER(KIND=MPI\_OFFSET\_KIND) OFFSET}
+ \mpicppemptybind{MPI::File::Iwrite\_at(MPI::Offset~offset, const~void*~buf, int~count, const~MPI::Datatype\&~datatype)}{MPI::Request}
+ 
+@@ -1745,7 +1745,7 @@
+  
+ \cdeclindex{MPI\_File}\cdeclindex{MPI::File}%
+ \cdeclindex{MPI\_Status}\cdeclindex{MPI::Status}%
+-\mpibind{MPI\_File\_write(MPI\_File~fh, void~*buf, int~count, MPI\_Datatype~datatype, MPI\_Status~*status)}
++\mpibind{MPI\_File\_write(MPI\_File~fh, \MPIupdate{3.0}{140}{const }void~*buf, int~count, MPI\_Datatype~datatype, MPI\_Status~*status)}
+ \mpifbind{MPI\_FILE\_WRITE(FH, BUF, COUNT, DATATYPE, STATUS, IERROR) \fargs <type> BUF(*) \\ INTEGER FH, COUNT, DATATYPE, STATUS(MPI\_STATUS\_SIZE), IERROR}
+ \mpicppemptybind{MPI::File::Write(const~void*~buf, int~count, const~MPI::Datatype\&~datatype, MPI::Status\&~status)}{void}
+ \mpicppemptybind{MPI::File::Write(const~void*~buf, int~count, const~MPI::Datatype\&~datatype)}{void}
+@@ -1763,7 +1763,7 @@
+  
+ \cdeclindex{MPI\_File}\cdeclindex{MPI::File}%
+ \cdeclindex{MPI\_Status}\cdeclindex{MPI::Status}%
+-\mpibind{MPI\_File\_write\_all(MPI\_File~fh, void~*buf, int~count, MPI\_Datatype~datatype, MPI\_Status~*status)}
++\mpibind{MPI\_File\_write\_all(MPI\_File~fh, \MPIupdate{3.0}{140}{const }void~*buf, int~count, MPI\_Datatype~datatype, MPI\_Status~*status)}
+ \mpifbind{MPI\_FILE\_WRITE\_ALL(FH, BUF, COUNT, DATATYPE, STATUS, IERROR) \fargs <type> BUF(*) \\ INTEGER FH, COUNT, DATATYPE, STATUS(MPI\_STATUS\_SIZE), IERROR}
+ \mpicppemptybind{MPI::File::Write\_all(const~void*~buf, int~count, const~MPI::Datatype\&~datatype, MPI::Status\&~status)}{void}
+ \mpicppemptybind{MPI::File::Write\_all(const~void*~buf, int~count, const~MPI::Datatype\&~datatype)}{void}
+@@ -1841,7 +1841,7 @@
+  
+ \cdeclindex{MPI\_Request}\cdeclindex{MPI::Request}%
+ \cdeclindex{MPI\_File}\cdeclindex{MPI::File}%
+-\mpibind{MPI\_File\_iwrite(MPI\_File~fh, void~*buf, int~count, MPI\_Datatype~datatype, MPI\_Request~*request)}
++\mpibind{MPI\_File\_iwrite(MPI\_File~fh, \MPIupdate{3.0}{140}{const }void~*buf, int~count, MPI\_Datatype~datatype, MPI\_Request~*request)}
+ \mpifbind{MPI\_FILE\_IWRITE(FH, BUF, COUNT, DATATYPE, REQUEST, IERROR) \fargs <type> BUF(*) \\ INTEGER FH, COUNT, DATATYPE, REQUEST, IERROR}
+ \mpicppemptybind{MPI::File::Iwrite(const~void*~buf, int~count, const~MPI::Datatype\&~datatype)}{MPI::Request}
+ 
+@@ -1999,7 +1999,7 @@
+  
+ \cdeclindex{MPI\_File}\cdeclindex{MPI::File}%
+ \cdeclindex{MPI\_Status}\cdeclindex{MPI::Status}%
+-\mpibind{MPI\_File\_write\_shared(MPI\_File~fh, void~*buf, int~count, MPI\_Datatype~datatype, MPI\_Status~*status)}
++\mpibind{MPI\_File\_write\_shared(MPI\_File~fh, \MPIupdate{3.0}{140}{const }void~*buf, int~count, MPI\_Datatype~datatype, MPI\_Status~*status)}
+ \mpifbind{MPI\_FILE\_WRITE\_SHARED(FH, BUF, COUNT, DATATYPE, STATUS, IERROR) \fargs <type> BUF(*) \\ INTEGER FH, COUNT, DATATYPE, STATUS(MPI\_STATUS\_SIZE), IERROR}
+ \mpicppemptybind{MPI::File::Write\_shared(const~void*~buf, int~count, const~MPI::Datatype\&~datatype, MPI::Status\&~status)}{void}
+ \mpicppemptybind{MPI::File::Write\_shared(const~void*~buf, int~count, const~MPI::Datatype\&~datatype)}{void}
+@@ -2036,7 +2036,7 @@
+  
+ \cdeclindex{MPI\_Request}\cdeclindex{MPI::Request}%
+ \cdeclindex{MPI\_File}\cdeclindex{MPI::File}%
+-\mpibind{MPI\_File\_iwrite\_shared(MPI\_File~fh, void~*buf, int~count, MPI\_Datatype~datatype, MPI\_Request~*request)}
++\mpibind{MPI\_File\_iwrite\_shared(MPI\_File~fh, \MPIupdate{3.0}{140}{const }void~*buf, int~count, MPI\_Datatype~datatype, MPI\_Request~*request)}
+ \mpifbind{MPI\_FILE\_IWRITE\_SHARED(FH, BUF, COUNT, DATATYPE, REQUEST, IERROR) \fargs <type> BUF(*) \\ INTEGER FH, COUNT, DATATYPE, REQUEST, IERROR}
+ \mpicppemptybind{MPI::File::Iwrite\_shared(const~void*~buf, int~count, const~MPI::Datatype\&~datatype)}{MPI::Request}
+ 
+@@ -2118,7 +2118,7 @@
+ 
+ \cdeclindex{MPI\_File}\cdeclindex{MPI::File}%
+ \cdeclindex{MPI\_Status}\cdeclindex{MPI::Status}%
+-\mpibind{MPI\_File\_write\_ordered(MPI\_File~fh, void~*buf, int~count, MPI\_Datatype~datatype, MPI\_Status~*status)}
++\mpibind{MPI\_File\_write\_ordered(MPI\_File~fh, \MPIupdate{3.0}{140}{const }void~*buf, int~count, MPI\_Datatype~datatype, MPI\_Status~*status)}
+ \mpifbind{MPI\_FILE\_WRITE\_ORDERED(FH, BUF, COUNT, DATATYPE, STATUS, IERROR) \fargs <type> BUF(*) \\ INTEGER FH, COUNT, DATATYPE, STATUS(MPI\_STATUS\_SIZE), IERROR}
+ \mpicppemptybind{MPI::File::Write\_ordered(const~void*~buf, int~count, const~MPI::Datatype\&~datatype, MPI::Status\&~status)}{void}
+ \mpicppemptybind{MPI::File::Write\_ordered(const~void*~buf, int~count, const~MPI::Datatype\&~datatype)}{void}
+@@ -2357,7 +2357,7 @@
+ 
+ \cdeclindex{MPI\_File}\cdeclindex{MPI::File}%
+ \cdeclindex{MPI\_Offset}\cdeclindex{MPI::Offset}%
+-\mpibind{MPI\_File\_write\_at\_all\_begin(MPI\_File~fh, MPI\_Offset~offset, void~*buf, int~count, MPI\_Datatype~datatype)}
++\mpibind{MPI\_File\_write\_at\_all\_begin(MPI\_File~fh, MPI\_Offset~offset, \MPIupdate{3.0}{140}{const }void~*buf, int~count, MPI\_Datatype~datatype)}
+ \mpifbind{MPI\_FILE\_WRITE\_AT\_ALL\_BEGIN(FH, OFFSET, BUF, COUNT, DATATYPE, IERROR)\fargs <type> BUF(*) \\ INTEGER FH, COUNT, DATATYPE, IERROR \\ INTEGER(KIND=MPI\_OFFSET\_KIND) OFFSET}
+ \mpicppemptybind{MPI::File::Write\_at\_all\_begin(MPI::Offset~offset, const~void*~buf, int~count, const~MPI::Datatype\&~datatype)}{void}
+ 
+@@ -2369,7 +2369,7 @@
+ 
+ \cdeclindex{MPI\_File}\cdeclindex{MPI::File}%
+ \cdeclindex{MPI\_Status}\cdeclindex{MPI::Status}%
+-\mpibind{MPI\_File\_write\_at\_all\_end(MPI\_File~fh, void~*buf, MPI\_Status~*status)}
++\mpibind{MPI\_File\_write\_at\_all\_end(MPI\_File~fh, \MPIupdate{3.0}{140}{const }void~*buf, MPI\_Status~*status)}
+ \mpifbind{MPI\_FILE\_WRITE\_AT\_ALL\_END(FH, BUF, STATUS, IERROR)\fargs <type> BUF(*) \\ INTEGER FH, STATUS(MPI\_STATUS\_SIZE), IERROR}
+ \mpicppemptybind{MPI::File::Write\_at\_all\_end(const~void*~buf, MPI::Status\&~status)}{void}
+ \mpicppemptybind{MPI::File::Write\_at\_all\_end(const~void*~buf)}{void}
+@@ -2409,7 +2409,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_File}\cdeclindex{MPI::File}%
+-\mpibind{MPI\_File\_write\_all\_begin(MPI\_File~fh, void~*buf, int~count, MPI\_Datatype~datatype)}
++\mpibind{MPI\_File\_write\_all\_begin(MPI\_File~fh, \MPIupdate{3.0}{140}{const }void~*buf, int~count, MPI\_Datatype~datatype)}
+ \mpifbind{MPI\_FILE\_WRITE\_ALL\_BEGIN(FH, BUF, COUNT, DATATYPE, IERROR)\fargs <type> BUF(*) \\ INTEGER FH, COUNT, DATATYPE, IERROR}
+ \mpicppemptybind{MPI::File::Write\_all\_begin(const~void*~buf, int~count, const~MPI::Datatype\&~datatype)}{void}
+ 
+@@ -2421,7 +2421,7 @@
+ 
+ \cdeclindex{MPI\_File}\cdeclindex{MPI::File}%
+ \cdeclindex{MPI\_Status}\cdeclindex{MPI::Status}%
+-\mpibind{MPI\_File\_write\_all\_end(MPI\_File~fh, void~*buf, MPI\_Status~*status)}
++\mpibind{MPI\_File\_write\_all\_end(MPI\_File~fh, \MPIupdate{3.0}{140}{const }void~*buf, MPI\_Status~*status)}
+ \mpifbind{MPI\_FILE\_WRITE\_ALL\_END(FH, BUF, STATUS, IERROR)\fargs <type> BUF(*) \\ INTEGER FH, STATUS(MPI\_STATUS\_SIZE), IERROR}
+ \mpicppemptybind{MPI::File::Write\_all\_end(const~void*~buf, MPI::Status\&~status)}{void}
+ \mpicppemptybind{MPI::File::Write\_all\_end(const~void*~buf)}{void}
+@@ -2461,7 +2461,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_File}\cdeclindex{MPI::File}%
+-\mpibind{MPI\_File\_write\_ordered\_begin(MPI\_File~fh, void~*buf, int~count, MPI\_Datatype~datatype)}
++\mpibind{MPI\_File\_write\_ordered\_begin(MPI\_File~fh, \MPIupdate{3.0}{140}{const }void~*buf, int~count, MPI\_Datatype~datatype)}
+ \mpifbind{MPI\_FILE\_WRITE\_ORDERED\_BEGIN(FH, BUF, COUNT, DATATYPE, IERROR)\fargs <type> BUF(*) \\ INTEGER FH, COUNT, DATATYPE, IERROR}
+ \mpicppemptybind{MPI::File::Write\_ordered\_begin(const~void*~buf, int~count, const~MPI::Datatype\&~datatype)}{void}
+ 
+@@ -2473,7 +2473,7 @@
+ 
+ \cdeclindex{MPI\_File}\cdeclindex{MPI::File}%
+ \cdeclindex{MPI\_Status}\cdeclindex{MPI::Status}%
+-\mpibind{MPI\_File\_write\_ordered\_end(MPI\_File~fh, void~*buf, MPI\_Status~*status)}
++\mpibind{MPI\_File\_write\_ordered\_end(MPI\_File~fh, \MPIupdate{3.0}{140}{const }void~*buf, MPI\_Status~*status)}
+ \mpifbind{MPI\_FILE\_WRITE\_ORDERED\_END(FH, BUF, STATUS, IERROR)\fargs <type> BUF(*) \\ INTEGER FH, STATUS(MPI\_STATUS\_SIZE), IERROR}
+ \mpicppemptybind{MPI::File::Write\_ordered\_end(const~void*~buf, MPI::Status\&~status)}{void}
+ \mpicppemptybind{MPI::File::Write\_ordered\_end(const~void*~buf)}{void}
+@@ -2961,7 +2961,7 @@
+ \funcarg{\IN}{extra\_state}{extra state}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Register\_datarep(char~*datarep, MPI\_Datarep\_conversion\_function~*read\_conversion\_fn, MPI\_Datarep\_conversion\_function~*write\_conversion\_fn, MPI\_Datarep\_extent\_function~*dtype\_file\_extent\_fn, void~*extra\_state)}
++\mpibind{MPI\_Register\_datarep(\MPIupdate{3.0}{140}{const }char~*datarep, MPI\_Datarep\_conversion\_function~*read\_conversion\_fn, MPI\_Datarep\_conversion\_function~*write\_conversion\_fn, MPI\_Datarep\_extent\_function~*dtype\_file\_extent\_fn, void~*extra\_state)}
+ \mpifbind{MPI\_REGISTER\_DATAREP(DATAREP, READ\_CONVERSION\_FN, WRITE\_CONVERSION\_FN, DTYPE\_FILE\_EXTENT\_FN, EXTRA\_STATE, IERROR) \fargs CHARACTER*(*) DATAREP \\ EXTERNAL READ\_CONVERSION\_FN, WRITE\_CONVERSION\_FN, DTYPE\_FILE\_EXTENT\_FN \\ INTEGER(KIND=MPI\_ADDRESS\_KIND) EXTRA\_STATE \\ INTEGER IERROR}
+ % JMS-apr
+ \mpicppemptybind{MPI::Register\_datarep(const~char*~datarep, MPI::Datarep\_conversion\_function*~read\_conversion\_fn, MPI::Datarep\_conversion\_function*~write\_conversion\_fn, MPI::Datarep\_extent\_function*~dtype\_file\_extent\_fn, void*~extra\_state)}{void}
+Index: chap-context/context.tex
+===================================================================
+--- chap-context/context.tex	(revision 769)
++++ chap-context/context.tex	(working copy)
+@@ -374,7 +374,7 @@
+ 
+ 
+ \cdeclindex{MPI\_Group}\cdeclindex{MPI::Group}%
+-\mpibind{MPI\_Group\_translate\_ranks (MPI\_Group~group1, int~n, int~*ranks1, MPI\_Group~group2, int~*ranks2)}
++\mpibind{MPI\_Group\_translate\_ranks (MPI\_Group~group1, int~n, \MPIupdate{3.0}{140}{const }int~*ranks1, MPI\_Group~group2, int~*ranks2)}
+ 
+ \mpifbind{MPI\_GROUP\_TRANSLATE\_RANKS(GROUP1, N, RANKS1, GROUP2, RANKS2, IERROR)\fargs INTEGER GROUP1, N, RANKS1(*), GROUP2, RANKS2(*), IERROR}
+ \mpicppemptybind{MPI::Group::Translate\_ranks (const~MPI::Group\&~group1, int~n, const~int~ranks1[], const~MPI::Group\&~group2, int~ranks2[])}{static void}
+@@ -515,7 +515,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Group}\cdeclindex{MPI::Group}%
+-\mpibind{MPI\_Group\_incl(MPI\_Group~group, int~n, int~*ranks, MPI\_Group~*newgroup)}
++\mpibind{MPI\_Group\_incl(MPI\_Group~group, int~n, \MPIupdate{3.0}{140}{const }int~*ranks, MPI\_Group~*newgroup)}
+ 
+ \mpifbind{MPI\_GROUP\_INCL(GROUP, N, RANKS, NEWGROUP, IERROR)\fargs INTEGER GROUP, N, RANKS(*), NEWGROUP, IERROR}
+ \mpicppemptybind{MPI::Group::Incl(int~n, const~int~ranks[]) const}{MPI::Group}
+@@ -540,7 +540,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Group}\cdeclindex{MPI::Group}%
+-\mpibind{MPI\_Group\_excl(MPI\_Group~group, int~n, int~*ranks, MPI\_Group~*newgroup)}
++\mpibind{MPI\_Group\_excl(MPI\_Group~group, int~n, \MPIupdate{3.0}{140}{const }int~*ranks, MPI\_Group~*newgroup)}
+ 
+ \mpifbind{MPI\_GROUP\_EXCL(GROUP, N, RANKS, NEWGROUP, IERROR)\fargs INTEGER GROUP, N, RANKS(*), NEWGROUP, IERROR}
+ \mpicppemptybind{MPI::Group::Excl(int~n, const~int~ranks[]) const}{MPI::Group}
+@@ -2591,7 +2591,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Comm}\cdeclindex{MPI::Comm}%
+-\mpibind{MPI\_Comm\_set\_attr(MPI\_Comm comm, int comm\_keyval, void *attribute\_val)}
++\mpibind{MPI\_Comm\_set\_attr(MPI\_Comm comm, int comm\_keyval, \MPIupdate{3.0}{140}{const }void *attribute\_val)}
+  
+ \mpifbind{MPI\_COMM\_SET\_ATTR(COMM, COMM\_KEYVAL, ATTRIBUTE\_VAL, IERROR)\fargs INTEGER COMM, COMM\_KEYVAL, IERROR\\INTEGER(KIND=MPI\_ADDRESS\_KIND) ATTRIBUTE\_VAL} 
+ 
+@@ -2822,7 +2822,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Win}\cdeclindex{MPI::Win}%
+-\mpibind{MPI\_Win\_set\_attr(MPI\_Win win, int win\_keyval, void *attribute\_val)}
++\mpibind{MPI\_Win\_set\_attr(MPI\_Win win, int win\_keyval, \MPIupdate{3.0}{140}{const }void *attribute\_val)}
+  
+ \mpifbind{MPI\_WIN\_SET\_ATTR(WIN, WIN\_KEYVAL, ATTRIBUTE\_VAL, IERROR)\fargs INTEGER WIN, WIN\_KEYVAL, IERROR\\INTEGER(KIND=MPI\_ADDRESS\_KIND) ATTRIBUTE\_VAL} 
+ 
+@@ -2974,7 +2974,7 @@
+ \funcarg{\IN}{attribute\_val}{attribute value}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Type\_set\_attr(MPI\_Datatype~type, int~type\_keyval, void~*attribute\_val)}
++\mpibind{MPI\_Type\_set\_attr(MPI\_Datatype~type, int~type\_keyval, \MPIupdate{3.0}{140}{const }void~*attribute\_val)}
+  
+ \mpifbind{MPI\_TYPE\_SET\_ATTR(TYPE, TYPE\_KEYVAL, ATTRIBUTE\_VAL, IERROR)\fargs INTEGER TYPE, TYPE\_KEYVAL, IERROR\\INTEGER(KIND=MPI\_ADDRESS\_KIND) ATTRIBUTE\_VAL} 
+ 
+@@ -3175,7 +3175,7 @@
+ the name (string)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Comm\_set\_name(MPI\_Comm comm, char *comm\_name)}
++\mpibind{MPI\_Comm\_set\_name(MPI\_Comm comm, \MPIupdate{3.0}{140}{const }char *comm\_name)}
+ 
+ \mpifbind{MPI\_COMM\_SET\_NAME(COMM, COMM\_NAME, IERROR) \fargs INTEGER COMM, IERROR\\ CHARACTER*(*) COMM\_NAME}
+ 
+@@ -3314,7 +3314,7 @@
+ \funcarg{\IN}{type\_name}{the character string which is remembered as the name (string)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Type\_set\_name(MPI\_Datatype type, char *type\_name)}
++\mpibind{MPI\_Type\_set\_name(MPI\_Datatype type, \MPIupdate{3.0}{140}{const }char *type\_name)}
+ 
+ \mpifbind{MPI\_TYPE\_SET\_NAME(TYPE, TYPE\_NAME, IERROR) \fargs INTEGER TYPE, IERROR\\ CHARACTER*(*) TYPE\_NAME}
+ 
+@@ -3345,7 +3345,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Win}\cdeclindex{MPI::Win}%
+-\mpibind{MPI\_Win\_set\_name(MPI\_Win win, char *win\_name)}
++\mpibind{MPI\_Win\_set\_name(MPI\_Win win, \MPIupdate{3.0}{140}{const }char *win\_name)}
+ 
+ \mpifbind{MPI\_WIN\_SET\_NAME(WIN, WIN\_NAME, IERROR) \fargs INTEGER WIN, IERROR\\ CHARACTER*(*) WIN\_NAME}
+ 
+Index: chap-coll/coll.tex
+===================================================================
+--- chap-coll/coll.tex	(revision 769)
++++ chap-coll/coll.tex	(working copy)
+@@ -678,7 +678,7 @@
+ \funcarg{\IN}{ comm}{ communicator (handle)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Gather(void*~sendbuf, int~sendcount, MPI\_Datatype~sendtype, void*~recvbuf, int~recvcount, MPI\_Datatype~recvtype, int~root, MPI\_Comm~comm) }
++\mpibind{MPI\_Gather(\MPIupdate{3.0}{140}{const }void*~sendbuf, int~sendcount, MPI\_Datatype~sendtype, void*~recvbuf, int~recvcount, MPI\_Datatype~recvtype, int~root, MPI\_Comm~comm) }
+ 
+ \mpifbind{MPI\_GATHER(SENDBUF, SENDCOUNT, SENDTYPE, RECVBUF, RECVCOUNT, RECVTYPE, ROOT, COMM, IERROR) \fargs <type> SENDBUF(*), RECVBUF(*) \\ INTEGER SENDCOUNT, SENDTYPE, RECVCOUNT, RECVTYPE, ROOT, COMM, IERROR}
+ % changed in MPI-2 %% \mpicppemptybind{MPI::Intracomm::Gather(const void*~sendbuf, int~sendcount, const MPI::Datatype\&~sendtype, void*~recvbuf, int~recvcount, const~MPI::Datatype\&~recvtype, int~root) const}{void}
+@@ -782,7 +782,7 @@
+ \funcarg{\IN}{ comm}{ communicator (handle)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Gatherv(void*~sendbuf, int~sendcount, MPI\_Datatype~sendtype, void*~recvbuf, int~\MPIdelete{3.0}{0}{*}recvcounts\MPIupdate{3.0}{0}{[]}, int~\MPIdelete{3.0}{0}{*}{}displs\MPIupdate{3.0}{0}{[]}, MPI\_Datatype~recvtype, int~root, MPI\_Comm~comm) }
++\mpibind{MPI\_Gatherv(\MPIupdate{3.0}{140}{const }void*~sendbuf, int~sendcount, MPI\_Datatype~sendtype, void*~recvbuf, \MPIupdate{3.0}{140}{const }int~\MPIdelete{3.0}{0}{*}recvcounts\MPIupdate{3.0}{0}{[]}, \MPIupdate{3.0}{140}{const }int~\MPIdelete{3.0}{0}{*}{}displs\MPIupdate{3.0}{0}{[]}, MPI\_Datatype~recvtype, int~root, MPI\_Comm~comm) }
+ 
+ \mpifbind{MPI\_GATHERV(SENDBUF, SENDCOUNT, SENDTYPE, RECVBUF, RECVCOUNTS, DISPLS, RECVTYPE, ROOT, COMM, IERROR) \fargs <type> SENDBUF(*), RECVBUF(*) \\ INTEGER SENDCOUNT, SENDTYPE, RECVCOUNTS(*), DISPLS(*), RECVTYPE, ROOT, COMM, IERROR}
+ % changed in MPI-2 %% \mpicppemptybind{MPI::Intracomm::Gatherv(const void*~sendbuf, int~sendcount, const MPI::Datatype\&~sendtype, void*~recvbuf, const~int~recvcounts[], const~int~displs[], const~MPI::Datatype\&~recvtype, int~root) const}{void}
+@@ -1366,7 +1366,7 @@
+ \funcarg{\IN}{ comm}{ communicator (handle)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Scatter(void*~sendbuf, int~sendcount, MPI\_Datatype~sendtype, void*~recvbuf, int~recvcount, MPI\_Datatype~recvtype, int~root, MPI\_Comm~comm)}
++\mpibind{MPI\_Scatter(\MPIupdate{3.0}{140}{const }void*~sendbuf, int~sendcount, MPI\_Datatype~sendtype, void*~recvbuf, int~recvcount, MPI\_Datatype~recvtype, int~root, MPI\_Comm~comm)}
+ 
+ \mpifbind{MPI\_SCATTER(SENDBUF, SENDCOUNT, SENDTYPE, RECVBUF, RECVCOUNT, RECVTYPE, ROOT, COMM, IERROR) \fargs <type> SENDBUF(*), RECVBUF(*) \\ INTEGER SENDCOUNT, SENDTYPE, RECVCOUNT, RECVTYPE, ROOT, COMM, IERROR}
+ % changed in MPI-2 %% \mpicppemptybind{MPI::Intracomm::Scatter(const void*~sendbuf, int~sendcount, const MPI::Datatype\&~sendtype, void*~recvbuf, int~recvcount, const~MPI::Datatype\&~recvtype, int~root) const}{void}
+@@ -1471,7 +1471,7 @@
+ \funcarg{\IN}{ comm}{ communicator (handle)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Scatterv(void*~sendbuf, int~\MPIdelete{3.0}{0}{*}sendcounts\MPIupdate{3.0}{0}{[]}, int~\MPIdelete{3.0}{0}{*}{}displs\MPIupdate{3.0}{0}{[]}, MPI\_Datatype~sendtype, void*~recvbuf, int~recvcount, MPI\_Datatype~recvtype, int~root, MPI\_Comm~comm)}
++\mpibind{MPI\_Scatterv(\MPIupdate{3.0}{140}{const }void*~sendbuf, \MPIupdate{3.0}{140}{const }int~\MPIdelete{3.0}{0}{*}sendcounts\MPIupdate{3.0}{0}{[]}, \MPIupdate{3.0}{140}{const }int~\MPIdelete{3.0}{0}{*}{}displs\MPIupdate{3.0}{0}{[]}, MPI\_Datatype~sendtype, void*~recvbuf, int~recvcount, MPI\_Datatype~recvtype, int~root, MPI\_Comm~comm)}
+ 
+ \mpifbind{MPI\_SCATTERV(SENDBUF, SENDCOUNTS, DISPLS, SENDTYPE, RECVBUF, RECVCOUNT, RECVTYPE, ROOT, COMM, IERROR) \fargs <type> SENDBUF(*), RECVBUF(*) \\ INTEGER SENDCOUNTS(*), DISPLS(*), SENDTYPE, RECVCOUNT, RECVTYPE, ROOT, COMM, IERROR}
+ % changed in MPI-2 %% \mpicppemptybind{MPI::Intracomm::Scatterv(const void*~sendbuf, const~int~sendcounts[], const~int~displs[], const~MPI::Datatype\&~sendtype, void*~recvbuf, int~recvcount, const~MPI::Datatype\&~recvtype, int~root) const}{void}
+@@ -1741,7 +1741,7 @@
+ \funcarg{\IN}{ comm}{  communicator (handle)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Allgather(void*~sendbuf, int~sendcount, MPI\_Datatype~sendtype, void*~recvbuf, int~recvcount, MPI\_Datatype~recvtype, MPI\_Comm~comm)}
++\mpibind{MPI\_Allgather(\MPIupdate{3.0}{140}{const }void*~sendbuf, int~sendcount, MPI\_Datatype~sendtype, void*~recvbuf, int~recvcount, MPI\_Datatype~recvtype, MPI\_Comm~comm)}
+ 
+ \mpifbind{MPI\_ALLGATHER(SENDBUF, SENDCOUNT, SENDTYPE, RECVBUF, RECVCOUNT, RECVTYPE, COMM, IERROR) \fargs <type> SENDBUF(*), RECVBUF(*) \\ INTEGER SENDCOUNT, SENDTYPE, RECVCOUNT, RECVTYPE, COMM, IERROR}
+ % changed in MPI-2 %% \mpicppemptybind{MPI::Intracomm::Allgather(const void*~sendbuf, int~sendcount, const MPI::Datatype\&~sendtype, void*~recvbuf, int~recvcount, const~MPI::Datatype\&~recvtype) const}{void}
+@@ -1855,7 +1855,7 @@
+ \funcarg{\IN}{ comm}{  communicator (handle)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Allgatherv(void*~sendbuf, int~sendcount, MPI\_Datatype~sendtype, void*~recvbuf, int~\MPIdelete{3.0}{0}{*}recvcounts\MPIupdate{3.0}{0}{[]}, int~\MPIdelete{3.0}{0}{*}{}displs\MPIupdate{3.0}{0}{[]}, MPI\_Datatype~recvtype, MPI\_Comm~comm)}
++\mpibind{MPI\_Allgatherv(\MPIupdate{3.0}{140}{const }void*~sendbuf, int~sendcount, MPI\_Datatype~sendtype, void*~recvbuf, \MPIupdate{3.0}{140}{const }int~\MPIdelete{3.0}{0}{*}recvcounts\MPIupdate{3.0}{0}{[]}, \MPIupdate{3.0}{140}{const }int~\MPIdelete{3.0}{0}{*}{}displs\MPIupdate{3.0}{0}{[]}, MPI\_Datatype~recvtype, MPI\_Comm~comm)}
+ 
+ \mpifbind{MPI\_ALLGATHERV(SENDBUF, SENDCOUNT, SENDTYPE, RECVBUF, RECVCOUNTS, DISPLS, RECVTYPE, COMM, IERROR) \fargs <type> SENDBUF(*), RECVBUF(*) \\ INTEGER SENDCOUNT, SENDTYPE, RECVCOUNTS(*), DISPLS(*), RECVTYPE, COMM, IERROR}
+ % changed in MPI-2 %% \mpicppemptybind{MPI::Intracomm::Allgatherv(const void*~sendbuf, int~sendcount, const MPI::Datatype\&~sendtype, void*~recvbuf, const~int~recvcounts[], const~int~displs[], const~MPI::Datatype\&~recvtype) const}{void}
+@@ -1974,7 +1974,7 @@
+ \funcarg{\IN}{ comm}{ communicator (handle)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Alltoall(void*~sendbuf, int~sendcount, MPI\_Datatype~sendtype, void*~recvbuf, int~recvcount, MPI\_Datatype~recvtype, MPI\_Comm~comm)}
++\mpibind{MPI\_Alltoall(\MPIupdate{3.0}{140}{const }void*~sendbuf, int~sendcount, MPI\_Datatype~sendtype, void*~recvbuf, int~recvcount, MPI\_Datatype~recvtype, MPI\_Comm~comm)}
+ 
+ \mpifbind{MPI\_ALLTOALL(SENDBUF, SENDCOUNT, SENDTYPE, RECVBUF, RECVCOUNT, RECVTYPE, COMM, IERROR) \fargs <type> SENDBUF(*), RECVBUF(*) \\ INTEGER SENDCOUNT, SENDTYPE, RECVCOUNT, RECVTYPE, COMM, IERROR}
+ % changed in MPI-2 %% \mpicppemptybind{MPI::Intracomm::Alltoall(const void*~sendbuf, int~sendcount, const MPI::Datatype\&~sendtype, void*~recvbuf, int~recvcount, const~MPI::Datatype\&~recvtype) const}{void}
+@@ -2091,8 +2091,13 @@
+ \funcarg{\IN}{ comm}{ communicator (handle)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Alltoallv(void*~sendbuf, int~\MPIdelete{3.0}{0}{*}sendcounts\MPIupdate{3.0}{0}{[]}, int~\MPIdelete{3.0}{0}{*}{}sdispls\MPIupdate{3.0}{0}{[]}, MPI\_Datatype~sendtype, void*~recvbuf, int~\MPIdelete{3.0}{0}{*}{}recvcounts\MPIupdate{3.0}{0}{[]}, int~\MPIdelete{3.0}{0}{*}{}rdispls\MPIupdate{3.0}{0}{[]}, MPI\_Datatype~recvtype, MPI\_Comm~comm)}
++\MPIupdate{3.0}{140}{
++  {\tt /* Adding const to parameters / ticket 140 -- not individually
++    highlighted because of latex restrictions */} \\
+ 
++\mpibind{MPI\_Alltoallv(const void*~sendbuf, const int~\MPIdelete{3.0}{0}{*}sendcounts\MPIupdate{3.0}{0}{[]}, const int~\MPIdelete{3.0}{0}{*}{}sdispls\MPIupdate{3.0}{0}{[]}, MPI\_Datatype~sendtype, void*~recvbuf, const int~\MPIdelete{3.0}{0}{*}{}recvcounts\MPIupdate{3.0}{0}{[]}, const int~\MPIdelete{3.0}{0}{*}{}rdispls\MPIupdate{3.0}{0}{[]}, MPI\_Datatype~recvtype, MPI\_Comm~comm)}
++}
++
+ \mpifbind{MPI\_ALLTOALLV(SENDBUF, SENDCOUNTS, SDISPLS, SENDTYPE, RECVBUF, RECVCOUNTS, RDISPLS, RECVTYPE, COMM, IERROR) \fargs <type> SENDBUF(*), RECVBUF(*) \\ INTEGER SENDCOUNTS(*), SDISPLS(*), SENDTYPE, RECVCOUNTS(*), RDISPLS(*), RECVTYPE, COMM, IERROR}
+ % changed in MPI-2 %% \mpicppemptybind{MPI::Intracomm::Alltoallv(const void*~sendbuf, const~int~sendcounts[], const~int~sdispls[], const~MPI::Datatype\&~sendtype, void*~recvbuf, const~int~recvcounts[], const~int~rdispls[], const~MPI::Datatype\&~recvtype) const}{void}
+ 
+@@ -2303,7 +2308,7 @@
+ \funcarg{\IN}{comm}{communicator (handle)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Alltoallw(void*~sendbuf, int~sendcounts[], int~sdispls[], MPI\_Datatype~sendtypes[], void*~recvbuf, int~recvcounts[], int~rdispls[], MPI\_Datatype~recvtypes[], MPI\_Comm~comm)}
++\mpibind{MPI\_Alltoallw(\MPIupdate{3.0}{140}{const }void*~sendbuf, \MPIupdate{3.0}{140}{const }int~sendcounts[], \MPIupdate{3.0}{140}{const }int~sdispls[], \MPIupdate{3.0}{140}{const }MPI\_Datatype~sendtypes[], void*~recvbuf, \MPIupdate{3.0}{140}{const }int~recvcounts[], \MPIupdate{3.0}{140}{const }int~rdispls[], \MPIupdate{3.0}{140}{const }MPI\_Datatype~recvtypes[], MPI\_Comm~comm)}
+ 
+ \mpifbind{MPI\_ALLTOALLW(SENDBUF, SENDCOUNTS, SDISPLS, SENDTYPES, RECVBUF, RECVCOUNTS, RDISPLS, RECVTYPES, COMM, IERROR) \fargs <type> SENDBUF(*), RECVBUF(*)\\INTEGER SENDCOUNTS(*), SDISPLS(*), SENDTYPES(*), RECVCOUNTS(*), RDISPLS(*), RECVTYPES(*), COMM, IERROR}
+ 
+@@ -2429,7 +2434,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Op}\cdeclindex{MPI::Op}%
+-\mpibind{MPI\_Reduce(void*~sendbuf, void*~recvbuf, int~count, MPI\_Datatype~datatype, MPI\_Op~op, int~root, MPI\_Comm~comm)}
++\mpibind{MPI\_Reduce(\MPIupdate{3.0}{140}{const }void*~sendbuf, void*~recvbuf, int~count, MPI\_Datatype~datatype, MPI\_Op~op, int~root, MPI\_Comm~comm)}
+ 
+ \mpifbind{MPI\_REDUCE(SENDBUF, RECVBUF, COUNT, DATATYPE, OP, ROOT, COMM, IERROR) \fargs <type> SENDBUF(*), RECVBUF(*) \\ INTEGER COUNT, DATATYPE, OP, ROOT, COMM, IERROR}
+ % changed in MPI-2 %% \mpicppemptybind{MPI::Intracomm::Reduce(const void*~sendbuf, void*~recvbuf, int~count, const~MPI::Datatype\&~datatype, const~MPI::Op\&~op, int~root) const}{void}
+@@ -3357,7 +3362,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Op}\cdeclindex{MPI::Op}%
+-\mpibind{MPI\_Allreduce(void*~sendbuf, void*~recvbuf, int~count, MPI\_Datatype~datatype, MPI\_Op~op, MPI\_Comm~comm)}
++\mpibind{MPI\_Allreduce(\MPIupdate{3.0}{140}{const }void*~sendbuf, void*~recvbuf, int~count, MPI\_Datatype~datatype, MPI\_Op~op, MPI\_Comm~comm)}
+ 
+ \mpifbind{MPI\_ALLREDUCE(SENDBUF, RECVBUF, COUNT, DATATYPE, OP, COMM, IERROR) \fargs <type> SENDBUF(*), RECVBUF(*) \\ INTEGER COUNT, DATATYPE, OP, COMM, IERROR}
+ % changed in MPI-2 %% \mpicppemptybind{MPI::Intracomm::Allreduce(const void*~sendbuf, void*~recvbuf, int~count, const MPI::Datatype\&~datatype, const~MPI::Op\&~op) const}{void}
+@@ -3461,7 +3466,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Op}\cdeclindex{MPI::Op}%
+-\mpibind{MPI\_Reduce\_local(void*~inbuf, void*~inoutbuf, int~count, MPI\_Datatype~datatype, MPI\_Op~op)}
++\mpibind{MPI\_Reduce\_local(\MPIupdate{3.0}{140}{const }void*~inbuf, void*~inoutbuf, int~count, MPI\_Datatype~datatype, MPI\_Op~op)}
+ 
+ \mpifbind{MPI\_REDUCE\_LOCAL(INBUF, INOUBUF, COUNT, DATATYPE, OP, IERROR) \fargs <type> INBUF(*), INOUTBUF(*) \\ INTEGER COUNT, DATATYPE, OP, IERROR}
+ 
+@@ -3512,7 +3517,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Op}\cdeclindex{MPI::Op}%
+-\mpibind{MPI\_Reduce\_scatter\_block(void*~sendbuf, void*~recvbuf, int~recvcount, MPI\_Datatype~datatype, MPI\_Op~op, MPI\_Comm~comm)}
++\mpibind{MPI\_Reduce\_scatter\_block(\MPIupdate{3.0}{140}{const }void*~sendbuf, void*~recvbuf, int~recvcount, MPI\_Datatype~datatype, MPI\_Op~op, MPI\_Comm~comm)}
+ 
+ \mpifbind{MPI\_REDUCE\_SCATTER\_BLOCK(SENDBUF, RECVBUF, RECVCOUNT, DATATYPE, OP, COMM, IERROR) \fargs <type> SENDBUF(*), RECVBUF(*) \\ INTEGER RECVCOUNT, DATATYPE, OP, COMM, IERROR}
+ 
+@@ -3579,7 +3584,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Op}\cdeclindex{MPI::Op}%
+-\mpibind{MPI\_Reduce\_scatter(void*~sendbuf, void*~recvbuf, int~\MPIdelete{3.0}{0}{*}recvcounts\MPIupdate{3.0}{0}{[]}, MPI\_Datatype~datatype, MPI\_Op~op, MPI\_Comm~comm)}
++\mpibind{MPI\_Reduce\_scatter(\MPIupdate{3.0}{140}{const }void*~sendbuf, void*~recvbuf, \MPIupdate{3.0}{140}{const }int~\MPIdelete{3.0}{0}{*}recvcounts\MPIupdate{3.0}{0}{[]}, MPI\_Datatype~datatype, MPI\_Op~op, MPI\_Comm~comm)}
+ 
+ \mpifbind{MPI\_REDUCE\_SCATTER(SENDBUF, RECVBUF, RECVCOUNTS, DATATYPE, OP, COMM, IERROR) \fargs <type> SENDBUF(*), RECVBUF(*) \\ INTEGER RECVCOUNTS(*), DATATYPE, OP, COMM, IERROR}
+ % changed in MPI-2 %% \mpicppemptybind{MPI::Intracomm::Reduce\_scatter(const void*~sendbuf, void*~recvbuf, int~recvcounts[], const~MPI::Datatype\&~datatype, const~MPI::Op\&~op) const}{void}
+@@ -3665,7 +3670,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Op}\cdeclindex{MPI::Op}%
+-\mpibind{MPI\_Scan(void*~sendbuf, void*~recvbuf, int~count, MPI\_Datatype~datatype, MPI\_Op~op, MPI\_Comm~comm)}
++\mpibind{MPI\_Scan(\MPIupdate{3.0}{140}{const }void*~sendbuf, void*~recvbuf, int~count, MPI\_Datatype~datatype, MPI\_Op~op, MPI\_Comm~comm)}
+ 
+ \mpifbind{MPI\_SCAN(SENDBUF, RECVBUF, COUNT, DATATYPE, OP, COMM, IERROR) \fargs <type> SENDBUF(*), RECVBUF(*) \\ INTEGER COUNT, DATATYPE, OP, COMM, IERROR}
+ \mpicppemptybind{MPI::Intracomm::Scan(const void*~sendbuf, void*~recvbuf, int~count, const MPI::Datatype\&~datatype, const~MPI::Op\&~op) const}{void}
+@@ -3764,7 +3769,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Op}\cdeclindex{MPI::Op}%
+-\mpibind{MPI\_Exscan(void*~sendbuf, void*~recvbuf, int~count, MPI\_Datatype~datatype, MPI\_Op~op, MPI\_Comm~comm) }
++\mpibind{MPI\_Exscan(\MPIupdate{3.0}{140}{const }void*~sendbuf, void*~recvbuf, int~count, MPI\_Datatype~datatype, MPI\_Op~op, MPI\_Comm~comm) }
+ 
+ \mpifbind{MPI\_EXSCAN(SENDBUF, RECVBUF, COUNT, DATATYPE, OP, COMM, IERROR) \fargs<type> SENDBUF(*), RECVBUF(*) \\INTEGER COUNT, DATATYPE, OP, COMM, IERROR }
+ 
+@@ -4139,7 +4144,7 @@
+ \funcarg{\OUT}{request}{communication request (handle)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Ibcast(void*~buffer, int~count, MPI\_Datatype~datatype, int~root, MPI\_Comm~comm, MPI\_Request*~request)}
++\mpibind{MPI\_Ibcast(\MPIupdate{3.0}{140}{const }void*~buffer, int~count, MPI\_Datatype~datatype, int~root, MPI\_Comm~comm, MPI\_Request*~request)}
+ 
+ \mpifbind{MPI\_IBCAST(BUFFER, COUNT, DATATYPE, ROOT, COMM, REQUEST, IERROR) \fargs <type>  BUFFER(*) \\ INTEGER COUNT, DATATYPE, ROOT, COMM, REQUEST, IERROR}
+ 
+@@ -4201,7 +4206,7 @@
+ \funcarg{\OUT}{request}{communication request (handle)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Igather(void*~sendbuf, int~sendcount, MPI\_Datatype~sendtype, void*~recvbuf, int~recvcount, MPI\_Datatype~recvtype, int~root, MPI\_Comm~comm, MPI\_Request*~request) }
++\mpibind{MPI\_Igather(\MPIupdate{3.0}{140}{const }void*~sendbuf, int~sendcount, MPI\_Datatype~sendtype, void*~recvbuf, int~recvcount, MPI\_Datatype~recvtype, int~root, MPI\_Comm~comm, MPI\_Request*~request) }
+ 
+ \mpifbind{MPI\_IGATHER(SENDBUF, SENDCOUNT, SENDTYPE, RECVBUF, RECVCOUNT, RECVTYPE, ROOT, COMM, REQUEST, IERROR) \fargs <type> SENDBUF(*), RECVBUF(*) \\ INTEGER SENDCOUNT, SENDTYPE, RECVCOUNT, RECVTYPE, ROOT, COMM, REQUEST, IERROR}
+ 
+@@ -4237,7 +4242,7 @@
+ \funcarg{\OUT}{request}{communication request (handle)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Igatherv(void*~sendbuf, int~sendcount, MPI\_Datatype~sendtype, void*~recvbuf, int~\MPIdelete{3.0}{0}{*}recvcounts\MPIupdate{3.0}{0}{[]}, int~\MPIdelete{3.0}{0}{*}{}displs\MPIupdate{3.0}{0}{[]}, MPI\_Datatype~recvtype, int~root, MPI\_Comm~comm, MPI\_Request*~request) }
++\mpibind{MPI\_Igatherv(\MPIupdate{3.0}{140}{const }void*~sendbuf, int~sendcount, MPI\_Datatype~sendtype, void*~recvbuf, \MPIupdate{3.0}{140}{const }int~\MPIdelete{3.0}{0}{*}recvcounts\MPIupdate{3.0}{0}{[]}, \MPIupdate{3.0}{140}{const }int~\MPIdelete{3.0}{0}{*}{}displs\MPIupdate{3.0}{0}{[]}, MPI\_Datatype~recvtype, int~root, MPI\_Comm~comm, MPI\_Request*~request) }
+ 
+ \mpifbind{MPI\_IGATHERV(SENDBUF, SENDCOUNT, SENDTYPE, RECVBUF, RECVCOUNTS, DISPLS, RECVTYPE, ROOT, COMM, REQUEST, IERROR) \fargs <type> SENDBUF(*), RECVBUF(*) \\ INTEGER SENDCOUNT, SENDTYPE, RECVCOUNTS(*), DISPLS(*), RECVTYPE, ROOT, COMM, REQUEST, IERROR}
+ 
+@@ -4273,7 +4278,7 @@
+ \funcarg{\OUT}{request}{communication request (handle)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Iscatter(void*~sendbuf, int~sendcount, MPI\_Datatype~sendtype, void*~recvbuf, int~recvcount, MPI\_Datatype~recvtype, int~root, MPI\_Comm~comm, MPI\_Request*~request)}
++\mpibind{MPI\_Iscatter(\MPIupdate{3.0}{140}{const }void*~sendbuf, int~sendcount, MPI\_Datatype~sendtype, void*~recvbuf, int~recvcount, MPI\_Datatype~recvtype, int~root, MPI\_Comm~comm, MPI\_Request*~request)}
+ 
+ \mpifbind{MPI\_ISCATTER(SENDBUF, SENDCOUNT, SENDTYPE, RECVBUF, RECVCOUNT, RECVTYPE, ROOT, COMM, REQUEST, IERROR) \fargs <type> SENDBUF(*), RECVBUF(*) \\ INTEGER SENDCOUNT, SENDTYPE, RECVCOUNT, RECVTYPE, ROOT, COMM, REQUEST, IERROR}
+ 
+@@ -4309,7 +4314,7 @@
+ \funcarg{\OUT}{request}{communication request (handle)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Iscatterv(void*~sendbuf, int~\MPIdelete{3.0}{0}{*}sendcounts\MPIupdate{3.0}{0}{[]}, int~\MPIdelete{3.0}{0}{*}{}displs\MPIupdate{3.0}{0}{[]}, MPI\_Datatype~sendtype, void*~recvbuf, int~recvcount, MPI\_Datatype~recvtype, int~root, MPI\_Comm~comm, MPI\_Request*~request)}
++\mpibind{MPI\_Iscatterv(\MPIupdate{3.0}{140}{const }void*~sendbuf, \MPIupdate{3.0}{140}{const }int~\MPIdelete{3.0}{0}{*}sendcounts\MPIupdate{3.0}{0}{[]}, \MPIupdate{3.0}{140}{const }int~\MPIdelete{3.0}{0}{*}{}displs\MPIupdate{3.0}{0}{[]}, MPI\_Datatype~sendtype, void*~recvbuf, int~recvcount, MPI\_Datatype~recvtype, int~root, MPI\_Comm~comm, MPI\_Request*~request)}
+ 
+ \mpifbind{MPI\_ISCATTERV(SENDBUF, SENDCOUNTS, DISPLS, SENDTYPE, RECVBUF, RECVCOUNT, RECVTYPE, ROOT, COMM, REQUEST, IERROR) \fargs <type> SENDBUF(*), RECVBUF(*) \\ INTEGER SENDCOUNTS(*), DISPLS(*), SENDTYPE, RECVCOUNT, RECVTYPE, ROOT, COMM, REQUEST, IERROR}
+ 
+@@ -4341,7 +4346,7 @@
+ \funcarg{\OUT}{request}{communication request (handle)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Iallgather(void*~sendbuf, int~sendcount, MPI\_Datatype~sendtype, void*~recvbuf, int~recvcount, MPI\_Datatype~recvtype, MPI\_Comm~comm, MPI\_Request*~request)}
++\mpibind{MPI\_Iallgather(\MPIupdate{3.0}{140}{const }void*~sendbuf, int~sendcount, MPI\_Datatype~sendtype, void*~recvbuf, int~recvcount, MPI\_Datatype~recvtype, MPI\_Comm~comm, MPI\_Request*~request)}
+ 
+ \mpifbind{MPI\_IALLGATHER(SENDBUF, SENDCOUNT, SENDTYPE, RECVBUF, RECVCOUNT, RECVTYPE, COMM, REQUEST, IERROR) \fargs <type> SENDBUF(*), RECVBUF(*) \\ INTEGER SENDCOUNT, SENDTYPE, RECVCOUNT, RECVTYPE, COMM, REQUEST, IERROR}
+ 
+@@ -4373,7 +4378,7 @@
+ \funcarg{\OUT}{request}{communication request (handle)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Iallgatherv(void*~sendbuf, int~sendcount, MPI\_Datatype~sendtype, void*~recvbuf, int~\MPIdelete{3.0}{0}{*}recvcounts\MPIupdate{3.0}{0}{[]}, int~\MPIdelete{3.0}{0}{*}{}displs\MPIupdate{3.0}{0}{[]}, MPI\_Datatype~recvtype, MPI\_Comm~comm, MPI\_Request* request)}
++\mpibind{MPI\_Iallgatherv(\MPIupdate{3.0}{140}{const }void*~sendbuf, int~sendcount, MPI\_Datatype~sendtype, void*~recvbuf, \MPIupdate{3.0}{140}{const }int~\MPIdelete{3.0}{0}{*}recvcounts\MPIupdate{3.0}{0}{[]}, \MPIupdate{3.0}{140}{const }int~\MPIdelete{3.0}{0}{*}{}displs\MPIupdate{3.0}{0}{[]}, MPI\_Datatype~recvtype, MPI\_Comm~comm, MPI\_Request* request)}
+ 
+ \mpifbind{MPI\_IALLGATHERV(SENDBUF, SENDCOUNT, SENDTYPE, RECVBUF, RECVCOUNTS, DISPLS, RECVTYPE, COMM, REQUEST, IERROR) \fargs <type> SENDBUF(*), RECVBUF(*) \\ INTEGER SENDCOUNT, SENDTYPE, RECVCOUNTS(*), DISPLS(*), RECVTYPE, COMM, REQUEST, IERROR}
+ 
+@@ -4405,7 +4410,7 @@
+ \funcarg{\OUT}{request}{communication request (handle)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Ialltoall(void*~sendbuf, int~sendcount, MPI\_Datatype~sendtype, void*~recvbuf, int~recvcount, MPI\_Datatype~recvtype, MPI\_Comm~comm, MPI\_Request*~request)}
++\mpibind{MPI\_Ialltoall(\MPIupdate{3.0}{140}{const }void*~sendbuf, int~sendcount, MPI\_Datatype~sendtype, void*~recvbuf, int~recvcount, MPI\_Datatype~recvtype, MPI\_Comm~comm, MPI\_Request*~request)}
+ 
+ \mpifbind{MPI\_IALLTOALL(SENDBUF, SENDCOUNT, SENDTYPE, RECVBUF, RECVCOUNT, RECVTYPE, COMM, REQUEST, IERROR) \fargs <type> SENDBUF(*), RECVBUF(*) \\ INTEGER SENDCOUNT, SENDTYPE, RECVCOUNT, RECVTYPE, COMM, REQUEST, IERROR}
+ 
+@@ -4441,8 +4446,13 @@
+ \funcarg{\OUT}{request}{communication request (handle)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Ialltoallv(void*~sendbuf, int~\MPIdelete{3.0}{0}{*}sendcounts\MPIupdate{3.0}{0}{[]}, int~\MPIdelete{3.0}{0}{*}sdispls\MPIupdate{3.0}{0}{[]}, MPI\_Datatype~sendtype, void*~recvbuf, int~\MPIdelete{3.0}{0}{*}recvcounts\MPIupdate{3.0}{0}{[]}, int~\MPIdelete{3.0}{0}{*}rdispls\MPIupdate{3.0}{0}{[]}, MPI\_Datatype~recvtype, MPI\_Comm~comm, MPI\_Request*~request)}
++\MPIupdate{3.0}{140}{
++  {\tt /* Adding const to parameters / ticket 140 -- not individually
++    highlighted because of latex restrictions */} \\
+ 
++\mpibind{MPI\_Ialltoallv(const void*~sendbuf, const int~\MPIdelete{3.0}{0}{*}sendcounts\MPIupdate{3.0}{0}{[]}, const int~\MPIdelete{3.0}{0}{*}sdispls\MPIupdate{3.0}{0}{[]}, MPI\_Datatype~sendtype, void*~recvbuf, const int~\MPIdelete{3.0}{0}{*}recvcounts\MPIupdate{3.0}{0}{[]}, const int~\MPIdelete{3.0}{0}{*}rdispls\MPIupdate{3.0}{0}{[]}, MPI\_Datatype~recvtype, MPI\_Comm~comm, MPI\_Request*~request)}
++}
++
+ \mpifbind{MPI\_IALLTOALLV(SENDBUF, SENDCOUNTS, SDISPLS, SENDTYPE, RECVBUF, RECVCOUNTS, RDISPLS, RECVTYPE, COMM, REQUEST, IERROR) \fargs <type> SENDBUF(*), RECVBUF(*) \\ INTEGER SENDCOUNTS(*), SDISPLS(*), SENDTYPE, RECVCOUNTS(*), RDISPLS(*), RECVTYPE, COMM, REQUEST, IERROR}
+ 
+ 
+@@ -4479,7 +4489,7 @@
+ \funcarg{\OUT}{request}{communication request (handle)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Ialltoallw(void*~sendbuf, int~sendcounts[], int~sdispls[], MPI\_Datatype~sendtypes[], void*~recvbuf, int~recvcounts[], int~rdispls[], MPI\_Datatype~recvtypes[], MPI\_Comm~comm, MPI\_Request*~request)}
++\mpibind{MPI\_Ialltoallw(\MPIupdate{3.0}{140}{const }void*~sendbuf, \MPIupdate{3.0}{140}{const }int~sendcounts[], \MPIupdate{3.0}{140}{const }int~sdispls[], \MPIupdate{3.0}{140}{const }MPI\_Datatype~sendtypes[], void*~recvbuf, \MPIupdate{3.0}{140}{const }int~recvcounts[], \MPIupdate{3.0}{140}{const }int~rdispls[], \MPIupdate{3.0}{140}{const }MPI\_Datatype~recvtypes[], MPI\_Comm~comm, MPI\_Request*~request)}
+ 
+ \mpifbind{MPI\_IALLTOALLW(SENDBUF, SENDCOUNTS, SDISPLS, SENDTYPES, RECVBUF, RECVCOUNTS, RDISPLS, RECVTYPES, COMM, REQUEST, IERROR) \fargs <type> SENDBUF(*), RECVBUF(*)\\INTEGER SENDCOUNTS(*), SDISPLS(*), SENDTYPES(*), RECVCOUNTS(*), RDISPLS(*), RECVTYPES(*), COMM, REQUEST, IERROR}
+ 
+@@ -4510,7 +4520,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Op}\cdeclindex{MPI::Op}%
+-\mpibind{MPI\_Ireduce(void*~sendbuf, void*~recvbuf, int~count, MPI\_Datatype~datatype, MPI\_Op~op, int~root, MPI\_Comm~comm, MPI\_Request*~request)}
++\mpibind{MPI\_Ireduce(\MPIupdate{3.0}{140}{const }void*~sendbuf, void*~recvbuf, int~count, MPI\_Datatype~datatype, MPI\_Op~op, int~root, MPI\_Comm~comm, MPI\_Request*~request)}
+ 
+ \mpifbind{MPI\_IREDUCE(SENDBUF, RECVBUF, COUNT, DATATYPE, OP, ROOT, COMM, REQUEST, IERROR) \fargs <type> SENDBUF(*), RECVBUF(*) \\ INTEGER COUNT, DATATYPE, OP, ROOT, COMM, REQUEST, IERROR}
+ 
+@@ -4558,7 +4568,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Op}\cdeclindex{MPI::Op}%
+-\mpibind{MPI\_Iallreduce(void*~sendbuf, void*~recvbuf, int~count, MPI\_Datatype~datatype, MPI\_Op~op, MPI\_Comm~comm, MPI\_Request*~request)}
++\mpibind{MPI\_Iallreduce(\MPIupdate{3.0}{140}{const }void*~sendbuf, void*~recvbuf, int~count, MPI\_Datatype~datatype, MPI\_Op~op, MPI\_Comm~comm, MPI\_Request*~request)}
+ 
+ \mpifbind{MPI\_IALLREDUCE(SENDBUF, RECVBUF, COUNT, DATATYPE, OP, COMM, REQUEST, IERROR) \fargs <type> SENDBUF(*), RECVBUF(*) \\ INTEGER COUNT, DATATYPE, OP, COMM, REQUEST, IERROR}
+ 
+@@ -4588,7 +4598,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Op}\cdeclindex{MPI::Op}%
+-\mpibind{MPI\_Ireduce\_scatter\_block(void*~sendbuf, void*~recvbuf, int~recvcount, MPI\_Datatype~datatype, MPI\_Op~op, MPI\_Comm~comm, MPI\_Request*~request)}
++\mpibind{MPI\_Ireduce\_scatter\_block(\MPIupdate{3.0}{140}{const }void*~sendbuf, void*~recvbuf, int~recvcount, MPI\_Datatype~datatype, MPI\_Op~op, MPI\_Comm~comm, MPI\_Request*~request)}
+ 
+ \mpifbind{MPI\_IREDUCE\_SCATTER\_BLOCK(SENDBUF, RECVBUF, RECVCOUNT, DATATYPE, OP, COMM, REQUEST, IERROR) \fargs <type> SENDBUF(*), RECVBUF(*) \\ INTEGER RECVCOUNT, DATATYPE, OP, COMM, REQUEST, IERROR}
+ 
+@@ -4622,7 +4632,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Op}\cdeclindex{MPI::Op}%
+-\mpibind{MPI\_Ireduce\_scatter(void*~sendbuf, void*~recvbuf, int~\MPIdelete{3.0}{0}{*}recvcounts\MPIupdate{3.0}{0}{[]}, MPI\_Datatype~datatype, MPI\_Op~op, MPI\_Comm~comm, MPI\_Request*~request)}
++\mpibind{MPI\_Ireduce\_scatter(\MPIupdate{3.0}{140}{const }void*~sendbuf, void*~recvbuf, \MPIupdate{3.0}{140}{const }int~\MPIdelete{3.0}{0}{*}recvcounts\MPIupdate{3.0}{0}{[]}, MPI\_Datatype~datatype, MPI\_Op~op, MPI\_Comm~comm, MPI\_Request*~request)}
+ 
+ \mpifbind{MPI\_IREDUCE\_SCATTER(SENDBUF, RECVBUF, RECVCOUNTS, DATATYPE, OP, COMM, REQUEST, IERROR) \fargs <type> SENDBUF(*), RECVBUF(*) \\ INTEGER RECVCOUNTS(*), DATATYPE, OP, COMM, REQUEST, IERROR}
+ 
+@@ -4654,7 +4664,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Op}\cdeclindex{MPI::Op}%
+-\mpibind{MPI\_Iscan(void*~sendbuf, void*~recvbuf, int~count, MPI\_Datatype~datatype, MPI\_Op~op, MPI\_Comm~comm, MPI\_Request*~request)}
++\mpibind{MPI\_Iscan(\MPIupdate{3.0}{140}{const }void*~sendbuf, void*~recvbuf, int~count, MPI\_Datatype~datatype, MPI\_Op~op, MPI\_Comm~comm, MPI\_Request*~request)}
+ 
+ \mpifbind{MPI\_ISCAN(SENDBUF, RECVBUF, COUNT, DATATYPE, OP, COMM, REQUEST, IERROR) \fargs <type> SENDBUF(*), RECVBUF(*) \\ INTEGER COUNT, DATATYPE, OP, COMM, REQUEST, IERROR}
+ \mpicppemptybind{MPI::Intracomm::Iscan(const void*~sendbuf, void*~recvbuf, int~count, const MPI::Datatype\&~datatype, const~MPI::Op\&~op) const}{MPI::Request}
+@@ -4685,7 +4695,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Op}\cdeclindex{MPI::Op}%
+-\mpibind{MPI\_Iexscan(void*~sendbuf, void*~recvbuf, int~count, MPI\_Datatype~datatype, MPI\_Op~op, MPI\_Comm~comm, MPI\_Request*~request) }
++\mpibind{MPI\_Iexscan(\MPIupdate{3.0}{140}{const }void*~sendbuf, void*~recvbuf, int~count, MPI\_Datatype~datatype, MPI\_Op~op, MPI\_Comm~comm, MPI\_Request*~request) }
+ 
+ \mpifbind{MPI\_IEXSCAN(SENDBUF, RECVBUF, COUNT, DATATYPE, OP, COMM, REQUEST, IERROR) \fargs<type> SENDBUF(*), RECVBUF(*) \\INTEGER COUNT, DATATYPE, OP, COMM, REQUEST, IERROR }
+ 
+Index: chap-topol/topol.tex
+===================================================================
+--- chap-topol/topol.tex	(revision 769)
++++ chap-topol/topol.tex	(working copy)
+@@ -214,7 +214,7 @@
+ \funcarg{\OUT}{ comm\_cart}{ communicator with new Cartesian topology (handle)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Cart\_create(MPI\_Comm~comm\_old, int~ndims, int~*dims, int~*periods, int~reorder, MPI\_Comm~*comm\_cart)}
++\mpibind{MPI\_Cart\_create(MPI\_Comm~comm\_old, int~ndims, \MPIupdate{3.0}{140}{const }int~*dims, \MPIupdate{3.0}{140}{const }int~*periods, int~reorder, MPI\_Comm~*comm\_cart)}
+ 
+ \mpifbind{MPI\_CART\_CREATE(COMM\_OLD, NDIMS, DIMS, PERIODS, REORDER, COMM\_CART, IERROR)\fargs INTEGER COMM\_OLD, NDIMS, DIMS(*), COMM\_CART, IERROR \\ LOGICAL PERIODS(*), REORDER}
+ \cdeclindex{MPI::Cartcomm}%
+@@ -309,7 +309,7 @@
+ \funcarg{\OUT}{ comm\_graph}{ communicator with graph topology added (handle)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Graph\_create(MPI\_Comm~comm\_old, int~nnodes, int~*index, int~*edges, int~reorder, MPI\_Comm~*comm\_graph)}
++\mpibind{MPI\_Graph\_create(MPI\_Comm~comm\_old, int~nnodes, \MPIupdate{3.0}{140}{const }int~*index, \MPIupdate{3.0}{140}{const }int~*edges, int~reorder, MPI\_Comm~*comm\_graph)}
+ 
+ \mpifbind{MPI\_GRAPH\_CREATE(COMM\_OLD, NNODES, INDEX, EDGES, REORDER, COMM\_GRAPH, IERROR)\fargs INTEGER COMM\_OLD, NNODES, INDEX(*), EDGES(*), COMM\_GRAPH, IERROR \\ LOGICAL REORDER}
+ \cdeclindex{MPI::Graphcomm}%
+@@ -491,7 +491,7 @@
+ \funcarg{\OUT}{comm\_dist\_graph}{communicator with distributed graph topology (handle)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Dist\_graph\_create\_adjacent(MPI\_Comm~comm\_old, int~indegree, int~sources[], int~sourceweights[], int~outdegree, int~destinations[], int destweights[], MPI\_Info~info, int~reorder, MPI\_Comm~*comm\_dist\_graph)}
++\mpibind{MPI\_Dist\_graph\_create\_adjacent(MPI\_Comm~comm\_old, int~indegree, \MPIupdate{3.0}{140}{const }int~sources[], \MPIupdate{3.0}{140}{const }int~sourceweights[], int~outdegree, \MPIupdate{3.0}{140}{const }int~destinations[], \MPIupdate{3.0}{140}{const }int destweights[], MPI\_Info~info, int~reorder, MPI\_Comm~*comm\_dist\_graph)}
+ 
+ \mpifbind{MPI\_DIST\_GRAPH\_CREATE\_ADJACENT(COMM\_OLD, INDEGREE, SOURCES, SOURCEWEIGHTS, OUTDEGREE, DESTINATIONS, DESTWEIGHTS, INFO, REORDER, COMM\_DIST\_GRAPH, IERROR)\fargs INTEGER COMM\_OLD, INDEGREE, SOURCES(*), SOURCEWEIGHTS(*), OUTDEGREE, \\ \ \ \ \ DESTINATIONS(*), DESTWEIGHTS(*), INFO, COMM\_DIST\_GRAPH, IERROR \\ LOGICAL REORDER}
+ 
+@@ -565,7 +565,7 @@
+ \funcarg{\OUT}{comm\_dist\_graph}{communicator with distributed graph topology added (handle)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Dist\_graph\_create(MPI\_Comm~comm\_old, int~n, int~sources[], int~degrees[], int~destinations[], int~weights[], MPI\_Info~info, int~reorder, MPI\_Comm~*comm\_dist\_graph)}
++\mpibind{MPI\_Dist\_graph\_create(MPI\_Comm~comm\_old, int~n, \MPIupdate{3.0}{140}{const }int~sources[], \MPIupdate{3.0}{140}{const }int~degrees[], \MPIupdate{3.0}{140}{const }int~destinations[], \MPIupdate{3.0}{140}{const }int~weights[], MPI\_Info~info, int~reorder, MPI\_Comm~*comm\_dist\_graph)}
+ 
+ \mpifbind{MPI\_DIST\_GRAPH\_CREATE(COMM\_OLD, N, SOURCES, DEGREES, DESTINATIONS, WEIGHTS, INFO, REORDER, COMM\_DIST\_GRAPH, IERROR)\fargs INTEGER COMM\_OLD, N, SOURCES(*), DEGREES(*), DESTINATIONS(*), WEIGHTS(*), INFO, COMM\_DIST\_GRAPH, IERROR \\ LOGICAL REORDER}
+ 
+@@ -902,7 +902,7 @@
+ \funcarg{\OUT}{ rank}{ rank of specified process (integer)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Cart\_rank(MPI\_Comm~comm, int~*coords, int~*rank)}
++\mpibind{MPI\_Cart\_rank(MPI\_Comm~comm, \MPIupdate{3.0}{140}{const }int~*coords, int~*rank)}
+ 
+ \mpifbind{MPI\_CART\_RANK(COMM, COORDS, RANK, IERROR)\fargs INTEGER COMM, COORDS(*), RANK, IERROR}
+ \mpicppemptybind{MPI::Cartcomm::Get\_cart\_rank(const~int~coords[]) const}{int}
+@@ -1264,7 +1264,7 @@
+ \funcarg{\OUT}{ newcomm}{ communicator containing the subgrid that includes the calling process (handle)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Cart\_sub(MPI\_Comm~comm, int~*remain\_dims, MPI\_Comm~*newcomm)}
++\mpibind{MPI\_Cart\_sub(MPI\_Comm~comm, \MPIupdate{3.0}{140}{const }int~*remain\_dims, MPI\_Comm~*newcomm)}
+ 
+ \mpifbind{MPI\_CART\_SUB(COMM, REMAIN\_DIMS, NEWCOMM, IERROR)\fargs INTEGER COMM, NEWCOMM, IERROR \\ LOGICAL REMAIN\_DIMS(*)}
+ \mpicppemptybind{MPI::Cartcomm::Sub(const~bool~remain\_dims[]) const}{MPI::Cartcomm}
+@@ -1319,7 +1319,7 @@
+ \funcarg{\OUT}{ newrank}{ reordered rank of the calling process; \const{MPI\_UNDEFINED} if calling process does not belong to grid (integer)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Cart\_map(MPI\_Comm~comm, int~ndims, int~*dims, int~*periods, int~*newrank)}
++\mpibind{MPI\_Cart\_map(MPI\_Comm~comm, int~ndims, \MPIupdate{3.0}{140}{const }int~*dims, \MPIupdate{3.0}{140}{const }int~*periods, int~*newrank)}
+ 
+ \mpifbind{MPI\_CART\_MAP(COMM, NDIMS, DIMS, PERIODS, NEWRANK, IERROR)\fargs INTEGER COMM, NDIMS, DIMS(*), NEWRANK, IERROR \\ LOGICAL PERIODS(*)}
+ \mpicppemptybind{MPI::Cartcomm::Map(int~ndims, const~int~dims[], const~bool~periods[]) const}{int}
+@@ -1360,7 +1360,7 @@
+ \funcarg{\OUT}{ newrank}{ reordered rank of the calling process; \const{MPI\_UNDEFINED} if the calling process does not belong to graph (integer)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Graph\_map(MPI\_Comm~comm, int~nnodes, int~*index, int~*edges, int~*newrank)}
++\mpibind{MPI\_Graph\_map(MPI\_Comm~comm, int~nnodes, \MPIupdate{3.0}{140}{const }int~*index, \MPIupdate{3.0}{140}{const }int~*edges, int~*newrank)}
+ 
+ \mpifbind{MPI\_GRAPH\_MAP(COMM, NNODES, INDEX, EDGES, NEWRANK, IERROR)\fargs INTEGER COMM, NNODES, INDEX(*), EDGES(*), NEWRANK, IERROR}
+ \mpicppemptybind{MPI::Graphcomm::Map(int~nnodes, const~int~index[], const~int~edges[]) const}{int}
+Index: chap-inquiry/inquiry.tex
+===================================================================
+--- chap-inquiry/inquiry.tex	(revision 769)
++++ chap-inquiry/inquiry.tex	(working copy)
+@@ -1140,7 +1140,7 @@
+ \funcarg{\IN}{string}{text corresponding to \mpiarg{errorcode} (string)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Add\_error\_string(int errorcode, char *string)}
++\mpibind{MPI\_Add\_error\_string(int errorcode, \MPIupdate{3.0}{140}{const }char *string)}
+ 
+ \mpifbind{MPI\_ADD\_ERROR\_STRING(ERRORCODE, STRING, IERROR)\fargs INTEGER ERRORCODE, IERROR \\ CHARACTER*(*) STRING}
+ 
+Index: chap-pt2pt/pt2pt.tex
+===================================================================
+--- chap-pt2pt/pt2pt.tex	(revision 769)
++++ chap-pt2pt/pt2pt.tex	(working copy)
+@@ -102,7 +102,7 @@
+ \end{funcdef}
+ 
+ \cdeclmainindex{MPI\_Comm}\cdeclmainindex{MPI::Comm}%
+-\mpibind{MPI\_Send(void*~buf, int~count, MPI\_Datatype~datatype, int~dest, int~tag, MPI\_Comm~comm)}
++\mpibind{MPI\_Send(\MPIupdate{3.0}{140}{const }void*~buf, int~count, MPI\_Datatype~datatype, int~dest, int~tag, MPI\_Comm~comm)}
+ 
+ \mpifbind{MPI\_SEND(BUF, COUNT, DATATYPE, DEST, TAG, COMM, IERROR)\fargs <type> BUF(*) \\ INTEGER  COUNT, DATATYPE, DEST, TAG, COMM, IERROR}
+ \mpicppemptybind{MPI::Comm::Send(const void*~buf, int~count, const MPI::Datatype\&~datatype, int~dest, int~tag) const}{void}
+@@ -599,7 +599,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Status}\cdeclindex{MPI::Status}%
+-\mpibind{MPI\_Get\_count(MPI\_Status~*status, MPI\_Datatype~datatype, int~*count)}
++\mpibind{MPI\_Get\_count(\MPIupdate{3.0}{140}{const }MPI\_Status~*status, MPI\_Datatype~datatype, int~*count)}
+ 
+ \mpifbind{MPI\_GET\_COUNT(STATUS, DATATYPE, COUNT, IERROR)\fargs INTEGER  STATUS(MPI\_STATUS\_SIZE), DATATYPE, COUNT, IERROR}
+ \mpicppemptybind{MPI::Status::Get\_count(const~MPI::Datatype\&~datatype) const}{int}
+@@ -1238,7 +1238,7 @@
+ \funcarg{\IN}{comm}{communicator (handle)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Bsend(void*~buf, int~count, MPI\_Datatype~datatype, int~dest, int~tag, MPI\_Comm~comm)}
++\mpibind{MPI\_Bsend(\MPIupdate{3.0}{140}{const }void*~buf, int~count, MPI\_Datatype~datatype, int~dest, int~tag, MPI\_Comm~comm)}
+ 
+ \mpifbind{MPI\_BSEND(BUF, COUNT, DATATYPE, DEST, TAG, COMM, IERROR)\fargs <type> BUF(*) \\ INTEGER  COUNT, DATATYPE, DEST, TAG, COMM, IERROR}
+ \mpicppemptybind{MPI::Comm::Bsend(const void*~buf, int~count, const MPI::Datatype\&~datatype, int~dest, int~tag) const}{void}
+@@ -1256,7 +1256,7 @@
+ \funcarg{\IN}{comm}{communicator (handle)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Ssend(void*~buf, int~count, MPI\_Datatype~datatype, int~dest, int~tag, MPI\_Comm~comm)}
++\mpibind{MPI\_Ssend(\MPIupdate{3.0}{140}{const }void*~buf, int~count, MPI\_Datatype~datatype, int~dest, int~tag, MPI\_Comm~comm)}
+ 
+ \mpifbind{MPI\_SSEND(BUF, COUNT, DATATYPE, DEST, TAG, COMM, IERROR)\fargs <type> BUF(*) \\ INTEGER  COUNT, DATATYPE, DEST, TAG, COMM, IERROR}
+ \mpicppemptybind{MPI::Comm::Ssend(const void*~buf, int~count, const MPI::Datatype\&~datatype, int~dest, int~tag) const}{void}
+@@ -1274,7 +1274,7 @@
+ \funcarg{\IN}{comm}{communicator (handle)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Rsend(void*~buf, int~count, MPI\_Datatype~datatype, int~dest, int~tag, MPI\_Comm~comm)}
++\mpibind{MPI\_Rsend(\MPIupdate{3.0}{140}{const }void*~buf, int~count, MPI\_Datatype~datatype, int~dest, int~tag, MPI\_Comm~comm)}
+ 
+ \mpifbind{MPI\_RSEND(BUF, COUNT, DATATYPE, DEST, TAG, COMM, IERROR)\fargs <type> BUF(*) \\ INTEGER  COUNT, DATATYPE, DEST, TAG, COMM, IERROR}
+ \mpicppemptybind{MPI::Comm::Rsend(const void*~buf, int~count, const MPI::Datatype\&~datatype, int~dest, int~tag) const}{void}
+@@ -1964,7 +1964,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Request}\cdeclindex{MPI::Request}%
+-\mpibind{MPI\_Isend(void*~buf, int~count, MPI\_Datatype~datatype, int~dest, int~tag, MPI\_Comm~comm, MPI\_Request~*request)}
++\mpibind{MPI\_Isend(\MPIupdate{3.0}{140}{const }void*~buf, int~count, MPI\_Datatype~datatype, int~dest, int~tag, MPI\_Comm~comm, MPI\_Request~*request)}
+ 
+ \mpifbind{MPI\_ISEND(BUF, COUNT, DATATYPE, DEST, TAG, COMM, REQUEST, IERROR)\fargs <type> BUF(*) \\ INTEGER  COUNT, DATATYPE, DEST, TAG, COMM, REQUEST, IERROR}
+ \mpicppemptybind{MPI::Comm::Isend(const void*~buf, int~count, const MPI::Datatype\&~datatype, int~dest, int~tag) const}{MPI::Request}
+@@ -1986,7 +1986,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Request}\cdeclindex{MPI::Request}%
+-\mpibind{MPI\_Ibsend(void*~buf, int~count, MPI\_Datatype~datatype, int~dest, int~tag, MPI\_Comm~comm, MPI\_Request~*request)}
++\mpibind{MPI\_Ibsend(\MPIupdate{3.0}{140}{const }void*~buf, int~count, MPI\_Datatype~datatype, int~dest, int~tag, MPI\_Comm~comm, MPI\_Request~*request)}
+ 
+ \mpifbind{MPI\_IBSEND(BUF, COUNT, DATATYPE, DEST, TAG, COMM, REQUEST, IERROR)\fargs <type> BUF(*) \\ INTEGER  COUNT, DATATYPE, DEST, TAG, COMM, REQUEST, IERROR}
+ \mpicppemptybind{MPI::Comm::Ibsend(const void*~buf, int~count, const MPI::Datatype\&~datatype, int~dest, int~tag) const}{MPI::Request}
+@@ -2009,7 +2009,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Request}\cdeclindex{MPI::Request}%
+-\mpibind{MPI\_Issend(void*~buf, int~count, MPI\_Datatype~datatype, int~dest, int~tag, MPI\_Comm~comm, MPI\_Request~*request)}
++\mpibind{MPI\_Issend(\MPIupdate{3.0}{140}{const }void*~buf, int~count, MPI\_Datatype~datatype, int~dest, int~tag, MPI\_Comm~comm, MPI\_Request~*request)}
+ 
+ \mpifbind{MPI\_ISSEND(BUF, COUNT, DATATYPE, DEST, TAG, COMM, REQUEST, IERROR)\fargs <type> BUF(*) \\ INTEGER  COUNT, DATATYPE, DEST, TAG, COMM, REQUEST, IERROR}
+ \mpicppemptybind{MPI::Comm::Issend(const void*~buf, int~count, const MPI::Datatype\&~datatype, int~dest, int~tag) const}{MPI::Request}
+@@ -2031,7 +2031,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Request}\cdeclindex{MPI::Request}%
+-\mpibind{MPI\_Irsend(void*~buf, int~count, MPI\_Datatype~datatype, int~dest, int~tag, MPI\_Comm~comm, MPI\_Request~*request)}
++\mpibind{MPI\_Irsend(\MPIupdate{3.0}{140}{const }void*~buf, int~count, MPI\_Datatype~datatype, int~dest, int~tag, MPI\_Comm~comm, MPI\_Request~*request)}
+ 
+ \mpifbind{MPI\_IRSEND(BUF, COUNT, DATATYPE, DEST, TAG, COMM, REQUEST, IERROR)\fargs <type> BUF(*) \\ INTEGER  COUNT, DATATYPE, DEST, TAG, COMM, REQUEST, IERROR}
+ \mpicppemptybind{MPI::Comm::Irsend(const void*~buf, int~count, const MPI::Datatype\&~datatype, int~dest, int~tag) const}{MPI::Request}
+@@ -3214,7 +3214,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Status}\cdeclindex{MPI::Status}%
+-\mpibind{MPI\_Test\_cancelled(MPI\_Status~*status, int~*flag)}
++\mpibind{MPI\_Test\_cancelled(\MPIupdate{3.0}{140}{const }MPI\_Status~*status, int~*flag)}
+ 
+ \mpifbind{MPI\_TEST\_CANCELLED(STATUS, FLAG, IERROR)\fargs LOGICAL FLAG \\ INTEGER  STATUS(MPI\_STATUS\_SIZE), IERROR}
+ \mpicppemptybind{MPI::Status::Is\_cancelled() const}{bool}
+@@ -3290,7 +3290,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Request}\cdeclindex{MPI::Request}%
+-\mpibind{MPI\_Send\_init(void*~buf, int~count, MPI\_Datatype~datatype, int~dest, int~tag, MPI\_Comm~comm, MPI\_Request~*request)}
++\mpibind{MPI\_Send\_init(\MPIupdate{3.0}{140}{const }void*~buf, int~count, MPI\_Datatype~datatype, int~dest, int~tag, MPI\_Comm~comm, MPI\_Request~*request)}
+ 
+ \mpifbind{MPI\_SEND\_INIT(BUF, COUNT, DATATYPE, DEST, TAG, COMM, REQUEST, IERROR)\fargs <type>  BUF(*) \\ INTEGER  REQUEST, COUNT, DATATYPE, DEST, TAG, COMM, REQUEST, IERROR}
+ \cdeclmainindex{MPI::Prequest}%
+@@ -3316,7 +3316,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Request}\cdeclindex{MPI::Request}%
+-\mpibind{MPI\_Bsend\_init(void*~buf, int~count, MPI\_Datatype~datatype, int~dest, int~tag, MPI\_Comm~comm, MPI\_Request~*request)}
++\mpibind{MPI\_Bsend\_init(\MPIupdate{3.0}{140}{const }void*~buf, int~count, MPI\_Datatype~datatype, int~dest, int~tag, MPI\_Comm~comm, MPI\_Request~*request)}
+ 
+ \mpifbind{MPI\_BSEND\_INIT(BUF, COUNT, DATATYPE, DEST, TAG, COMM, REQUEST, IERROR)\fargs <type>  BUF(*) \\ INTEGER  REQUEST, COUNT, DATATYPE, DEST, TAG, COMM, REQUEST, IERROR}
+ \mpicppemptybind{MPI::Comm::Bsend\_init(const void*~buf, int~count, const MPI::Datatype\&~datatype, int~dest, int~tag) const}{MPI::Prequest}
+@@ -3340,7 +3340,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Request}\cdeclindex{MPI::Request}%
+-\mpibind{MPI\_Ssend\_init(void*~buf, int~count, MPI\_Datatype~datatype, int~dest, int~tag, MPI\_Comm~comm, MPI\_Request~*request)}
++\mpibind{MPI\_Ssend\_init(\MPIupdate{3.0}{140}{const }void*~buf, int~count, MPI\_Datatype~datatype, int~dest, int~tag, MPI\_Comm~comm, MPI\_Request~*request)}
+ 
+ \mpifbind{MPI\_SSEND\_INIT(BUF, COUNT, DATATYPE, DEST, TAG, COMM, REQUEST, IERROR)\fargs <type>  BUF(*) \\ INTEGER  COUNT, DATATYPE, DEST, TAG, COMM, REQUEST, IERROR}
+ \mpicppemptybind{MPI::Comm::Ssend\_init(const void*~buf, int~count, const MPI::Datatype\&~datatype, int~dest, int~tag) const}{MPI::Prequest}
+@@ -3364,7 +3364,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Request}\cdeclindex{MPI::Request}%
+-\mpibind{MPI\_Rsend\_init(void*~buf, int~count, MPI\_Datatype~datatype, int~dest, int~tag, MPI\_Comm~comm, MPI\_Request~*request)}
++\mpibind{MPI\_Rsend\_init(\MPIupdate{3.0}{140}{const }void*~buf, int~count, MPI\_Datatype~datatype, int~dest, int~tag, MPI\_Comm~comm, MPI\_Request~*request)}
+ 
+ \mpifbind{MPI\_RSEND\_INIT(BUF, COUNT, DATATYPE, DEST, TAG, COMM, REQUEST, IERROR)\fargs <type>  BUF(*) \\ INTEGER  COUNT, DATATYPE, DEST, TAG, COMM, REQUEST, IERROR}
+ \mpicppemptybind{MPI::Comm::Rsend\_init(const void*~buf, int~count, const MPI::Datatype\&~datatype, int~dest, int~tag) const}{MPI::Prequest}
+@@ -3409,7 +3409,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Request}\cdeclindex{MPI::Request}%
+-\mpibind{MPI\_Start(MPI\_Request~*request)}
++\mpibind{MPI\_Start(\MPIupdate{3.0}{140}{const }MPI\_Request~*request)}
+ 
+ \mpifbind{MPI\_START(REQUEST, IERROR)\fargs INTEGER  REQUEST, IERROR}
+ \mpicppemptybind{MPI::Prequest::Start()}{void}
+@@ -3448,7 +3448,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Request}\cdeclindex{MPI::Request}%
+-\mpibind{MPI\_Startall(int~count, MPI\_Request~*array\_of\_requests)}
++\mpibind{MPI\_Startall(int~count, \MPIupdate{3.0}{140}{const }MPI\_Request~*array\_of\_requests)}
+ 
+ \mpifbind{MPI\_STARTALL(COUNT, ARRAY\_OF\_REQUESTS, IERROR)\fargs INTEGER  COUNT, ARRAY\_OF\_REQUESTS(*), IERROR}
+ \mpicppemptybind{MPI::Prequest::Startall(int~count, MPI::Prequest~array\_of\_requests[])}{static void}
+@@ -3564,7 +3564,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Status}\cdeclindex{MPI::Status}%
+-\mpibind{MPI\_Sendrecv(void~*sendbuf, int~sendcount, MPI\_Datatype~sendtype, int~dest, int~sendtag, void~*recvbuf, int~recvcount, MPI\_Datatype~recvtype, int~source, int~recvtag, MPI\_Comm~comm, MPI\_Status~*status)}
++\mpibind{MPI\_Sendrecv(\MPIupdate{3.0}{140}{const }void~*sendbuf, int~sendcount, MPI\_Datatype~sendtype, int~dest, int~sendtag, void~*recvbuf, int~recvcount, MPI\_Datatype~recvtype, int~source, int~recvtag, MPI\_Comm~comm, MPI\_Status~*status)}
+ 
+ \mpifbind{MPI\_SENDRECV(SENDBUF, SENDCOUNT, SENDTYPE, DEST, SENDTAG, RECVBUF, RECVCOUNT, RECVTYPE, SOURCE, RECVTAG, COMM, STATUS, IERROR)\fargs <type> SENDBUF(*), RECVBUF(*) \\ INTEGER  SENDCOUNT, SENDTYPE, DEST, SENDTAG, RECVCOUNT, RECVTYPE, SOURCE, RECVTAG, COMM, STATUS(MPI\_STATUS\_SIZE), IERROR}
+ \mpicppemptybind{MPI::Comm::Sendrecv(const void~*sendbuf, int~sendcount, const MPI::Datatype\&~sendtype, int~dest, int~sendtag, void~*recvbuf, int~recvcount, const~MPI::Datatype\&~recvtype, int~source, int~recvtag, MPI::Status\&~status) const}{void}
+Index: chap-binding/binding-2.tex
+===================================================================
+--- chap-binding/binding-2.tex	(revision 769)
++++ chap-binding/binding-2.tex	(working copy)
+@@ -2905,7 +2905,7 @@
+ is hidden.  That is, no status information is lost in the conversion. \par
+ \medskip
+ \cdeclindex{MPI\_Status}\cdeclindex{MPI::Status}%
+-\mpiemptybindidx{MPI\_Status\_f2c(MPI\_Fint *f\_status, MPI\_Status *c\_status)}{int}{MPI\_STATUS\_F2C}
++\mpiemptybindidx{MPI\_Status\_f2c(\MPIupdate{3.0}{140}{const }MPI\_Fint *f\_status, MPI\_Status *c\_status)}{int}{MPI\_STATUS\_F2C}
+ 
+ If \mpiarg{f\_status} is a valid Fortran status, but not the Fortran value of
+ \const{MPI\_STATUS\_IGNORE} or \const{MPI\_STATUSES\_IGNORE}, then
+@@ -2936,7 +2936,7 @@
+ To do the conversion in the other direction, we have the following:
+ 
+ \cdeclindex{MPI\_Status}\cdeclindex{MPI::Status}%
+-\mpiemptybindidx{MPI\_Status\_c2f(MPI\_Status *c\_status, MPI\_Fint *f\_status)}{int}{MPI\_STATUS\_C2F}
++\mpiemptybindidx{MPI\_Status\_c2f(\MPIupdate{3.0}{140}{const }MPI\_Status *c\_status, MPI\_Fint *f\_status)}{int}{MPI\_STATUS\_C2F}
+ 
+ This call converts a C status into a Fortran status, and has a behavior
+ similar to \cfunc{MPI\_Status\_f2c}.  That is, the value of
+Index: chap-dynamic/dynamic-2.tex
+===================================================================
+--- chap-dynamic/dynamic-2.tex	(revision 769)
++++ chap-dynamic/dynamic-2.tex	(working copy)
+@@ -333,7 +333,7 @@
+ \funcarg{\OUT}{array\_of\_errcodes}{one code per process (array of integer)}
+ \end{funcdef}
+ \cdeclindex{MPI\_Info}\cdeclindex{MPI::Info}%
+-\mpibind{MPI\_Comm\_spawn(char~*command, char~*argv[], int~maxprocs, MPI\_Info info, int~root, MPI\_Comm~comm, MPI\_Comm~*intercomm, int~array\_of\_errcodes[])}
++\mpibind{MPI\_Comm\_spawn(\MPIupdate{3.0}{140}{const }char~*command, char~*argv[], int~maxprocs, MPI\_Info info, int~root, MPI\_Comm~comm, MPI\_Comm~*intercomm, int~array\_of\_errcodes[])}
+ \mpifbind{MPI\_COMM\_SPAWN(COMMAND, ARGV, MAXPROCS, INFO, ROOT, COMM, INTERCOMM, ARRAY\_OF\_ERRCODES, IERROR)\fargs CHARACTER*(*) COMMAND, ARGV(*) \\INTEGER INFO, MAXPROCS, ROOT, COMM, INTERCOMM, ARRAY\_OF\_ERRCODES(*), IERROR}
+ \mpicppemptybind{MPI::Intracomm::Spawn(const~char*~command, const~char*~argv[], int~maxprocs, const~MPI::Info\&~info, int~root, int~array\_of\_errcodes[]) const}{MPI::Intercomm}
+ \mpicppemptybind{MPI::Intracomm::Spawn(const~char*~command, const~char*~argv[], int~maxprocs, const~MPI::Info\&~info, int~root) const}{MPI::Intercomm}
+@@ -689,7 +689,7 @@
+ (array of integer)}
+ \end{funcdef}
+ \cdeclindex{MPI\_Info}\cdeclindex{MPI::Info}%
+-\mpibind{MPI\_Comm\_spawn\_multiple(int~count, char~*array\_of\_commands[], char~**array\_of\_argv[], int~array\_of\_maxprocs[], MPI\_Info~array\_of\_info[], int~root, MPI\_Comm~comm, MPI\_Comm~*intercomm, int~array\_of\_errcodes[])} 
++\mpibind{MPI\_Comm\_spawn\_multiple(int~count, char~*array\_of\_commands[], char~**array\_of\_argv[], \MPIupdate{3.0}{140}{const }int~array\_of\_maxprocs[], \MPIupdate{3.0}{140}{const }MPI\_Info~array\_of\_info[], int~root, MPI\_Comm~comm, MPI\_Comm~*intercomm, int~array\_of\_errcodes[])} 
+ \mpifbind{MPI\_COMM\_SPAWN\_MULTIPLE(COUNT, ARRAY\_OF\_COMMANDS, ARRAY\_OF\_ARGV, ARRAY\_OF\_MAXPROCS, ARRAY\_OF\_INFO, ROOT, COMM, INTERCOMM, ARRAY\_OF\_ERRCODES, IERROR)\fargs INTEGER COUNT, ARRAY\_OF\_INFO(*), ARRAY\_OF\_MAXPROCS(*), ROOT, COMM, INTERCOMM, ARRAY\_OF\_ERRCODES(*), IERROR \\CHARACTER*(*) ARRAY\_OF\_COMMANDS(*), ARRAY\_OF\_ARGV(COUNT, *)}
+ \mpicppemptybind{MPI::Intracomm::Spawn\_multiple(int~count, const~char*~array\_of\_commands[], const~char**~array\_of\_argv[], const~int~array\_of\_maxprocs[], const~MPI::Info~array\_of\_info[], int~root, int~array\_of\_errcodes[])}{MPI::Intercomm}
+ \mpicppemptybind{MPI::Intracomm::Spawn\_multiple(int~count, const~char*~array\_of\_commands[], const~char**~array\_of\_argv[], const~int~array\_of\_maxprocs[], const~MPI::Info~array\_of\_info[], int~root)}{MPI::Intercomm}
+@@ -1177,7 +1177,7 @@
+ \begin{funcdef}{MPI\_CLOSE\_PORT(port\_name)}
+ \funcarg{\IN}{port\_name}{a port (string)}
+ \end{funcdef}
+-\mpibind{MPI\_Close\_port(char~*port\_name)}
++\mpibind{MPI\_Close\_port(\MPIupdate{3.0}{140}{const }char~*port\_name)}
+ \mpifbind{MPI\_CLOSE\_PORT(PORT\_NAME, IERROR)\fargs CHARACTER*(*) PORT\_NAME \\INTEGER IERROR}
+ \mpicppemptybind{MPI::Close\_port(const~char*~port\_name)}{void}
+ This function releases the network address represented by 
+@@ -1196,7 +1196,7 @@
+ (handle)}
+ \end{funcdef}
+ \cdeclindex{MPI\_Info}\cdeclindex{MPI::Info}%
+-\mpibind{MPI\_Comm\_accept(char~*port\_name, MPI\_Info~info, int~root, MPI\_Comm~comm, MPI\_Comm~*newcomm)}
++\mpibind{MPI\_Comm\_accept(\MPIupdate{3.0}{140}{const }char~*port\_name, MPI\_Info~info, int~root, MPI\_Comm~comm, MPI\_Comm~*newcomm)}
+ \mpifbind{MPI\_COMM\_ACCEPT(PORT\_NAME, INFO, ROOT, COMM, NEWCOMM, IERROR)\fargs CHARACTER*(*) PORT\_NAME \\INTEGER INFO, ROOT, COMM, NEWCOMM, IERROR}
+ \mpicppemptybind{MPI::Intracomm::Accept(const~char*~port\_name, const~MPI::Info\&~info, int~root) const}{MPI::Intercomm}
+ 
+@@ -1231,7 +1231,7 @@
+ (handle)}
+ \end{funcdef}
+ \cdeclindex{MPI\_Info}\cdeclindex{MPI::Info}%
+-\mpibind{MPI\_Comm\_connect(char~*port\_name, MPI\_Info~info, int~root, MPI\_Comm~comm, MPI\_Comm~*newcomm)}
++\mpibind{MPI\_Comm\_connect(\MPIupdate{3.0}{140}{const }char~*port\_name, MPI\_Info~info, int~root, MPI\_Comm~comm, MPI\_Comm~*newcomm)}
+ \mpifbind{MPI\_COMM\_CONNECT(PORT\_NAME, INFO, ROOT, COMM, NEWCOMM, IERROR)\fargs CHARACTER*(*) PORT\_NAME \\INTEGER INFO, ROOT, COMM, NEWCOMM, IERROR}
+ \mpicppemptybind{MPI::Intracomm::Connect(const~char*~port\_name, const~MPI::Info\&~info, int~root) const}{MPI::Intercomm}
+ 
+@@ -1302,7 +1302,7 @@
+ \funcarg{\IN}{port\_name}{a port name (string)}
+ \end{funcdef}
+ \cdeclindex{MPI\_Info}\cdeclindex{MPI::Info}%
+-\mpibind{MPI\_Publish\_name(char~*service\_name, MPI\_Info~info, char~*port\_name)}
++\mpibind{MPI\_Publish\_name(\MPIupdate{3.0}{140}{const }char~*service\_name, MPI\_Info~info, \MPIupdate{3.0}{140}{const }char~*port\_name)}
+ \mpifbind{MPI\_PUBLISH\_NAME(SERVICE\_NAME, INFO, PORT\_NAME, IERROR)\fargs INTEGER INFO, IERROR \\CHARACTER*(*) SERVICE\_NAME, PORT\_NAME}
+ \mpicppemptybind{MPI::Publish\_name(const~char*~service\_name, const~MPI::Info\&~info, const~char*~port\_name)}{void}
+ 
+@@ -1376,7 +1376,7 @@
+ \funcarg{\IN}{port\_name}{a port name (string)}
+ \end{funcdef}
+ \cdeclindex{MPI\_Info}\cdeclindex{MPI::Info}%
+-\mpibind{MPI\_Unpublish\_name(char~*service\_name, MPI\_Info~info, char~*port\_name)}
++\mpibind{MPI\_Unpublish\_name(\MPIupdate{3.0}{140}{const }char~*service\_name, MPI\_Info~info, \MPIupdate{3.0}{140}{const }char~*port\_name)}
+ \mpifbind{MPI\_UNPUBLISH\_NAME(SERVICE\_NAME, INFO, PORT\_NAME, IERROR)\fargs INTEGER INFO, IERROR \\CHARACTER*(*) SERVICE\_NAME, PORT\_NAME}
+ \mpicppemptybind{MPI::Unpublish\_name(const~char*~service\_name, const~MPI::Info\&~info, const~char*~port\_name)}{void}
+ 
+@@ -1406,7 +1406,7 @@
+ \funcarg{\OUT}{port\_name}{a port name (string)}
+ \end{funcdef}
+ \cdeclindex{MPI\_Info}\cdeclindex{MPI::Info}%
+-\mpibind{MPI\_Lookup\_name(char~*service\_name, MPI\_Info~info, char~*port\_name)}
++\mpibind{MPI\_Lookup\_name(\MPIupdate{3.0}{140}{const }char~*service\_name, MPI\_Info~info, char~*port\_name)}
+ \mpifbind{MPI\_LOOKUP\_NAME(SERVICE\_NAME, INFO, PORT\_NAME, IERROR)\fargs CHARACTER*(*) SERVICE\_NAME, PORT\_NAME \\INTEGER INFO, IERROR}
+ \mpicppemptybind{MPI::Lookup\_name(const~char*~service\_name, const~MPI::Info\&~info, char*~port\_name)}{void}
+ 
+Index: chap-misc/misc-2.tex
+===================================================================
+--- chap-misc/misc-2.tex	(revision 769)
++++ chap-misc/misc-2.tex	(working copy)
+@@ -114,7 +114,7 @@
+ \funcarg{\IN}{value}{value (string)}
+ \end{funcdef}
+ \cdeclindex{MPI\_Info}\cdeclindex{MPI::Info}%
+-\mpibind{MPI\_Info\_set(MPI\_Info~info, char~*key, char~*value)}
++\mpibind{MPI\_Info\_set(MPI\_Info~info, \MPIupdate{3.0}{140}{const }char~*key, \MPIupdate{3.0}{140}{const }char~*value)}
+ \mpifbind{MPI\_INFO\_SET(INFO, KEY, VALUE, IERROR)\fargs INTEGER INFO, IERROR \\CHARACTER*(*) KEY, VALUE}
+ \mpicppemptybind{MPI::Info::Set(const~char*~key, const~char*~value)}{void}
+ 
+@@ -130,7 +130,7 @@
+ \funcarg{\IN}{key}{key (string)}
+ \end{funcdef}
+ \cdeclindex{MPI\_Info}\cdeclindex{MPI::Info}%
+-\mpibind{MPI\_Info\_delete(MPI\_Info~info, char~*key)}
++\mpibind{MPI\_Info\_delete(MPI\_Info~info, \MPIupdate{3.0}{140}{const }char~*key)}
+ \mpifbind{MPI\_INFO\_DELETE(INFO, KEY, IERROR)\fargs INTEGER INFO, IERROR \\CHARACTER*(*) KEY}
+ \mpicppemptybind{MPI::Info::Delete(const~char*~key)}{void}
+ 
+@@ -146,7 +146,7 @@
+ \funcarg{\OUT}{flag}{ \constskip{true} if key defined, \constskip{false} if not (boolean)}
+ \end{funcdef}
+ \cdeclindex{MPI\_Info}\cdeclindex{MPI::Info}%
+-\mpibind{MPI\_Info\_get(MPI\_Info~info, char~*key, int~valuelen, char~*value, int~*flag)}
++\mpibind{MPI\_Info\_get(MPI\_Info~info, \MPIupdate{3.0}{140}{const }char~*key, int~valuelen, char~*value, int~*flag)}
+ \mpifbind{MPI\_INFO\_GET(INFO, KEY, VALUELEN, VALUE, FLAG, IERROR)\fargs INTEGER INFO, VALUELEN, IERROR \\CHARACTER*(*) KEY, VALUE \\LOGICAL FLAG}
+ \mpicppemptybind{MPI::Info::Get(const~char*~key, int~valuelen, char*~value) const}{bool}
+ 
+@@ -172,7 +172,7 @@
+ \funcarg{\OUT}{flag}{ \constskip{true} if key defined, \constskip{false} if not (boolean)}
+ \end{funcdef}
+ \cdeclindex{MPI\_Info}\cdeclindex{MPI::Info}%
+-\mpibind{MPI\_Info\_get\_valuelen(MPI\_Info~info, char~*key, int~*valuelen, int~*flag)}
++\mpibind{MPI\_Info\_get\_valuelen(MPI\_Info~info, \MPIupdate{3.0}{140}{const }char~*key, int~*valuelen, int~*flag)}
+ \mpifbind{MPI\_INFO\_GET\_VALUELEN(INFO, KEY, VALUELEN, FLAG, IERROR)\fargs INTEGER INFO, VALUELEN, IERROR \\LOGICAL FLAG \\CHARACTER*(*) KEY}
+ \mpicppemptybind{MPI::Info::Get\_valuelen(const~char*~key, int\&~valuelen) const}{bool}
+ 
+Index: chap-datatypes/datatypes.tex
+===================================================================
+--- chap-datatypes/datatypes.tex	(revision 769)
++++ chap-datatypes/datatypes.tex	(working copy)
+@@ -493,7 +493,7 @@
+ \funcarg{\OUT}{newtype}{new datatype (handle)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Type\_indexed(int~count, int~*array\_of\_blocklengths, int~*array\_of\_displacements, MPI\_Datatype~oldtype, MPI\_Datatype~*newtype)}
++\mpibind{MPI\_Type\_indexed(int~count, \MPIupdate{3.0}{140}{const }int~*array\_of\_blocklengths, \MPIupdate{3.0}{140}{const }int~*array\_of\_displacements, MPI\_Datatype~oldtype, MPI\_Datatype~*newtype)}
+ 
+ \mpifbind{MPI\_TYPE\_INDEXED(COUNT, ARRAY\_OF\_BLOCKLENGTHS, ARRAY\_OF\_DISPLACEMENTS, OLDTYPE, NEWTYPE, IERROR)\fargs INTEGER COUNT, ARRAY\_OF\_BLOCKLENGTHS(*), ARRAY\_OF\_DISPLACEMENTS(*), OLDTYPE, NEWTYPE, IERROR}
+ \mpicppemptybind{MPI::Datatype::Create\_indexed(int~count, const~int~array\_of\_blocklengths[], const~int~array\_of\_displacements[]) const}{MPI::Datatype}
+@@ -598,7 +598,7 @@
+ 
+ %shl
+ \cdeclindex{MPI\_Aint}\cdeclindex{MPI::Aint}%
+-\mpibind{MPI\_Type\_create\_hindexed(int~count, int~array\_of\_blocklengths[], MPI\_Aint~array\_of\_displacements[], MPI\_Datatype~oldtype, MPI\_Datatype~*newtype)}
++\mpibind{MPI\_Type\_create\_hindexed(int~count, \MPIupdate{3.0}{140}{const }int~array\_of\_blocklengths[], \MPIupdate{3.0}{140}{const }MPI\_Aint~array\_of\_displacements[], MPI\_Datatype~oldtype, MPI\_Datatype~*newtype)}
+ 
+ \mpifbind{MPI\_TYPE\_CREATE\_HINDEXED(COUNT, ARRAY\_OF\_BLOCKLENGTHS, ARRAY\_OF\_DISPLACEMENTS, OLDTYPE, NEWTYPE, IERROR)\fargs INTEGER COUNT, ARRAY\_OF\_BLOCKLENGTHS(*), OLDTYPE, NEWTYPE, IERROR\\INTEGER(KIND=MPI\_ADDRESS\_KIND) ARRAY\_OF\_DISPLACEMENTS(*)}
+ 
+@@ -674,7 +674,7 @@
+ \funcarg{\OUT}{newtype}{new datatype (handle)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Type\_create\_indexed\_block(int~count, int~blocklength, int~array\_of\_displacements[], MPI\_Datatype~oldtype, MPI\_Datatype~*newtype)}
++\mpibind{MPI\_Type\_create\_indexed\_block(int~count, int~blocklength, \MPIupdate{3.0}{140}{const }int~array\_of\_displacements[], MPI\_Datatype~oldtype, MPI\_Datatype~*newtype)}
+ 
+ \mpifbind{MPI\_TYPE\_CREATE\_INDEXED\_BLOCK(COUNT, BLOCKLENGTH, ARRAY\_OF\_DISPLACEMENTS, OLDTYPE, NEWTYPE, IERROR) \fargs INTEGER COUNT, BLOCKLENGTH, ARRAY\_OF\_DISPLACEMENTS(*), OLDTYPE, NEWTYPE, IERROR}
+ 
+@@ -716,7 +716,7 @@
+ 
+ %shl
+ \cdeclindex{MPI\_Aint}\cdeclindex{MPI::Aint}%
+-\mpibind{MPI\_Type\_create\_struct(int~count, int~array\_of\_blocklengths[], MPI\_Aint~array\_of\_displacements[], MPI\_Datatype~array\_of\_types[], MPI\_Datatype~*newtype)}
++\mpibind{MPI\_Type\_create\_struct(int~count, \MPIupdate{3.0}{140}{const }int~array\_of\_blocklengths[], \MPIupdate{3.0}{140}{const }MPI\_Aint~array\_of\_displacements[], \MPIupdate{3.0}{140}{const }MPI\_Datatype~array\_of\_types[], MPI\_Datatype~*newtype)}
+ 
+ \mpifbind{MPI\_TYPE\_CREATE\_STRUCT(COUNT, ARRAY\_OF\_BLOCKLENGTHS, ARRAY\_OF\_DISPLACEMENTS, ARRAY\_OF\_TYPES, NEWTYPE, IERROR)\fargs INTEGER COUNT, ARRAY\_OF\_BLOCKLENGTHS(*), ARRAY\_OF\_TYPES(*), NEWTYPE, IERROR\\ INTEGER(KIND=MPI\_ADDRESS\_KIND) ARRAY\_OF\_DISPLACEMENTS(*)}
+ 
+@@ -828,7 +828,7 @@
+ \end{funcdef}
+ 
+ % JMS-apr
+-\mpibind{MPI\_Type\_create\_subarray(int ndims, int~array\_of\_sizes[], int~array\_of\_subsizes[], int~array\_of\_starts[], int order, MPI\_Datatype oldtype, MPI\_Datatype~*newtype)}
++\mpibind{MPI\_Type\_create\_subarray(int ndims, \MPIupdate{3.0}{140}{const }int~array\_of\_sizes[], \MPIupdate{3.0}{140}{const }int~array\_of\_subsizes[], \MPIupdate{3.0}{140}{const }int~array\_of\_starts[], int order, MPI\_Datatype oldtype, MPI\_Datatype~*newtype)}
+ % JMS-apr
+ \mpifbind{MPI\_TYPE\_CREATE\_SUBARRAY(NDIMS, ARRAY\_OF\_SIZES, ARRAY\_OF\_SUBSIZES, ARRAY\_OF\_STARTS, ORDER, OLDTYPE, NEWTYPE, IERROR)\fargs INTEGER NDIMS, ARRAY\_OF\_SIZES(*), ARRAY\_OF\_SUBSIZES(*), ARRAY\_OF\_STARTS(*), ORDER, OLDTYPE, NEWTYPE, IERROR}
+ % JMS-apr
+@@ -1018,7 +1018,7 @@
+ \end{funcdef}
+ 
+ % JMS-apr
+-\mpibind{MPI\_Type\_create\_darray(int~size, int~rank, int~ndims, int~array\_of\_gsizes[], int~array\_of\_distribs[], int array\_of\_dargs[], int array\_of\_psizes[], int order, MPI\_Datatype~oldtype, MPI\_Datatype~*newtype)}
++\mpibind{MPI\_Type\_create\_darray(int~size, int~rank, int~ndims, \MPIupdate{3.0}{140}{const }int~array\_of\_gsizes[], \MPIupdate{3.0}{140}{const }int~array\_of\_distribs[], \MPIupdate{3.0}{140}{const }int array\_of\_dargs[], \MPIupdate{3.0}{140}{const }int array\_of\_psizes[], int order, MPI\_Datatype~oldtype, MPI\_Datatype~*newtype)}
+ % JMS-apr
+ \mpifbind{MPI\_TYPE\_CREATE\_DARRAY(SIZE, RANK, NDIMS, ARRAY\_OF\_GSIZES, ARRAY\_OF\_DISTRIBS, ARRAY\_OF\_DARGS, ARRAY\_OF\_PSIZES, ORDER, OLDTYPE, NEWTYPE, IERROR)\fargs INTEGER SIZE, RANK, NDIMS, ARRAY\_OF\_GSIZES(*), ARRAY\_OF\_DISTRIBS(*), ARRAY\_OF\_DARGS(*), ARRAY\_OF\_PSIZES(*), ORDER, OLDTYPE, NEWTYPE, IERROR}
+ % JMS-apr
+@@ -1356,7 +1356,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Aint}\cdeclindex{MPI::Aint}%
+-\mpibind{MPI\_Get\_address(void~*location, MPI\_Aint~*address)}
++\mpibind{MPI\_Get\_address(\MPIupdate{3.0}{140}{const }void~*location, MPI\_Aint~*address)}
+ 
+ %shl
+ \mpifbind{MPI\_GET\_ADDRESS(LOCATION, ADDRESS, IERROR)\fargs <type> LOCATION(*) \\ INTEGER IERROR\\INTEGER(KIND=MPI\_ADDRESS\_KIND) ADDRESS}
+@@ -1978,7 +1978,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Status}\cdeclindex{MPI::Status}%
+-\mpibind{MPI\_Get\_elements(MPI\_Status~*status, MPI\_Datatype~datatype, int~*count)}
++\mpibind{MPI\_Get\_elements(\MPIupdate{3.0}{140}{const }MPI\_Status~*status, MPI\_Datatype~datatype, int~*count)}
+ 
+ \mpifbind{MPI\_GET\_ELEMENTS(STATUS, DATATYPE, COUNT, IERROR)\fargs INTEGER  STATUS(MPI\_STATUS\_SIZE), DATATYPE, COUNT, IERROR}
+ \mpicppemptybind{MPI::Status::Get\_elements(const~MPI::Datatype\&~datatype) const}{int}
+@@ -3364,7 +3364,7 @@
+ \funcarg{\IN}{comm}{communicator for packed message (handle)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Pack(void*~inbuf, int~incount, MPI\_Datatype~datatype, void~*outbuf, int~outsize, int~*position,  MPI\_Comm~comm)}
++\mpibind{MPI\_Pack(\MPIupdate{3.0}{140}{const }void*~inbuf, int~incount, MPI\_Datatype~datatype, void~*outbuf, int~outsize, int~*position,  MPI\_Comm~comm)}
+ 
+ \mpifbind{MPI\_PACK(INBUF, INCOUNT, DATATYPE, OUTBUF, OUTSIZE, POSITION, COMM, IERROR)\fargs <type> INBUF(*), OUTBUF(*)\\ INTEGER INCOUNT, DATATYPE, OUTSIZE, POSITION,  COMM, IERROR}
+ \mpicppemptybind{MPI::Datatype::Pack(const void*~inbuf, int~incount, void~*outbuf, int~outsize, int\&~position, const~MPI::Comm~\&comm) const}{void}
+@@ -3401,7 +3401,7 @@
+ \funcarg{\IN}{comm}{communicator for packed message (handle)}
+ \end{funcdef}
+ 
+-\mpibind{MPI\_Unpack(void*~inbuf, int~insize, int~*position, void~*outbuf, int~outcount, MPI\_Datatype~datatype, MPI\_Comm~comm)}
++\mpibind{MPI\_Unpack(\MPIupdate{3.0}{140}{const }void*~inbuf, int~insize, int~*position, void~*outbuf, int~outcount, MPI\_Datatype~datatype, MPI\_Comm~comm)}
+ 
+ \mpifbind{MPI\_UNPACK(INBUF, INSIZE, POSITION, OUTBUF, OUTCOUNT, DATATYPE, COMM, IERROR)\fargs  <type> INBUF(*), OUTBUF(*) \\ INTEGER INSIZE, POSITION, OUTCOUNT, DATATYPE, COMM, IERROR}
+ \mpicppemptybind{MPI::Datatype::Unpack(const void*~inbuf, int~insize, void~*outbuf, int~outcount, int\&~position, const~MPI::Comm\&~comm) const}{void}
+@@ -3771,7 +3771,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Aint}\cdeclindex{MPI::Aint}%
+-\mpibind{MPI\_Pack\_external(char~*datarep, void *inbuf, int incount, MPI\_Datatype~datatype, void~*outbuf, MPI\_Aint~outsize, MPI\_Aint~*position)} 
++\mpibind{MPI\_Pack\_external(\MPIupdate{3.0}{140}{const }char~*datarep, \MPIupdate{3.0}{140}{const }void *inbuf, int incount, MPI\_Datatype~datatype, void~*outbuf, MPI\_Aint~outsize, MPI\_Aint~*position)} 
+ 
+ \mpifbind{MPI\_PACK\_EXTERNAL(DATAREP, INBUF, INCOUNT, DATATYPE, OUTBUF, OUTSIZE, POSITION, IERROR)\fargs INTEGER INCOUNT, DATATYPE, IERROR \\ INTEGER(KIND=MPI\_ADDRESS\_KIND) OUTSIZE, POSITION \\CHARACTER*(*) DATAREP \\ <type> INBUF(*), OUTBUF(*)}
+ 
+@@ -3789,7 +3789,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Aint}\cdeclindex{MPI::Aint}%
+-\mpibind{MPI\_Unpack\_external(char~*datarep, void *inbuf, MPI\_Aint~insize, MPI\_Aint~*position, void~*outbuf, int~outcount, MPI\_Datatype~datatype)} 
++\mpibind{MPI\_Unpack\_external(\MPIupdate{3.0}{140}{const }char~*datarep, \MPIupdate{3.0}{140}{const }void *inbuf, MPI\_Aint~insize, MPI\_Aint~*position, void~*outbuf, int~outcount, MPI\_Datatype~datatype)} 
+ 
+ \mpifbind{MPI\_UNPACK\_EXTERNAL(DATAREP, INBUF, INSIZE, POSITION, OUTBUF, OUTCOUNT, DATATYPE, IERROR)\fargs INTEGER OUTCOUNT, DATATYPE, IERROR \\ INTEGER(KIND=MPI\_ADDRESS\_KIND) INSIZE, POSITION \\ CHARACTER*(*) DATAREP \\ <type> INBUF(*), OUTBUF(*)}
+ 
+@@ -3803,7 +3803,7 @@
+ \end{funcdef}
+ 
+ \cdeclindex{MPI\_Aint}\cdeclindex{MPI::Aint}%
+-\mpibind{MPI\_Pack\_external\_size(char~*datarep, int~incount, MPI\_Datatype~datatype, MPI\_Aint~*size)} 
++\mpibind{MPI\_Pack\_external\_size(\MPIupdate{3.0}{140}{const }char~*datarep, int~incount, MPI\_Datatype~datatype, MPI\_Aint~*size)} 
+ 
+ \mpifbind{MPI\_PACK\_EXTERNAL\_SIZE(DATAREP, INCOUNT, DATATYPE, SIZE, IERROR)\fargs INTEGER INCOUNT, DATATYPE, IERROR \\ INTEGER(KIND=MPI\_ADDRESS\_KIND) SIZE \\ CHARACTER*(*) DATAREP }
+ 
+Index: chap-one-side/one-side-2.tex
+===================================================================
+--- chap-one-side/one-side-2.tex	(revision 769)
++++ chap-one-side/one-side-2.tex	(working copy)
+@@ -373,7 +373,7 @@
+ 
+ \cdeclindex{MPI\_Win}\cdeclindex{MPI::Win}%
+ \cdeclindex{MPI\_Aint}\cdeclindex{MPI::Aint}%
+-\mpibind{MPI\_Put(void *origin\_addr, int origin\_count, MPI\_Datatype origin\_datatype, int target\_rank, MPI\_Aint target\_disp, int target\_count, MPI\_Datatype target\_datatype, MPI\_Win win)}
++\mpibind{MPI\_Put(\MPIupdate{3.0}{140}{const }void *origin\_addr, int origin\_count, MPI\_Datatype origin\_datatype, int target\_rank, MPI\_Aint target\_disp, int target\_count, MPI\_Datatype target\_datatype, MPI\_Win win)}
+ 
+ 
+ \mpifbind{MPI\_PUT(ORIGIN\_ADDR, ORIGIN\_COUNT, ORIGIN\_DATATYPE, TARGET\_RANK, TARGET\_DISP, TARGET\_COUNT, TARGET\_DATATYPE, WIN, IERROR)\fargs <type> ORIGIN\_ADDR(*) \\ INTEGER(KIND=MPI\_ADDRESS\_KIND) TARGET\_DISP \\ INTEGER ORIGIN\_COUNT, ORIGIN\_DATATYPE, TARGET\_RANK, TARGET\_COUNT, TARGET\_DATATYPE,  WIN, IERROR}
+@@ -667,7 +667,7 @@
+ \cdeclindex{MPI\_Op}\cdeclindex{MPI::Op}%
+ \cdeclindex{MPI\_Win}\cdeclindex{MPI::Win}%
+ \cdeclindex{MPI\_Aint}\cdeclindex{MPI::Aint}%
+-\mpibind{MPI\_Accumulate(void~*origin\_addr, int~origin\_count, MPI\_Datatype~origin\_datatype, int~target\_rank, MPI\_Aint~target\_disp, int~target\_count, MPI\_Datatype~target\_datatype,  MPI\_Op~op, MPI\_Win~win)}
++\mpibind{MPI\_Accumulate(\MPIupdate{3.0}{140}{const }void~*origin\_addr, int~origin\_count, MPI\_Datatype~origin\_datatype, int~target\_rank, MPI\_Aint~target\_disp, int~target\_count, MPI\_Datatype~target\_datatype,  MPI\_Op~op, MPI\_Win~win)}
+ 
+ \mpifbind{MPI\_ACCUMULATE(ORIGIN\_ADDR, ORIGIN\_COUNT, ORIGIN\_DATATYPE, TARGET\_RANK, TARGET\_DISP, TARGET\_COUNT, TARGET\_DATATYPE,  OP, WIN, IERROR) \fargs <type> ORIGIN\_ADDR(*) \\ INTEGER(KIND=MPI\_ADDRESS\_KIND) TARGET\_DISP \\ INTEGER ORIGIN\_COUNT, ORIGIN\_DATATYPE,TARGET\_RANK, TARGET\_COUNT, TARGET\_DATATYPE,  OP, WIN, IERROR}
+ 

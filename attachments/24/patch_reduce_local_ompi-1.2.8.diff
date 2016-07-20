@@ -1,0 +1,666 @@
+diff -x '*wrapper*' -x '*autom*' -Nur openmpi-1.2.8/ompi/mpi/c/Makefile.in openmpi-1.2.8-mpi_reduce_local/ompi/mpi/c/Makefile.in
+--- openmpi-1.2.8/ompi/mpi/c/Makefile.in	2008-10-08 15:44:51.000000000 -0700
++++ openmpi-1.2.8-mpi_reduce_local/ompi/mpi/c/Makefile.in	2008-12-14 09:06:33.000000000 -0800
+@@ -267,7 +267,7 @@
+ 	op_create.lo op_f2c.lo op_free.lo open_port.lo \
+ 	pack_external.lo pack_external_size.lo pack.lo pack_size.lo \
+ 	pcontrol.lo probe.lo publish_name.lo query_thread.lo \
+-	recv_init.lo recv.lo reduce.lo reduce_scatter.lo \
++	recv_init.lo recv.lo reduce.lo reduce_scatter.lo reduce_local.lo query_op.lo \
+ 	register_datarep.lo request_c2f.lo request_f2c.lo \
+ 	request_free.lo request_get_status.lo rsend_init.lo rsend.lo \
+ 	scan.lo scatter.lo scatterv.lo send.lo send_init.lo \
+@@ -1181,6 +1181,8 @@
+         recv.c \
+         reduce.c \
+         reduce_scatter.c \
++        reduce_local.c \
++        query_op.c \
+         register_datarep.c \
+         request_c2f.c \
+         request_f2c.c \
+@@ -1549,6 +1551,8 @@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/recv_init.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce_scatter.Plo@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce_local.Plo@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/query_op.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/register_datarep.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/request_c2f.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/request_f2c.Plo@am__quote@
+diff -x '*wrapper*' -x '*autom*' -Nur openmpi-1.2.8/ompi/mpi/c/query_op.c openmpi-1.2.8-mpi_reduce_local/ompi/mpi/c/query_op.c
+--- openmpi-1.2.8/ompi/mpi/c/query_op.c	1969-12-31 16:00:00.000000000 -0800
++++ openmpi-1.2.8-mpi_reduce_local/ompi/mpi/c/query_op.c	2008-12-14 08:20:19.000000000 -0800
+@@ -0,0 +1,44 @@
++/*
++ * Copyright (c) 2004-2006 The Trustees of Indiana University and Indiana
++ *                         University Research and Technology
++ *                         Corporation.  All rights reserved.
++ * Copyright (c) 2004-2005 The University of Tennessee and The University
++ *                         of Tennessee Research Foundation.  All rights
++ *                         reserved.
++ * Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
++ *                         University of Stuttgart.  All rights reserved.
++ * Copyright (c) 2004-2005 The Regents of the University of California.
++ *                         All rights reserved.
++ * Copyright (c) 2006      Cisco Systems, Inc.  All rights reserved.
++ * $COPYRIGHT$
++ * 
++ * Additional copyrights may follow
++ * 
++ * $HEADER$
++ */
++#include "ompi_config.h"
++#include <stdio.h>
++
++#include "ompi/mpi/c/bindings.h"
++#include "ompi/datatype/datatype.h"
++#include "ompi/op/op.h"
++
++#if OMPI_HAVE_WEAK_SYMBOLS && OMPI_PROFILING_DEFINES
++#pragma weak MPI_Query_op = PMPI_Query_op
++#endif
++
++#if OMPI_PROFILING_DEFINES
++#include "ompi/mpi/c/profile/defines.h"
++#endif
++
++static const char FUNC_NAME[] = "MPI_Query_op";
++
++
++int MPI_Query_op(MPI_Op op, int *commute) 
++{
++    int err;
++
++    if(ompi_op_is_commute(op)) *commute=1;
++    else *commute=0;
++
++}
+diff -x '*wrapper*' -x '*autom*' -Nur openmpi-1.2.8/ompi/mpi/c/profile/Makefile.in openmpi-1.2.8-mpi_reduce_local/ompi/mpi/c/profile/Makefile.in
+--- openmpi-1.2.8/ompi/mpi/c/profile/Makefile.in	2008-10-08 15:44:52.000000000 -0700
++++ openmpi-1.2.8-mpi_reduce_local/ompi/mpi/c/profile/Makefile.in	2008-12-14 09:07:37.000000000 -0800
+@@ -268,7 +268,7 @@
+ 	pop_f2c.lo pop_free.lo popen_port.lo ppack_external.lo \
+ 	ppack_external_size.lo ppack.lo ppack_size.lo ppcontrol.lo \
+ 	pprobe.lo ppublish_name.lo pquery_thread.lo precv_init.lo \
+-	precv.lo preduce.lo preduce_scatter.lo pregister_datarep.lo \
++	precv.lo preduce.lo preduce_scatter.lo preduce_local.lo pquery_op.lo pregister_datarep.lo \
+ 	prequest_c2f.lo prequest_f2c.lo prequest_free.lo \
+ 	prequest_get_status.lo prsend_init.lo prsend.lo pscan.lo \
+ 	pscatter.lo pscatterv.lo psend.lo psend_init.lo psendrecv.lo \
+@@ -1157,6 +1157,8 @@
+         precv.c \
+         preduce.c \
+         preduce_scatter.c \
++        preduce_local.c \
++        pquery_op.c \
+         pregister_datarep.c \
+         prequest_c2f.c \
+         prequest_f2c.c \
+@@ -1525,6 +1527,8 @@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/precv_init.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/preduce.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/preduce_scatter.Plo@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/preduce_local.Plo@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pquery_op.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pregister_datarep.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/prequest_c2f.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/prequest_f2c.Plo@am__quote@
+diff -x '*wrapper*' -x '*autom*' -Nur openmpi-1.2.8/ompi/mpi/c/profile/defines.h openmpi-1.2.8-mpi_reduce_local/ompi/mpi/c/profile/defines.h
+--- openmpi-1.2.8/ompi/mpi/c/profile/defines.h	2008-08-25 12:16:52.000000000 -0700
++++ openmpi-1.2.8-mpi_reduce_local/ompi/mpi/c/profile/defines.h	2008-12-14 08:27:20.000000000 -0800
+@@ -231,6 +231,8 @@
+ #define MPI_Recv_init PMPI_Recv_init 
+ #define MPI_Recv PMPI_Recv 
+ #define MPI_Reduce PMPI_Reduce
++#define MPI_Reduce_local PMPI_Reduce_local
++#define MPI_Query_op PMPI_Query_op
+ #define MPI_Reduce_scatter PMPI_Reduce_scatter
+ #define MPI_Register_datarep PMPI_Register_datarep
+ #define MPI_Request_c2f PMPI_Request_c2f
+diff -x '*wrapper*' -x '*autom*' -Nur openmpi-1.2.8/ompi/mpi/c/profile/query_op.c openmpi-1.2.8-mpi_reduce_local/ompi/mpi/c/profile/query_op.c
+--- openmpi-1.2.8/ompi/mpi/c/profile/query_op.c	1969-12-31 16:00:00.000000000 -0800
++++ openmpi-1.2.8-mpi_reduce_local/ompi/mpi/c/profile/query_op.c	2008-12-14 08:20:19.000000000 -0800
+@@ -0,0 +1,44 @@
++/*
++ * Copyright (c) 2004-2006 The Trustees of Indiana University and Indiana
++ *                         University Research and Technology
++ *                         Corporation.  All rights reserved.
++ * Copyright (c) 2004-2005 The University of Tennessee and The University
++ *                         of Tennessee Research Foundation.  All rights
++ *                         reserved.
++ * Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
++ *                         University of Stuttgart.  All rights reserved.
++ * Copyright (c) 2004-2005 The Regents of the University of California.
++ *                         All rights reserved.
++ * Copyright (c) 2006      Cisco Systems, Inc.  All rights reserved.
++ * $COPYRIGHT$
++ * 
++ * Additional copyrights may follow
++ * 
++ * $HEADER$
++ */
++#include "ompi_config.h"
++#include <stdio.h>
++
++#include "ompi/mpi/c/bindings.h"
++#include "ompi/datatype/datatype.h"
++#include "ompi/op/op.h"
++
++#if OMPI_HAVE_WEAK_SYMBOLS && OMPI_PROFILING_DEFINES
++#pragma weak MPI_Query_op = PMPI_Query_op
++#endif
++
++#if OMPI_PROFILING_DEFINES
++#include "ompi/mpi/c/profile/defines.h"
++#endif
++
++static const char FUNC_NAME[] = "MPI_Query_op";
++
++
++int MPI_Query_op(MPI_Op op, int *commute) 
++{
++    int err;
++
++    if(ompi_op_is_commute(op)) *commute=1;
++    else *commute=0;
++
++    return MPI_SUCCESS;
++
++}
+diff -x '*wrapper*' -x '*autom*' -Nur openmpi-1.2.8/ompi/mpi/c/profile/preduce_local.c openmpi-1.2.8-mpi_reduce_local/ompi/mpi/c/profile/preduce_local.c
+--- openmpi-1.2.8/ompi/mpi/c/profile/preduce_local.c	1969-12-31 16:00:00.000000000 -0800
++++ openmpi-1.2.8-mpi_reduce_local/ompi/mpi/c/profile/preduce_local.c	2008-12-14 07:58:04.000000000 -0800
+@@ -0,0 +1,44 @@
++/*
++ * Copyright (c) 2004-2006 The Trustees of Indiana University and Indiana
++ *                         University Research and Technology
++ *                         Corporation.  All rights reserved.
++ * Copyright (c) 2004-2005 The University of Tennessee and The University
++ *                         of Tennessee Research Foundation.  All rights
++ *                         reserved.
++ * Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
++ *                         University of Stuttgart.  All rights reserved.
++ * Copyright (c) 2004-2005 The Regents of the University of California.
++ *                         All rights reserved.
++ * Copyright (c) 2006      Cisco Systems, Inc.  All rights reserved.
++ * $COPYRIGHT$
++ * 
++ * Additional copyrights may follow
++ * 
++ * $HEADER$
++ */
++#include "ompi_config.h"
++#include <stdio.h>
++
++#include "ompi/mpi/c/bindings.h"
++#include "ompi/datatype/datatype.h"
++#include "ompi/op/op.h"
++
++#if OMPI_HAVE_WEAK_SYMBOLS && OMPI_PROFILING_DEFINES
++#pragma weak MPI_Reduce_local = PMPI_Reduce_local
++#endif
++
++#if OMPI_PROFILING_DEFINES
++#include "ompi/mpi/c/profile/defines.h"
++#endif
++
++static const char FUNC_NAME[] = "MPI_Reduce_local";
++
++
++int MPI_Reduce_local(void *buf1, void *buf2, int count,
++               MPI_Datatype datatype, MPI_Op op) 
++{
++    int err;
++
++    ompi_op_reduce(op, buf1, buf2, count, datatype);
++
++}
+diff -x '*wrapper*' -x '*autom*' -Nur openmpi-1.2.8/ompi/mpi/c/reduce_local.c openmpi-1.2.8-mpi_reduce_local/ompi/mpi/c/reduce_local.c
+--- openmpi-1.2.8/ompi/mpi/c/reduce_local.c	1969-12-31 16:00:00.000000000 -0800
++++ openmpi-1.2.8-mpi_reduce_local/ompi/mpi/c/reduce_local.c	2008-12-14 07:58:04.000000000 -0800
+@@ -0,0 +1,44 @@
++/*
++ * Copyright (c) 2004-2006 The Trustees of Indiana University and Indiana
++ *                         University Research and Technology
++ *                         Corporation.  All rights reserved.
++ * Copyright (c) 2004-2005 The University of Tennessee and The University
++ *                         of Tennessee Research Foundation.  All rights
++ *                         reserved.
++ * Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
++ *                         University of Stuttgart.  All rights reserved.
++ * Copyright (c) 2004-2005 The Regents of the University of California.
++ *                         All rights reserved.
++ * Copyright (c) 2006      Cisco Systems, Inc.  All rights reserved.
++ * $COPYRIGHT$
++ * 
++ * Additional copyrights may follow
++ * 
++ * $HEADER$
++ */
++#include "ompi_config.h"
++#include <stdio.h>
++
++#include "ompi/mpi/c/bindings.h"
++#include "ompi/datatype/datatype.h"
++#include "ompi/op/op.h"
++
++#if OMPI_HAVE_WEAK_SYMBOLS && OMPI_PROFILING_DEFINES
++#pragma weak MPI_Reduce_local = PMPI_Reduce_local
++#endif
++
++#if OMPI_PROFILING_DEFINES
++#include "ompi/mpi/c/profile/defines.h"
++#endif
++
++static const char FUNC_NAME[] = "MPI_Reduce_local";
++
++
++int MPI_Reduce_local(void *buf1, void *buf2, int count,
++               MPI_Datatype datatype, MPI_Op op) 
++{
++    int err;
++
++    ompi_op_reduce(op, buf1, buf2, count, datatype);
++
++}
+diff -x '*wrapper*' -x '*autom*' -Nur openmpi-1.2.8/ompi/mpi/f77/Makefile.in openmpi-1.2.8-mpi_reduce_local/ompi/mpi/f77/Makefile.in
+--- openmpi-1.2.8/ompi/mpi/f77/Makefile.in	2008-10-08 15:44:53.000000000 -0700
++++ openmpi-1.2.8-mpi_reduce_local/ompi/mpi/f77/Makefile.in	2008-12-14 09:09:01.000000000 -0800
+@@ -266,6 +266,8 @@
+ @WANT_MPI_F77_BINDINGS_LAYER_TRUE@        recv_init_f.c \
+ @WANT_MPI_F77_BINDINGS_LAYER_TRUE@        reduce_f.c \
+ @WANT_MPI_F77_BINDINGS_LAYER_TRUE@        reduce_scatter_f.c \
++@WANT_MPI_F77_BINDINGS_LAYER_TRUE@        reduce_local_f.c \
++@WANT_MPI_F77_BINDINGS_LAYER_TRUE@        query_op_f.c \
+ @WANT_MPI_F77_BINDINGS_LAYER_TRUE@        register_datarep_f.c \
+ @WANT_MPI_F77_BINDINGS_LAYER_TRUE@        request_free_f.c \
+ @WANT_MPI_F77_BINDINGS_LAYER_TRUE@        request_get_status_f.c \
+@@ -583,7 +585,7 @@
+ 	pack_external_f.c pack_external_size_f.c pack_f.c \
+ 	pack_size_f.c pcontrol_f.c probe_f.c publish_name_f.c \
+ 	query_thread_f.c recv_f.c recv_init_f.c reduce_f.c \
+-	reduce_scatter_f.c register_datarep_f.c request_free_f.c \
++	reduce_scatter_f.c reduce_local_f.c query_op_f.c register_datarep_f.c request_free_f.c \
+ 	request_get_status_f.c rsend_f.c rsend_init_f.c scan_f.c \
+ 	scatter_f.c scatterv_f.c send_f.c send_init_f.c sendrecv_f.c \
+ 	sendrecv_replace_f.c ssend_f.c ssend_init_f.c startall_f.c \
+@@ -784,6 +786,8 @@
+ @WANT_MPI_F77_BINDINGS_LAYER_TRUE@	query_thread_f.lo recv_f.lo \
+ @WANT_MPI_F77_BINDINGS_LAYER_TRUE@	recv_init_f.lo reduce_f.lo \
+ @WANT_MPI_F77_BINDINGS_LAYER_TRUE@	reduce_scatter_f.lo \
++@WANT_MPI_F77_BINDINGS_LAYER_TRUE@	reduce_local.lo \
++@WANT_MPI_F77_BINDINGS_LAYER_TRUE@	query_op.lo \
+ @WANT_MPI_F77_BINDINGS_LAYER_TRUE@	register_datarep_f.lo \
+ @WANT_MPI_F77_BINDINGS_LAYER_TRUE@	request_free_f.lo \
+ @WANT_MPI_F77_BINDINGS_LAYER_TRUE@	request_get_status_f.lo \
+@@ -1844,6 +1848,8 @@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/recv_init_f.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce_f.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce_scatter_f.Plo@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reduce_local_f.Plo@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/query_op_f.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/register_datarep_f.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/request_free_f.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/request_get_status_f.Plo@am__quote@
+diff -x '*wrapper*' -x '*autom*' -Nur openmpi-1.2.8/ompi/mpi/f77/query_op_f.c openmpi-1.2.8-mpi_reduce_local/ompi/mpi/f77/query_op_f.c
+--- openmpi-1.2.8/ompi/mpi/f77/query_op_f.c	1969-12-31 16:00:00.000000000 -0800
++++ openmpi-1.2.8-mpi_reduce_local/ompi/mpi/f77/query_op_f.c	2008-12-14 08:39:40.000000000 -0800
+@@ -0,0 +1,74 @@
++/*
++ * Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
++ *                         University Research and Technology
++ *                         Corporation.  All rights reserved.
++ * Copyright (c) 2004-2005 The University of Tennessee and The University
++ *                         of Tennessee Research Foundation.  All rights
++ *                         reserved.
++ * Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
++ *                         University of Stuttgart.  All rights reserved.
++ * Copyright (c) 2004-2005 The Regents of the University of California.
++ *                         All rights reserved.
++ * $COPYRIGHT$
++ * 
++ * Additional copyrights may follow
++ * 
++ * $HEADER$
++ */
++
++#include "ompi_config.h"
++
++#include "ompi/mpi/f77/bindings.h"
++#include "ompi/mpi/f77/constants.h"
++
++#if OMPI_HAVE_WEAK_SYMBOLS && OMPI_PROFILE_LAYER
++#pragma weak PMPI_QUERY_OP = mpi_query_op_f
++#pragma weak pmpi_query_op = mpi_query_op_f
++#pragma weak pmpi_query_op_ = mpi_query_op_f
++#pragma weak pmpi_query_op__ = mpi_query_op_f
++#elif OMPI_PROFILE_LAYER
++OMPI_GENERATE_F77_BINDINGS (PMPI_QUERY_OP,
++                           pmpi_query_op,
++                           pmpi_query_op_,
++                           pmpi_query_op__,
++                           pmpi_query_op_f,
++                           (char *sendbuf, char *recvbuf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *op, MPI_Fint *ierr),
++                           (sendbuf, recvbuf, count, datatype, op, ierr) )
++#endif
++
++#if OMPI_HAVE_WEAK_SYMBOLS
++#pragma weak MPI_QUERY_OP = mpi_query_op_f
++#pragma weak mpi_query_op = mpi_query_op_f
++#pragma weak mpi_query_op_ = mpi_query_op_f
++#pragma weak mpi_query_op__ = mpi_query_op_f
++#endif
++
++#if ! OMPI_HAVE_WEAK_SYMBOLS && ! OMPI_PROFILE_LAYER
++OMPI_GENERATE_F77_BINDINGS (MPI_QUERY_OP,
++                           mpi_query_op,
++                           mpi_query_op_,
++                           mpi_query_op__,
++                           mpi_query_op_f,
++                           (char *sendbuf, char *recvbuf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *op, MPI_Fint *ierr),
++                           (sendbuf, recvbuf, count, datatype, op, ierr) )
++#endif
++
++
++#if OMPI_PROFILE_LAYER && ! OMPI_HAVE_WEAK_SYMBOLS
++#include "ompi/mpi/f77/profile/defines.h"
++#endif
++
++void mpi_query_op_f(MPI_Fint *op, MPI_Flogical *commute, MPI_Fint *ierr)
++{
++    MPI_Datatype c_type;
++    MPI_Op c_op;
++    MPI_Comm c_comm;
++
++    c_op = MPI_Op_f2c(*op);
++    OMPI_LOGICAL_NAME_DECL(commute);
++
++    *ierr = OMPI_INT_2_FINT(MPI_Query_op(c_op, OMPI_LOGICAL_SINGLE_NAME_CONVERT(commute)));
++    if (MPI_SUCCESS == OMPI_FINT_2_INT(*ierr)) {
++        OMPI_SINGLE_INT_2_LOGICAL(commute);
++    }
++}
+diff -x '*wrapper*' -x '*autom*' -Nur openmpi-1.2.8/ompi/mpi/f77/profile/Makefile.in openmpi-1.2.8-mpi_reduce_local/ompi/mpi/f77/profile/Makefile.in
+--- openmpi-1.2.8/ompi/mpi/f77/profile/Makefile.in	2008-10-08 15:44:53.000000000 -0700
++++ openmpi-1.2.8-mpi_reduce_local/ompi/mpi/f77/profile/Makefile.in	2008-12-14 09:10:14.000000000 -0800
+@@ -277,7 +277,7 @@
+ 	ppack_external_f.lo ppack_external_size_f.lo ppack_f.lo \
+ 	ppack_size_f.lo ppcontrol_f.lo pprobe_f.lo ppublish_name_f.lo \
+ 	pquery_thread_f.lo precv_f.lo precv_init_f.lo preduce_f.lo \
+-	preduce_scatter_f.lo pregister_datarep_f.lo prequest_free_f.lo \
++	preduce_scatter_f.lo preduce_local_f.lo pquery_op_f.lo pregister_datarep_f.lo prequest_free_f.lo \
+ 	prequest_get_status_f.lo prsend_f.lo prsend_init_f.lo \
+ 	pscan_f.lo pscatter_f.lo pscatterv_f.lo psend_f.lo \
+ 	psend_init_f.lo psendrecv_f.lo psendrecv_replace_f.lo \
+@@ -1156,6 +1156,8 @@
+         precv_init_f.c \
+         preduce_f.c \
+         preduce_scatter_f.c \
++        preduce_local_f.c \
++        pquery_op_f.c \
+         pregister_datarep_f.c \
+         prequest_free_f.c \
+         prequest_get_status_f.c \
+@@ -1504,6 +1506,8 @@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/precv_init_f.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/preduce_f.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/preduce_scatter_f.Plo@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/preduce_local_f.Plo@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pquery_op_f.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pregister_datarep_f.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/prequest_free_f.Plo@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/prequest_get_status_f.Plo@am__quote@
+diff -x '*wrapper*' -x '*autom*' -Nur openmpi-1.2.8/ompi/mpi/f77/profile/defines.h openmpi-1.2.8-mpi_reduce_local/ompi/mpi/f77/profile/defines.h
+--- openmpi-1.2.8/ompi/mpi/f77/profile/defines.h	2008-08-25 12:16:55.000000000 -0700
++++ openmpi-1.2.8-mpi_reduce_local/ompi/mpi/f77/profile/defines.h	2008-12-14 08:41:12.000000000 -0800
+@@ -213,6 +213,7 @@
+ #define mpi_recv_init_f pmpi_recv_init_f
+ #define mpi_recv_f pmpi_recv_f
+ #define mpi_reduce_f pmpi_reduce_f
++#define mpi_reduce_local_f pmpi_reduce_local_f
+ #define mpi_reduce_scatter_f pmpi_reduce_scatter_f
+ #define mpi_register_datarep_f pmpi_register_datarep_f
+ #define mpi_request_free_f pmpi_request_free_f
+diff -x '*wrapper*' -x '*autom*' -Nur openmpi-1.2.8/ompi/mpi/f77/profile/pquery_op_f.c openmpi-1.2.8-mpi_reduce_local/ompi/mpi/f77/profile/pquery_op_f.c
+--- openmpi-1.2.8/ompi/mpi/f77/profile/pquery_op_f.c	1969-12-31 16:00:00.000000000 -0800
++++ openmpi-1.2.8-mpi_reduce_local/ompi/mpi/f77/profile/pquery_op_f.c	2008-12-14 08:39:40.000000000 -0800
+@@ -0,0 +1,74 @@
++/*
++ * Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
++ *                         University Research and Technology
++ *                         Corporation.  All rights reserved.
++ * Copyright (c) 2004-2005 The University of Tennessee and The University
++ *                         of Tennessee Research Foundation.  All rights
++ *                         reserved.
++ * Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
++ *                         University of Stuttgart.  All rights reserved.
++ * Copyright (c) 2004-2005 The Regents of the University of California.
++ *                         All rights reserved.
++ * $COPYRIGHT$
++ * 
++ * Additional copyrights may follow
++ * 
++ * $HEADER$
++ */
++
++#include "ompi_config.h"
++
++#include "ompi/mpi/f77/bindings.h"
++#include "ompi/mpi/f77/constants.h"
++
++#if OMPI_HAVE_WEAK_SYMBOLS && OMPI_PROFILE_LAYER
++#pragma weak PMPI_QUERY_OP = mpi_query_op_f
++#pragma weak pmpi_query_op = mpi_query_op_f
++#pragma weak pmpi_query_op_ = mpi_query_op_f
++#pragma weak pmpi_query_op__ = mpi_query_op_f
++#elif OMPI_PROFILE_LAYER
++OMPI_GENERATE_F77_BINDINGS (PMPI_QUERY_OP,
++                           pmpi_query_op,
++                           pmpi_query_op_,
++                           pmpi_query_op__,
++                           pmpi_query_op_f,
++                           (char *sendbuf, char *recvbuf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *op, MPI_Fint *ierr),
++                           (sendbuf, recvbuf, count, datatype, op, ierr) )
++#endif
++
++#if OMPI_HAVE_WEAK_SYMBOLS
++#pragma weak MPI_QUERY_OP = mpi_query_op_f
++#pragma weak mpi_query_op = mpi_query_op_f
++#pragma weak mpi_query_op_ = mpi_query_op_f
++#pragma weak mpi_query_op__ = mpi_query_op_f
++#endif
++
++#if ! OMPI_HAVE_WEAK_SYMBOLS && ! OMPI_PROFILE_LAYER
++OMPI_GENERATE_F77_BINDINGS (MPI_QUERY_OP,
++                           mpi_query_op,
++                           mpi_query_op_,
++                           mpi_query_op__,
++                           mpi_query_op_f,
++                           (char *sendbuf, char *recvbuf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *op, MPI_Fint *ierr),
++                           (sendbuf, recvbuf, count, datatype, op, ierr) )
++#endif
++
++
++#if OMPI_PROFILE_LAYER && ! OMPI_HAVE_WEAK_SYMBOLS
++#include "ompi/mpi/f77/profile/defines.h"
++#endif
++
++void mpi_query_op_f(MPI_Fint *op, MPI_Flogical *commute, MPI_Fint *ierr)
++{
++    MPI_Datatype c_type;
++    MPI_Op c_op;
++    MPI_Comm c_comm;
++
++    c_op = MPI_Op_f2c(*op);
++    OMPI_LOGICAL_NAME_DECL(commute);
++
++    *ierr = OMPI_INT_2_FINT(MPI_Query_op(c_op, OMPI_LOGICAL_SINGLE_NAME_CONVERT(commute)));
++    if (MPI_SUCCESS == OMPI_FINT_2_INT(*ierr)) {
++        OMPI_SINGLE_INT_2_LOGICAL(commute);
++    }
++}
+diff -x '*wrapper*' -x '*autom*' -Nur openmpi-1.2.8/ompi/mpi/f77/profile/preduce_local_f.c openmpi-1.2.8-mpi_reduce_local/ompi/mpi/f77/profile/preduce_local_f.c
+--- openmpi-1.2.8/ompi/mpi/f77/profile/preduce_local_f.c	1969-12-31 16:00:00.000000000 -0800
++++ openmpi-1.2.8-mpi_reduce_local/ompi/mpi/f77/profile/preduce_local_f.c	2008-12-14 08:13:26.000000000 -0800
+@@ -0,0 +1,78 @@
++/*
++ * Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
++ *                         University Research and Technology
++ *                         Corporation.  All rights reserved.
++ * Copyright (c) 2004-2005 The University of Tennessee and The University
++ *                         of Tennessee Research Foundation.  All rights
++ *                         reserved.
++ * Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
++ *                         University of Stuttgart.  All rights reserved.
++ * Copyright (c) 2004-2005 The Regents of the University of California.
++ *                         All rights reserved.
++ * $COPYRIGHT$
++ * 
++ * Additional copyrights may follow
++ * 
++ * $HEADER$
++ */
++
++#include "ompi_config.h"
++
++#include "ompi/mpi/f77/bindings.h"
++#include "ompi/mpi/f77/constants.h"
++
++#if OMPI_HAVE_WEAK_SYMBOLS && OMPI_PROFILE_LAYER
++#pragma weak PMPI_REDUCE_LOCAL = mpi_reduce_local_f
++#pragma weak pmpi_reduce_local = mpi_reduce_local_f
++#pragma weak pmpi_reduce_local_ = mpi_reduce_local_f
++#pragma weak pmpi_reduce_local__ = mpi_reduce_local_f
++#elif OMPI_PROFILE_LAYER
++OMPI_GENERATE_F77_BINDINGS (PMPI_REDUCE_LOCAL,
++                           pmpi_reduce_local,
++                           pmpi_reduce_local_,
++                           pmpi_reduce_local__,
++                           pmpi_reduce_local_f,
++                           (char *sendbuf, char *recvbuf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *op, MPI_Fint *ierr),
++                           (sendbuf, recvbuf, count, datatype, op, ierr) )
++#endif
++
++#if OMPI_HAVE_WEAK_SYMBOLS
++#pragma weak MPI_REDUCE_LOCAL = mpi_reduce_local_f
++#pragma weak mpi_reduce_local = mpi_reduce_local_f
++#pragma weak mpi_reduce_local_ = mpi_reduce_local_f
++#pragma weak mpi_reduce_local__ = mpi_reduce_local_f
++#endif
++
++#if ! OMPI_HAVE_WEAK_SYMBOLS && ! OMPI_PROFILE_LAYER
++OMPI_GENERATE_F77_BINDINGS (MPI_REDUCE_LOCAL,
++                           mpi_reduce_local,
++                           mpi_reduce_local_,
++                           mpi_reduce_local__,
++                           mpi_reduce_local_f,
++                           (char *sendbuf, char *recvbuf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *op, MPI_Fint *ierr),
++                           (sendbuf, recvbuf, count, datatype, op, ierr) )
++#endif
++
++
++#if OMPI_PROFILE_LAYER && ! OMPI_HAVE_WEAK_SYMBOLS
++#include "ompi/mpi/f77/profile/defines.h"
++#endif
++
++void mpi_reduce_local_f(char *sendbuf, char *recvbuf, MPI_Fint *count,
++		  MPI_Fint *datatype, MPI_Fint *op, MPI_Fint *ierr)
++{
++    MPI_Datatype c_type;
++    MPI_Op c_op;
++    MPI_Comm c_comm;
++
++    c_type = MPI_Type_f2c(*datatype);
++    c_op = MPI_Op_f2c(*op);
++
++    sendbuf = OMPI_F2C_IN_PLACE(sendbuf);
++    sendbuf = OMPI_F2C_BOTTOM(sendbuf);
++    recvbuf = OMPI_F2C_BOTTOM(recvbuf);
++
++    *ierr = OMPI_INT_2_FINT(MPI_Reduce_local(sendbuf, recvbuf,
++				       OMPI_FINT_2_INT(*count),
++				       c_type, c_op));
++}
+diff -x '*wrapper*' -x '*autom*' -Nur openmpi-1.2.8/ompi/mpi/f77/reduce_local_f.c openmpi-1.2.8-mpi_reduce_local/ompi/mpi/f77/reduce_local_f.c
+--- openmpi-1.2.8/ompi/mpi/f77/reduce_local_f.c	1969-12-31 16:00:00.000000000 -0800
++++ openmpi-1.2.8-mpi_reduce_local/ompi/mpi/f77/reduce_local_f.c	2008-12-14 08:13:26.000000000 -0800
+@@ -0,0 +1,78 @@
++/*
++ * Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
++ *                         University Research and Technology
++ *                         Corporation.  All rights reserved.
++ * Copyright (c) 2004-2005 The University of Tennessee and The University
++ *                         of Tennessee Research Foundation.  All rights
++ *                         reserved.
++ * Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
++ *                         University of Stuttgart.  All rights reserved.
++ * Copyright (c) 2004-2005 The Regents of the University of California.
++ *                         All rights reserved.
++ * $COPYRIGHT$
++ * 
++ * Additional copyrights may follow
++ * 
++ * $HEADER$
++ */
++
++#include "ompi_config.h"
++
++#include "ompi/mpi/f77/bindings.h"
++#include "ompi/mpi/f77/constants.h"
++
++#if OMPI_HAVE_WEAK_SYMBOLS && OMPI_PROFILE_LAYER
++#pragma weak PMPI_REDUCE_LOCAL = mpi_reduce_local_f
++#pragma weak pmpi_reduce_local = mpi_reduce_local_f
++#pragma weak pmpi_reduce_local_ = mpi_reduce_local_f
++#pragma weak pmpi_reduce_local__ = mpi_reduce_local_f
++#elif OMPI_PROFILE_LAYER
++OMPI_GENERATE_F77_BINDINGS (PMPI_REDUCE_LOCAL,
++                           pmpi_reduce_local,
++                           pmpi_reduce_local_,
++                           pmpi_reduce_local__,
++                           pmpi_reduce_local_f,
++                           (char *sendbuf, char *recvbuf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *op, MPI_Fint *ierr),
++                           (sendbuf, recvbuf, count, datatype, op, ierr) )
++#endif
++
++#if OMPI_HAVE_WEAK_SYMBOLS
++#pragma weak MPI_REDUCE_LOCAL = mpi_reduce_local_f
++#pragma weak mpi_reduce_local = mpi_reduce_local_f
++#pragma weak mpi_reduce_local_ = mpi_reduce_local_f
++#pragma weak mpi_reduce_local__ = mpi_reduce_local_f
++#endif
++
++#if ! OMPI_HAVE_WEAK_SYMBOLS && ! OMPI_PROFILE_LAYER
++OMPI_GENERATE_F77_BINDINGS (MPI_REDUCE_LOCAL,
++                           mpi_reduce_local,
++                           mpi_reduce_local_,
++                           mpi_reduce_local__,
++                           mpi_reduce_local_f,
++                           (char *sendbuf, char *recvbuf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *op, MPI_Fint *ierr),
++                           (sendbuf, recvbuf, count, datatype, op, ierr) )
++#endif
++
++
++#if OMPI_PROFILE_LAYER && ! OMPI_HAVE_WEAK_SYMBOLS
++#include "ompi/mpi/f77/profile/defines.h"
++#endif
++
++void mpi_reduce_local_f(char *sendbuf, char *recvbuf, MPI_Fint *count,
++		  MPI_Fint *datatype, MPI_Fint *op, MPI_Fint *ierr)
++{
++    MPI_Datatype c_type;
++    MPI_Op c_op;
++    MPI_Comm c_comm;
++
++    c_type = MPI_Type_f2c(*datatype);
++    c_op = MPI_Op_f2c(*op);
++
++    sendbuf = OMPI_F2C_IN_PLACE(sendbuf);
++    sendbuf = OMPI_F2C_BOTTOM(sendbuf);
++    recvbuf = OMPI_F2C_BOTTOM(recvbuf);
++
++    *ierr = OMPI_INT_2_FINT(MPI_Reduce_local(sendbuf, recvbuf,
++				       OMPI_FINT_2_INT(*count),
++				       c_type, c_op));
++}

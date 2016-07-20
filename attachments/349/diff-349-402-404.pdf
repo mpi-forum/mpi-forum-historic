@@ -1,0 +1,254 @@
+Index: chap-datatypes/datatypes.tex
+===================================================================
+--- chap-datatypes/datatypes.tex	(revision 1731)
++++ chap-datatypes/datatypes.tex	(working copy)
+@@ -1359,15 +1359,15 @@
+ %%LANG: FORTRAN
+ %%DECL: INTEGER IERROR
+ %%ENDHEADER
+-\begin{verbatim}
++\begin{Verbatim}[commandchars=\\\$\^]
+    REAL A(100,100)
+    INTEGER(KIND=MPI_ADDRESS_KIND) I1, I2, DIFF
+    CALL MPI_GET_ADDRESS(A(1,1), I1, IERROR)
+    CALL MPI_GET_ADDRESS(A(10,10), I2, IERROR)
+-   DIFF = I2 - I1
++   DIFF = \MPIreplace$3.1^$404^$I2 - I1^$MPI_AINT_DIFF(I2, I1)^
+ ! The value of DIFF is 909*sizeofreal; the values of I1 and I2 are
+ ! implementation dependent.
+-\end{verbatim}
++\end{Verbatim}
+ \end{example}
+ 
+ \begin{users}
+@@ -1408,6 +1408,74 @@
+ %% ``{\sf Temporary Data Movements}'' and ``{\sf Permanent Data Movements}''.  
+ \end{users}
+ 
++\MPIupdate{3.1}{349}{To ensure portability, arithmetic on MPI addresses must be
++performed using the \mpifunc{MPI\_AINT\_ADD}
++\MPIupdate{3.1}{404}{and \mpifunc{MPI\_AINT\_DIFF}}
++functions.}
++
++\MPIupdateBegin{3.1}{349}
++\begin{funcdef}{MPI\_AINT\_ADD(base, disp)}
++\funcarg{\IN}{base}{base address (integer)}
++\funcarg{\IN}{disp}{displacement (integer)}
++\end{funcdef}
++
++\cdeclindex{MPI\_Aint}%
++\mpibindnotint{MPI\_Aint MPI\_Aint\_add(MPI\_Aint base, MPI\_Aint disp)}
++
++\mpifnewbind{INTEGER(KIND=MPI\_ADDRESS\_KIND) MPI\_Aint\_add(base, disp) \fargs INTEGER(KIND=MPI\_ADDRESS\_KIND), INTENT(IN) :: base, disp}
++\mpifbind{INTEGER(KIND=MPI\_ADDRESS\_KIND) MPI\_AINT\_ADD(BASE, DISP) \fargs INTEGER(KIND=MPI\_ADDRESS\_KIND) BASE, DISP}
++
++\mpifunc{MPI\_AINT\_ADD} produces a new \consti{MPI\_Aint} value that is
++equivalent to the sum of the \mpiarg{base} and \mpiarg{disp} arguments, where
++\mpiarg{base} represents a base address returned by a call to
++\mpifunc{MPI\_GET\_ADDRESS} and \mpiarg{disp} represents a signed integer
++displacement. The resulting address is valid only at the process that generated
++\mpiarg{base}, and it must correspond to a location in the same object
++referenced by \mpiarg{base}, as described in
++Section~\ref{subsec:pt2pt-segmented}. The addition is performed in a manner
++that results in the correct \consti{MPI\_Aint} representation of the output
++address, as if the process that originally produced \mpiarg{base} had called:
++
++\begin{verbatim}
++MPI_Get_address((char *) base + disp, &result)
++\end{verbatim}
++
++\begin{rationale}
++\consti{MPI\_Aint} values are signed integers, while addresses are unsigned
++quantities. Direct arithmetic on addresses in \consti{MPI\_Aint} variables can
++cause overflows, resulting in undefined behavior.
++\end{rationale}
++\MPIupdateEnd{3.1}
++
++\MPIupdateBegin{3.1}{404}
++\begin{funcdef}{MPI\_AINT\_DIFF(addr1, addr2)}
++\funcarg{\IN}{addr1}{minuend address (integer)}
++\funcarg{\IN}{addr2}{subtrahend address (integer)}
++\end{funcdef}
++
++\cdeclindex{MPI\_Aint}%
++\mpibindnotint{MPI\_Aint MPI\_Aint\_diff(MPI\_Aint addr1, MPI\_Aint addr2)}
++
++\mpifnewbind{INTEGER(KIND=MPI\_ADDRESS\_KIND) MPI\_Aint\_diff(addr1, addr2) \fargs INTEGER(KIND=MPI\_ADDRESS\_KIND), INTENT(IN) :: addr1, addr2}
++\mpifbind{INTEGER(KIND=MPI\_ADDRESS\_KIND) MPI\_AINT\_DIFF(ADDR1, ADDR2) \fargs INTEGER(KIND=MPI\_ADDRESS\_KIND) ADDR1, ADDR2}
++
++\mpifunc{MPI\_AINT\_DIFF} produces a new \consti{MPI\_Aint} value that is
++equivalent to the difference between \mpiarg{addr1} and \mpiarg{addr2}
++arguments, where \mpiarg{addr1} and \mpiarg{addr2} represent addresses returned
++by calls to \mpifunc{MPI\_GET\_ADDRESS}.  The resulting address is valid only
++at the process that generated \mpiarg{addr1} and \mpiarg{addr2}, and
++\mpiarg{addr1} and \mpiarg{addr2} must correspond to locations in the same
++object in the same process, as described in
++Section~\ref{subsec:pt2pt-segmented}. The difference is calculated in a manner
++that results the signed difference from \mpiarg{addr1} to \mpiarg{addr2}, as if
++the process that originally produced the addresses had called
++%
++\verb#(char *) addr1 - (char *) addr2#
++%
++on the addresses initially passed to \mpifunc{MPI\_GET\_ADDRESS}.
++
++\MPIupdateEnd{3.1}
++
+ The following auxiliary functions provide useful information on
+ derived datatypes.
+ 
+@@ -2918,7 +2986,7 @@
+ %%LANG: C
+ %%FRAGMENT
+ %%ENDHEADER
+-\begin{verbatim}
++\begin{Verbatim}[commandchars=\\\$\^]
+ struct Partstruct
+ {
+    int    type;  /* particle type */
+@@ -2947,7 +3015,8 @@
+ MPI_Get_address(particle[0].d, disp+1);
+ MPI_Get_address(particle[0].b, disp+2);
+ base = disp[0];
+-for (i=0; i < 3; i++) disp[i] -= base;
++\MPIdelete$3.1^$404^$for (i=0; i < 3; i++) disp[i] -= base;^
++\MPIupdate$3.1^$404^$for (i=0; i < 3; i++) disp[i] = MPI_Aint_diff(disp[i], base);^
+ 
+ MPI_Type_create_struct(3, blocklen, disp, type, &Particlestruct);
+ 
+@@ -2957,7 +3026,8 @@
+ /* compute extent of the structure */
+ 
+ MPI_Get_address(particle+1, &sizeofentry);
+-sizeofentry -= base;
++\MPIdelete$3.1^$404^$sizeofentry -= base;^
++\MPIupdate$3.1^$404^$sizeofentry = MPI_Aint_diff(sizeofentry, base);^
+ 
+ /* build datatype describing structure */
+ 
+@@ -3053,7 +3123,7 @@
+ MPI_Type_commit(&Onepair);
+ MPI_Send(particle[0].d, 1000, Onepair, dest, tag, comm);
+ 
+-\end{verbatim}
++\end{Verbatim}
+ \end{example}
+ 
+ \begin{example}
+@@ -3160,7 +3230,7 @@
+ %%FRAGMENT
+ %%DECL: int dest, tag; MPI_Comm comm;
+ %%ENDHEADER
+-\begin{verbatim}
++\begin{Verbatim}[commandchars=\\\$\^]
+ union {
+    int     ival;
+    float   fval;
+@@ -3179,7 +3249,8 @@
+ 
+ MPI_Get_address(u, &i);
+ MPI_Get_address(u+1, &extent);
+-extent -= i;
++\MPIdelete$3.1^$404^$extent -= i;^
++\MPIupdate$3.1^$404^$extent = MPI_Aint_diff(extent, i);^
+ 
+ MPI_Type_create_resized(MPI_INT, 0, extent, &mpi_utype[0]);
+ 
+@@ -3190,7 +3261,7 @@
+ /* actual communication */
+ 
+ MPI_Send(u, 1000, mpi_utype[utype], dest, tag, comm);
+-\end{verbatim}
++\end{Verbatim}
+ \end{example}
+ 
+ \begin{example}
+Index: chap-one-side/one-side-2.tex
+===================================================================
+--- chap-one-side/one-side-2.tex	(revision 1731)
++++ chap-one-side/one-side-2.tex	(working copy)
+@@ -4274,7 +4274,7 @@
+ is stale and it must chase ahead to the new tail before the element can be
+ attached.
+ This example requires some modification to
+-work in an environment where the length of a pointer is different on
++work in an environment where the \MPIreplace{3.1}{402}{length of a pointer}{layout of the structures} is different on
+ different processes.
+ 
+ \exindex{MPI\_Win\_create\_dynamic}%
+@@ -4296,7 +4296,16 @@
+ \begin{verbatim}
+ ...
+ #define NUM_ELEMS 10
+-
++\end{verbatim}
++\MPIupdateBegin{3.1}{402}
++\begin{verbatim}
++#define LLIST_ELEM_NEXT_RANK ( offsetof(llist_elem_t, next) + \
++                               offsetof(llist_ptr_t, rank) )
++#define LLIST_ELEM_NEXT_DISP ( offsetof(llist_elem_t, next) + \
++                               offsetof(llist_ptr_t, disp) )
++\end{verbatim}
++\MPIupdateEnd{3.1}
++\begin{Verbatim}[commandchars=\\\$\^]
+ /* Linked list pointer */
+ typedef struct {
+   MPI_Aint disp;
+@@ -4381,7 +4390,8 @@
+ 
+       MPI_Compare_and_swap((void*) &new_elem_ptr.rank, (void*) &nil.rank,
+           (void*)&next_tail_ptr.rank, MPI_INT, tail_ptr.rank,
+-          (MPI_Aint) &(((llist_elem_t*)tail_ptr.disp)->next.rank), 
++\MPIdelete$3.1^$402^$(MPI_Aint) &(((llist_elem_t*)tail_ptr.disp)->next.rank),^
++\MPIupdate$3.1^$402^$MPI_Aint_add(tail_ptr.disp, LLIST_ELEM_NEXT_RANK),^
+           llist_win);
+ 
+       MPI_Win_flush(tail_ptr.rank, llist_win);
+@@ -4389,7 +4399,8 @@
+ 
+       if (success) {
+         MPI_Accumulate(&new_elem_ptr.disp, 1, MPI_AINT, tail_ptr.rank,
+-            (MPI_Aint) &(((llist_elem_t*)tail_ptr.disp)->next.disp), 1,
++\MPIdelete$3.1^$402^$(MPI_Aint) &(((llist_elem_t*)tail_ptr.disp)->next.disp), 1,^
++\MPIupdate$3.1^$402^$MPI_Aint_add(tail_ptr.disp, LLIST_ELEM_NEXT_DISP), 1,^
+             MPI_AINT, MPI_REPLACE, llist_win);
+ 
+         MPI_Win_flush(tail_ptr.rank, llist_win);
+@@ -4401,7 +4412,8 @@
+         do {
+           MPI_Get_accumulate( NULL, 0, MPI_AINT, &next_tail_ptr.disp, 
+               1, MPI_AINT, tail_ptr.rank, 
+-              (MPI_Aint) &(((llist_elem_t*)tail_ptr.disp)->next.disp),
++\MPIdelete$3.1^$402^$(MPI_Aint) &(((llist_elem_t*)tail_ptr.disp)->next.disp),^
++\MPIupdate$3.1^$402^$MPI_Aint_add(tail_ptr.disp, LLIST_ELEM_NEXT_DISP),^
+               1, MPI_AINT, MPI_NO_OP, llist_win);
+ 
+           MPI_Win_flush(tail_ptr.rank, llist_win);
+@@ -4421,7 +4433,7 @@
+   }
+   MPI_Win_free(&llist_win);
+ ...
+-\end{verbatim}
++\end{Verbatim}
+ 
+ \end{example}
+ 
+Index: chap-terms/terms-2.tex
+===================================================================
+--- chap-terms/terms-2.tex	(revision 1731)
++++ chap-terms/terms-2.tex	(working copy)
+@@ -859,9 +859,12 @@
+ \subsection{Functions and Macros}
+ \label{sec:macros}
+ 
+-An implementation is allowed to implement \mpifunc{MPI\_WTIME},
+-\mpifunc{MPI\_WTICK}, \mpifunc{PMPI\_WTIME},
+-\mpifunc{PMPI\_WTICK}, and the handle-conversion functions
++An implementation is allowed to implement
++\mpifunc{MPI\_WTIME}, \mpifunc{MPI\_WTICK},
++\MPIupdate{3.1}{349}{\mpifunc{MPI\_AINT\_ADD}}, \MPIupdate{3.1}{404}{\mpifunc{MPI\_AINT\_DIFF}},
++\mpifunc{PMPI\_WTIME}, \mpifunc{PMPI\_WTICK},
++\MPIupdate{3.1}{349}{\mpifunc{PMPI\_AINT\_ADD}}, \MPIupdate{3.1}{404}{\mpifunc{PMPI\_AINT\_DIFF}},
++and the handle-conversion functions
+ (\cfunc{MPI\_Group\_f2c}, etc.) in Section~\ref{sec:misc-handleconvert}, and
+ no others, as macros in C.
+ 

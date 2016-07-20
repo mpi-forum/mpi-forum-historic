@@ -1,0 +1,1057 @@
+
+mpi-report-F2008-2011-09-08-changeonlyplustickets.pdf
+= https://svn.mpi-forum.org/trac/mpi-forum-web/attachment/ticket/229/mpi-report-F2008-2011-09-08-changeonlyplustickets.pdf
+
+____________________________________________________________________________________________
+____________________________________________________________________________________________
+
+Markup for late changes:
+
+#229.1 - The changes defined for the re-reading at the Santorini meeting Aug. 2011.
+
+#229.2 - The changes defined within this file, i.e., new in the reading 
+         in Chicago Oct. 2011
+
+#229.3 - If there will be additional changes for a re-reading at the Chicago Oct. 2011 meeting.
+
+(lines with * are new, 
+ lines with : are modified, 
+ lines with x are removed)
+
+____________________________________________________________________________________________
+____________________________________________________________________________________________ 
+
+Section 3.2.6 Passing MPI_STATUS_IGNORE for Status,
+MPI_STATUS_IGNORE is now allowed in all variants of MPI_PROBE
+and INTENT(OUT) is removed from the status argument of the probes:
+------------------------------------------------------------------
+
+mpi-report-F2008-2011-09-08-changeonlyplustickets.pdf
+p36:40-42 (=MPI-2.2 p34:3-5) read
+
+  To cope with this problem, there are two predefined constants, MPI_STATUS_IGNORE
+  and MPI_STATUSES_IGNORE, which when passed to a receive, 
+  wait, or test function, inform the implementation that the status fields 
+  are not to be filled in.
+
+but should read
+
+  To cope with this problem, there are two predefined constants, MPI_STATUS_IGNORE
+  and MPI_STATUSES_IGNORE, which when passed to a receive, 
+* probe, 
+  wait, or test function, inform the implementation that the status fields 
+  are not to be filled in.
+
+________
+
+mpi-report-F2008-2011-09-08-changeonlyplustickets.pdf
+p37:3-6 (=MPI-2.2 p34:14-17) read
+
+  In general, this optimization can apply to all functions for which status or an array of
+  statuses is an OUT argument. Note that this converts status into an INOUT argument. The
+  functions that can be passed MPI_STATUS_IGNORE are all the various forms of MPI_RECV,
+  MPI_TEST, and MPI_WAIT, as well as MPI_REQUEST_GET_STATUS.
+
+but should read
+
+  In general, this optimization can apply to all functions for which status or an array of
+  statuses is an OUT argument. Note that this converts status into an INOUT argument. The
+  functions that can be passed MPI_STATUS_IGNORE are all the various forms of MPI_RECV,
+* MPI_PROBE,
+  MPI_TEST, and MPI_WAIT, as well as MPI_REQUEST_GET_STATUS.
+
+________
+
+mpi-report-F2008-2011-09-08-changeonlyplustickets.pdf
+p71:32 (iprobe), p72:29 (probe), p654:4 (iprobe), p654:40 (probe), 
+p754:9 (improbe), p754:20 (mprobe) reads
+
+  TYPE(MPI_Status), INTENT(OUT) :: status
+
+but should read
+
+  TYPE(MPI_Status) :: status
+
+____________________________________________________________________________________________
+____________________________________________________________________________________________
+
+Section 3.6 Buffer Allocation and Usage (MPI_BUFFER_ATTACH), 
+clarification about the contiguous-quality of buffer in Fortran: 
+----------------------------------------------------------------
+
+mpi-report-F2008-2011-09-08-changeonlyplustickets.pdf
+p49:32-34 read
+
+  Provides to MPI a buffer in the user's memory to be used for buffering
+  outgoing messages. The buffer is used only by messages sent in buffered
+  mode. Only one buffer can be attached to a process at a time.
+
+but should read
+
+  Provides to MPI a buffer in the user's memory to be used for buffering
+  outgoing messages. The buffer is used only by messages sent in buffered
+  mode. Only one buffer can be attached to a process at a time.
+* In C and C++, buffer is the starting address of a memory region.
+* In Fortran, one can pass the first element of a memory region
+* or a whole array, which must be simply contiguous 
+* (for simply contiguous, see also Section 16.2.12 on page 576).  
+
+____________________________________________________________________________________________
+____________________________________________________________________________________________
+
+Section 3.6 Buffer Allocation and Usage (MPI_BUFFER_DETACH), 
+Corrections for ASYNCHRONOUS buffer argument: 
+------------------------------------------------------------
+
+mpi-report-F2008-2011-09-08-changeonlyplustickets.pdf
+p49:45 (MPI_BUFFER_DETACH) reads
+
+  TYPE(*), DIMENSION(..), ASYNCHRONOUS :: buffer_addr
+
+but should read 
+
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY : C_PTR
+  TYPE(C_PTR), INTENT(OUT) :: buffer_addr
+
+p50:22-26 read
+
+  Advice to users. Even though the C functions MPI_Buffer_attach and
+  MPI_Buffer_detach both have a first argument of type void*, these arguments are
+  used differently: A pointer to the buffer is passed to MPI_Buffer_attach; the address
+  of the pointer is passed to MPI_Buffer_detach, so that this call can return the pointer
+  value. 
+  (End of advice to users.)
+
+but should read
+
+  Advice to users. Even though the C functions MPI_Buffer_attach and
+  MPI_Buffer_detach both have a first argument of type void*, these arguments are
+  used differently: A pointer to the buffer is passed to MPI_Buffer_attach; the address
+  of the pointer is passed to MPI_Buffer_detach, so that this call can return the pointer
+  value. 
+* In Fortran with the mpi module or mpif.h, the type of the buffer_addr argument is
+* wrongly defined and the argument is therefore unused.
+* In Fortran with the mpi_f08 module, the address of the buffer is returned
+* as TYPE(C_PTR), see also Example 8.1 on page 328 about the use of C_PTR pointers.
+  (End of advice to users.)
+
+_______________________
+
+Background:
+-----------
+
+p50:1 reads
+
+  <type> BUFFER_ADDR(*)
+
+p50:5-8 read
+
+  Detach the buffer currently associated with MPI. The call returns the address and the
+  size of the detached buffer. This operation will block until all messages currently in the
+  buffer have been transmitted. Upon return of this function, the user may reuse or deallocate
+  the space taken by the buffer.
+
+p50:22-26 read
+
+  Advice to users. Even though the C functions MPI_Buffer_attach and
+  MPI_Buffer_detach both have a first argument of type void*, these arguments are
+  used differently: A pointer to the buffer is passed to MPI_Buffer_attach; the address
+  of the pointer is passed to MPI_Buffer_detach, so that this call can return the pointer
+  value. 
+  (End of advice to users.)
+
+WHAT THE HELL!  HOW IS THIS DONE IN FORTRAN????????
+
+It looks like that in Fortran, the argument is used as an input argument.
+Is this true?
+What is implemented in
+ - OpenMPI: buffer is ignored
+ - mpich2:  buffer is used as input and therefore ignored. 
+ - IBM MPI: ?
+ - others ???
+
+From OpenMPI (openmpi-1.2.8/ompi/mpi/f77/buffer_detach_f.c):
+
+  void mpi_buffer_detach_f(char *buffer, MPI_Fint *size, MPI_Fint *ierr)
+  {
+
+    /* 
+     * It does not make sense in fortran to return a pointer
+     * here as the user may get a behavior that is unexpected.
+     * Therefore, we use a dummy variable and leave the value
+     * handed in alone.
+     */
+    void *dummy;
+    OMPI_SINGLE_NAME_DECL(size);
+    *ierr = OMPI_INT_2_FINT(MPI_Buffer_detach(&dummy, 
+                                              OMPI_SINGLE_NAME_CONVERT(size)));
+    if (MPI_SUCCESS == OMPI_FINT_2_INT(*ierr)) {
+        OMPI_SINGLE_INT_2_FINT(size);
+    }
+  }
+
+From mpich (mpich2-1.4.1p1/src/binding/f77/bufdetachf.c):
+
+  /* Prototypes for the Fortran interfaces */
+  #include "fproto.h"
+  FORT_DLL_SPEC void FORT_CALL mpi_buffer_detach_ ( void*v1, MPI_Fint *v2, MPI_Fint *ierr ){
+    void *t1 = v1;
+    *ierr = MPI_Buffer_detach( &t1, v2 );
+  }
+
+____________________________________________________________________________________________
+____________________________________________________________________________________________
+
+Section 3.9 Persistent Communication Requests, 
+INTENT(IN) is added because the routine does not modify the content of the buffer: 
+----------------------------------------------------------------------------------
+
+mpi-report-F2008-2011-09-08-changeonlyplustickets.pdf
+p76:34 (MPI_SEND_INIT), p77:17 (MPI_BSEND_INIT),  
+p78:33 (MPI_RSEND_INIT), p78:1 (MPI_SSEND_INIT) read
+
+  TYPE(*), DIMENSION(..), ASYNCHRONOUS :: buf
+
+but should read
+
+  TYPE(*), DIMENSION(..), INTENT(IN), ASYNCHRONOUS :: buf
+
+REMARK: In MPI_RECV_INIT, buf is an OUT argument, therefore INTENT(IN) is not
+        added although the routine itself does not modify the buffer.
+
+____________________________________________________________________________________________
+____________________________________________________________________________________________
+
+Sections 4.1 Derived Datatypes, 4.1.6 Resize, und 16.2.15 Fortran derived types
+Corrections for the alignment problems in structure datatypes and arrays of structures:
+---------------------------------------------------------------------------------------
+
+
+mpi-report-F2008-2011-09-08-changeonlyplustickets.pdf
+p13:23-31 read
+
+  Rationale. Since the Fortran integer values are equivalent, applications can easily
+  convert MPI handles between all three supported Fortran methods. For example, an
+  integer communicator handle COMM can be converted directly into an exactly equivalent
+  mpi_f08 communicator handle named comm_f08 by comm_f08%MPI_VAL=COMM, and
+  vice versa. The use of the INTEGER defined handles and the BIND(C) derived type
+  handles is different: Fortran 2003 (and later) define that BIND(C) derived types can
+  be used within user defined common blocks, but it is up to the rules of the companion
+  C compiler how many numerical storage unit are used for these BIND(C) derived type
+  handles. 
+  (End of rationale.)
+
+but should read
+
+  Rationale. Since the Fortran integer values are equivalent, applications can easily
+  convert MPI handles between all three supported Fortran methods. For example, an
+  integer communicator handle COMM can be converted directly into an exactly equivalent
+  mpi_f08 communicator handle named comm_f08 by comm_f08%MPI_VAL=COMM, and
+  vice versa. The use of the INTEGER defined handles and the BIND(C) derived type
+  handles is different: Fortran 2003 (and later) define that BIND(C) derived types can
+  be used within user defined common blocks, but it is up to the rules of the companion
+: C compiler how many numerical storage units are used for these BIND(C) derived type
+  handles.
+* Most compilers use one unit for both, the INTEGER handles and the handles defined as 
+* BIND(C) derived types. 
+  (End of rationale.)
+
+________
+
+mpi-report-F2008-2011-09-08-changeonlyplustickets.pdf
+p86:45-47 (=MPI-2.2 p78:45-47) read
+
+  If type_i requires alignment to a byte address that is a multiple of k_i, then epsilon 
+  is the least non-negative increment needed to round extent(Typemap) to the next multiple 
+  of max_i k_i.
+  The complete definition of extent is given on page 107.
+
+but should read
+
+  If type_i requires alignment to a byte address that is a multiple of k_i, then epsilon 
+  is the least non-negative increment needed to round extent(Typemap) to the next multiple 
+  of max_i k_i.
+* In Fortran, whether the alignments k_i are computed according to the alignments 
+* used by the compiler in common blocks, SEQUENCE derived types, BIND(C) derived types,
+* or derived types that are neither SEQUENCE nor BIND(C),
+* is implementation-dependent.
+: The complete definition of extent is given in Section 4.1.6 on page 106.
+
+________
+
+mpi-report-F2008-2011-09-08-changeonlyplustickets.pdf
+p87:7-11 (=MPI-2.2 p79:7-11) read
+
+  Rationale. The definition of extent is motivated by the assumption that the amount
+  of padding added at the end of each structure in an array of structures is the least
+  needed to fulfill alignment constraints. More explicit control of the extent is provided
+  in Section 4.1.6. Such explicit control is needed in cases where the assumption does
+  not hold, for example, where union types are used. 
+  (End of rationale.)
+
+but should read
+
+  Rationale. The definition of extent is motivated by the assumption that the amount
+  of padding added at the end of each structure in an array of structures is the least
+  needed to fulfill alignment constraints. More explicit control of the extent is provided
+  in Section 4.1.6. Such explicit control is needed in cases where the assumption does
+  not hold, for example, where union types are used. 
+* In Fortran, structures can be expressed with several language features, e.g.,
+* common blocks, SEQUENCE derived types, or BIND(C) derived types. The compiler may
+* use different alignments, and therefore, it is recommended to use MPI_TYPE_CREATE_RESIZED
+* for arrays of structures if an alignment may cause an alignment-gap at the end of 
+* a structure as described in Section 4.1.6 on page 106 and in Section 16.2.15 on page 580. 
+  (End of rationale.)
+
+
+________
+
+mpi-report-F2008-2011-09-08-changeonlyplustickets.pdf
+p107:13-17 (=MPI-2.2 p96:42-45) read
+
+  If type_i requires alignment to a byte address that is a multiple of k_i, then epsilon
+  is the least non-negative increment needed to round extent(Typemap) to the next multiple
+  of max_i k_i.
+  The formal definitions given for the various datatype constructors apply now, 
+  with the amended definition of extent.
+
+but should read
+
+  If type_i requires alignment to a byte address that is a multiple of k_i, then epsilon
+  is the least non-negative increment needed to round extent(Typemap) to the next multiple
+  of max_i k_i.
+* In Fortran, whether the alignments k_i are computed according to the alignments 
+* used by the compiler in common blocks, SEQUENCE derived types, BIND(C) derived types,
+* or derived types that are neither SEQUENCE nor BIND(C),
+* is implementation-dependent.
+  The formal definitions given for the various datatype constructors apply now, 
+  with the amended definition of extent.
+
+* Rationale.
+* Before Fortran 2003, MPI_TYPE_CREATE_STRUCT could be applied to Fortran common blocks and
+* SEQUENCE derived types. With Fortran 2003, this list was extended by BIND(C) derived types
+* and MPI implementors have implemented the alignments k_i differently, i.e., some based on
+* the alignments used in SEQUENCE derived types, and others according to BIND(C) derived types.
+* (End of rationale.)
+
+* Advice to implementors.
+* In Fortran, it is generally recommended to use BIND(C) derived types instead of
+* common blocks or SEQUENCE derived types. Therefore it is recommended to calculate the
+* alignments k_i based on BIND(C) derived types.
+* (End of advice to implementors.)
+
+* Advice to users.
+* Structures combining different basic datatypes should be defined so that there will
+* be no gaps based on alignment rules, and if used as an array of structures, then
+* also without such an alignment-gap at the end of the structure.
+* In MPI communication, the content of such gaps would not be communicated
+* into the receiver's buffer.
+TEXT USED IN THE FORMAL READING, OCT. 25, 2011, CHICAGO-MEETING.
+DUE TO BAD READABILITY, IT WAS REQUESTED TO SUBSTITUTE THE FOLLOWING TEXT:
+  If alignment-gaps may occur, e.g., between an odd number of floats or REAL before
+  a double or DOUBLE PRECISION data, then such gaps should be added explicitely in 
+  the structure and also to the MPI derived datatype handle, because the communication
+  of a contiguous derived datatype may be significantly faster than the communication
+  of one that is non-contiguous due such alignment-gaps. 
+THIS TEXT IS SUBSTITUTED BY THE FOLLOWING TEXT, RE-READ ON OCT. 26, 2011:
+* For example, such an alignment-gap may occur between an odd number of
+* floats or REALs before a double or DOUBLE PRECISION data.  Such gaps
+* may be added explicitly to both the structure and the MPI derived
+* datatype handle because the communication of a contiguous derived
+* datatype may be significantly faster than the communication of one
+* that is non-contiguous due to such alignment-gaps.
+END OF SUBSTITUTION
+*
+* Example:
+*   Instead of
+*
+*     TYPE, BIND(C) :: my_data
+*       REAL, DIMENSION(3) :: x
+*       ! there may be a gap of the size of one REAL
+*       ! if the alignment of a DOUBLE PRECISION is 
+*       ! two times the size of a REAL
+*       DOUBLE PRECISION: p
+*     END TYPE
+* 
+* one should define
+*
+*     TYPE, BIND(C) :: my_data
+*       REAL, DIMENSION(3) :: x
+*       REAL :: gap1
+*       DOUBLE PRECISION: p
+*     END TYPE
+*
+* and also including gap1 in the matching MPI derived datatype.
+* It is required that all processes in a communication add the same
+* gaps, i.e., defined with the same basic datatype.
+* Both, the original and the modified structures are portable,
+* but may have different performance implications for the
+* communication and memory accesses during computation on
+* systems with different alignment values. 
+* 
+* In principle, a compiler may define an additional alignment rule 
+* for structures, e.g., to use at least 4 or 8 byte alignment although
+* the content may have a max_i k_i alignment less than this structure
+* alignment. To keep an application portable, it is therefore
+* recommended to always resize structure derived datatype handles
+* if used in an array of structures, see the Example in Section
+* 16.2.15 on page 580.
+* (End of advice to users.)
+
+__________
+
+mpi-report-F2008-2011-09-08-changeonlyplustickets.pdf
+p580:12,21,26,30,34,36:
+
+  Add a forth structure entry: logical l after the double precision d
+
+and add :: on lines p580:10-12, i.e., p580:9-13 read
+
+  type, BIND(C) :: mytype
+    integer i
+    real x
+    double precision d
+  end type mytype
+
+but should read
+
+  type, BIND(C) :: mytype
+:   integer :: i
+:   real :: x
+:   double precision :: d
+*   logical :: l 
+  end type mytype
+
+________
+
+mpi-report-F2008-2011-09-08-changeonlyplustickets.pdf
+p580:17 reads
+
+  INTEGER(MPI_ADDRESS_KIND)
+
+but shoud read
+
+  INTEGER(KIND=MPI_ADDRESS_KIND)
+
+________
+
+mpi-report-F2008-2011-09-08-changeonlyplustickets.pdf
+p581:11-29 read
+
+x TODO: The following text about the extent of derived types should be
+x strongly checked by specialist on derived types!!! The correct variant should
+x be chosen.
+  To use a derived type in an array requires a correct extent of the datatype handle to
+  take care of the alignment rules applied by the compiler. These alignment rules may imply
+  that there are gaps between the elements of a derived type, and also between the array
+  elements. 
+x The alignment rules in Section 4.1 on page 85 and Section 4.1.6 on page 106
+x apply only to
+x VARIANT 1: SEQUENCE
+x VARIANT 2: BIND(C)
+x derived types. 
+  The extent of an interoperable derived type (i.e., defined with BIND(C)) and
+  a SEQUENCE derived type with the same content may be different because C and Fortran
+  may apply different alignment rules.
+x VARIANT 1:
+x Using the SEQUENCE attribute instead of BIND(C) in the declararion on mytype, one can
+x directly use newtype to send the fooarr array.
+x VARIANT 2:
+x In the example, one can directly use newtype to send the fooarr array. The resized
+x newarrtype datatype is only needed, if mytype is a SEQUENCE derived type.
+
+but should read
+
+  To use a derived type in an array requires a correct extent of the datatype handle to
+  take care of the alignment rules applied by the compiler. These alignment rules may imply
+  that there are gaps between the elements of a derived type, and also between the array
+  elements.
+: The extent of an interoperable derived type (i.e., defined with BIND(C)) and
+  a SEQUENCE derived type with the same content may be different because C and Fortran
+  may apply different alignment rules.
+* As recommended in the advice to users in Section 4.1.6 on page 106,
+* one should add an additional fifth structure element with one numerical storage unit
+* at the end of this structure to force in most cases that the array of structures is contiguous.
+* Even with such an additional element, one should keep this resizing due to the
+* special alignment rules that can be used by the compiler for structures,
+* as also mentioned in this advice.
+ 
+__________
+
+In Annex B Change-Log the following entry should added:
+
+* Section 4.1 on page 85, Section 4.1.6 on page 106, and Section 16.2.15 on page 580.
+* The Fortran alignments of basic datatypes are implementation dependent. 
+* It is recommended that they are computed according to BIND(C) derived types.
+* If an array of structures (in C/C++) or derived types (in Fortran) should be communicated,
+* it is recommended that the user creates a portable datatype handle and applies
+* additionally MPI_TYPE_CREATE_RESIZED to this datatype handle.
+ 
+____________________________________________________________________________________________
+____________________________________________________________________________________________
+
+Section 4.1.5 Address and Size Functions (MPI_GET_ADDRESS),
+telling the reason why INTENT(IN) does not apply:
+-----------------------------------------------------------
+
+mpi-report-F2008-2011-09-08-changeonlyplustickets.pdf
+p105:17 (in MPI_GET_ADDRESS) the following text should be added:
+
+  Rationale.
+  In the mpi_f08 module, the location argument is not defined 
+  with INTENT(IN) because existing applications may use 
+  MPI_GET_ADDRESS (and the deprecated MPI_ADDRESS) as a 
+  substitute for MPI_F_SYNC_REG that was not defined before MPI-3.0. 
+  (End of rationale.)
+
+____________________________________________________________________________________________
+____________________________________________________________________________________________
+
+Section 8.1.2 Environmental Inquiries / MPI_GET_PROCESSOR_NAME
+
+mpi-report-F2008-2011-09-08-changeonlyplustickets.pdf
+Page 326, lines 26-31 (Rationale): should be removed, because the length is now defined 
+          in many other routines and not only in this one.
+
+  Rationale. In the mpi_f08 interface, the string length is defined because the output
+  of this routine is defined only by the MPI library and therefore this routine must not be
+  called with a shorter string buffer. In other routines with string-output arguments, the
+  LEN=* may be specified to indicate that shorter strings are possible if the application
+  already knows about a maximum of characters that where stored by the application.
+  (End of rationale.)
+
+____________________________________________________________________________________________
+____________________________________________________________________________________________
+
+Section 8.2 Memory Allocation (here: MPI_FREE_MEM), 
+INTENT(IN) is added because the routine does not modify the content of the buffer: 
+----------------------------------------------------------------------------------
+
+mpi-report-F2008-2011-09-08-changeonlyplustickets.pdf
+p328:8 (MPI_FREE_MEM) reads
+
+  TYPE(*), DIMENSION(..), ASYNCHRONOUS :: base
+
+but should read
+
+  TYPE(*), DIMENSION(..), INTENT(IN), ASYNCHRONOUS :: base
+
+____________________________________________________________________________________________
+____________________________________________________________________________________________
+
+Section 11.2.1 Window Creation (MPI_WIN_CREATE), 
+INTENT(IN) is added because the routine does not modify the content of the buffer: 
+----------------------------------------------------------------------------------
+
+mpi-report-F2008-2011-09-08-changeonlyplustickets.pdf
+p394:45-p395:2 read
+
+  This is a collective call executed by all processes in the group of comm. It returns
+  a window object that can be used by these processes to perform RMA operations. Each
+  process specifies a window of existing memory that it exposes to RMA accesses by the
+  processes in the group of comm. The window consists of size bytes, starting at address base.
+  A process may elect to expose no memory by specifying size = 0.
+
+but should read
+
+  This is a collective call executed by all processes in the group of comm. It returns
+  a window object that can be used by these processes to perform RMA operations. Each
+  process specifies a window of existing memory that it exposes to RMA accesses by the
+  processes in the group of comm. The window consists of size bytes, starting at address base.
+* In C and C++, base is the starting address of a memory region.
+* In Fortran, one can pass the first element of a memory region
+* or a whole array, which must be simply contiguous 
+* (for simply contiguous, see also Section 16.2.12 on page 576).
+  A process may elect to expose no memory by specifying size = 0.
+
+____________________________________________________________________________________________
+____________________________________________________________________________________________
+
+Section 11.2.1 Window Creation (MPI_WIN_ATTACH and MPI_WIN_DETACH), 
+Corrections for ASYNCHRONOUS buffer argument: 
+-------------------------------------------------------------------
+
+CAUTION: The mpi module / mpif.h interface declares on 1sided-p7:25 and 1sided-p8:20 in
+  https://svn.mpi-forum.org/trac/mpi-forum-web/attachment/ticket/270/one-side-2.2.pdf
+
+    <type> base
+
+  i.e., without (*), i.e., not "<type> base(*)".
+  Therefore, the DIMENSION(..) is removed.
+  INTENT(IN) is added because the routine does not modify the content of the buffer:
+
+mpi-report-F2008-2011-09-08-changeonlyplustickets.pdf
+p766:16 (MPI_WIN_ATTACH) and p766:26 (MPI_WIN_DETACH) read
+
+  TYPE(*), DIMENSION(..), ASYNCHRONOUS :: base
+
+but should read
+
+  TYPE(*), ASYNCHRONOUS :: base
+
+____________________________________________________________________________________________
+____________________________________________________________________________________________
+
+Section 16.2.1 Overview of 16.2 Fortran Support,
+making the consistency-quality of the Fortran binding (A) optional, or (B) mandatory:
+-------------------------------------------------------------------------------------
+
+p550 29-44 currently reads:
+
+  MPI defines three methods of Fortran support:
+
+  1. USE mpi_f08: This method is described in Section 16.2.2 and
+     requires compile-time argument checking with unique MPI handle
+     types and provides techniques to fully solve the optimization
+     problems with nonblocking calls.
+  
+  2. USE mpi: This method is described in Section 16.2.3 and requires
+     compile-time argument checking. Handles are defined as INTEGER.
+   
+  3. INCLUDE ’mpif.h’: This method is described in Section 16.2.4. The
+     use of the include file mpif.h is strongly discouraged starting
+     with MPI-3.0, because this method neither guarantees compile-time
+     argument checking nor provides sufficient techniques to solve the
+     optimization problems with nonblocking 
+     calls.
+  
+  Compliant MPI-3 implementations providing a Fortran interface must
+  provide all three Fortran support methods. 
+  Section 16.2.6 on page 559 describes restrictions if the compiler
+  does not support all the needed features.
+
+but should be changed to read 
+
+  MPI defines three methods of Fortran support:
+
+  1. USE mpi_f08: This method is described in Section 16.2.2 and
+     requires compile-time argument checking with unique MPI handle
+     types and provides techniques to fully solve the optimization
+     problems with nonblocking calls.
+*    This is the only Fortran support method that is consistent with
+*    the Fortran standard (Fortran 2008 + TR 29113 and later).  This
+*    method is highly recomended for all MPI applications.
+  
+  2. USE mpi: This method is described in Section 16.2.3 and requires
+     compile-time argument checking. Handles are defined as INTEGER.
+*    This Fortran support method is inconsistent with the Fortran
+*    standard, and its use is therefore not recommended.  It exists
+*    only for backwards compatibility.
+   
+  3. INCLUDE ’mpif.h’: This method is described in Section 16.2.4. The
+     use of the include file mpif.h is strongly discouraged starting
+     with MPI-3.0, because this method neither guarantees compile-time
+     argument checking nor provides sufficient techniques to solve the
+     optimization problems with nonblocking 
+:    calls,
+*    and is therefore inconsistent with the Fortran
+*    standard.  It exists only for backwards compatibility with legacy
+*    MPI applications.
+  
+ALTERNATIVE A (mpih.f/use mpi become independently optional vs. use mpif_08):
+ 
+  Compliant MPI-3 implementations providing a Fortran interface must
+: provide one or both of the following:
+
+*   * The USE mpi_f08 Fortran support method.
+*   * The USE mpi and INCLUDE 'mpif.h' Fortran support methods.
+
+ALTERNATIVE B (if any Fortran bindings are provided, all 3 methods are required):
+
+  Compliant MPI-3 implementations providing a Fortran interface must
+  provide all three Fortran support methods. 
+ 
+END of ALTERNATIVES A and B
+
+  Section 16.2.6 on page 559 describes restrictions if the compiler
+  does not support all needed features.
+ 
+-----------------
+
+Page 551 lines 1-4 read
+
+  Advice to users. Users are advised to utilize one of the MPI modules
+  even if mpif.h enforces type checking on a particular system. Using
+  a module provides several potential advantages over using an include
+  file; the mpi_f08 module offers the most 
+  advantages. 
+  (End of advice to users.)
+
+but should read
+
+  Advice to users. Users are advised to utilize one of the MPI modules
+  even if mpif.h enforces type checking on a particular system. Using
+  a module provides several potential advantages over using an include
+  file; the mpi_f08 module offers the most 
+: robust and complete Fortran support. 
+  (End of advice to users.)
+
+
+____________________________________________________________________________________________
+____________________________________________________________________________________________
+
+Section 16.2.3 Fortran Support Through the mpi Module,
+adding a link to help to learn about Fortran "simply contiguous":
+-----------------------------------------------------------------
+
+page 554, lines 33-47 read
+
+  Advice to users. For an MPI implementation that fully supports nonblocking calls
+  with the ASYNCHRONOUS attribute for choice buffers, an existing MPI-2.2 application
+  may fail to compile even if it compiled and executed with expected results with an
+  MPI-2.2 implementation. One reason may be that the application uses contiguous but
+  not simply contiguous ASYNCHRONOUS arrays as actual arguments for choice buffers of
+  nonblocking routines, e.g., by using subscript triplets with stride one or specifying
+  (1:n) for a whole dimension instead of using (:). This should be fixed to fulfill
+  the Fortran constaints for ASYNCHRONOUS dummy arguments. This is not considered
+  a violation of backward compatibility because existing applications can not use the
+  ASYNCHRONOUS attribute to protect nonblocking calls. Onother reason may be that
+  the application does not conform either to MPI-2.2, or to MPI-3.0, or to the Fortran
+  standard, typically because the program forces the compiler to perform copyin/out
+  for a choice buffer argument in a nonblocking MPI call. This is also not a violation
+  of backward compatibility because the application itself is non-conforming. 
+  (End of advice to users.) 
+
+but should read 
+
+  Advice to users. For an MPI implementation that fully supports nonblocking calls
+  with the ASYNCHRONOUS attribute for choice buffers, an existing MPI-2.2 application
+  may fail to compile even if it compiled and executed with expected results with an
+  MPI-2.2 implementation. One reason may be that the application uses contiguous but
+  not simply contiguous ASYNCHRONOUS arrays as actual arguments for choice buffers of
+  nonblocking routines, e.g., by using subscript triplets with stride one or specifying
+  (1:n) for a whole dimension instead of using (:). This should be fixed to fulfill
+  the Fortran constaints for ASYNCHRONOUS dummy arguments. This is not considered
+  a violation of backward compatibility because existing applications can not use the
+  ASYNCHRONOUS attribute to protect nonblocking calls. Onother reason may be that
+  the application does not conform either to MPI-2.2, or to MPI-3.0, or to the Fortran
+  standard, typically because the program forces the compiler to perform copyin/out
+  for a choice buffer argument in a nonblocking MPI call. This is also not a violation
+  of backward compatibility because the application itself is non-conforming. 
+* See Section 16.2.12 on page 576 for more details. 
+  (End of advice to users.) 
+
+
+____________________________________________________________________________________________
+____________________________________________________________________________________________
+
+Section 16.2.2 Fortran Support Through the mpi_f08 Module, and
+Section 16.2.3 Fortran Support Through the mpi Module, and
+16.2.5 Interface Specifications, Linker Names and the Profiling Interface
+
+Routine grouping to help the tools' people:
+------------------------------------------
+
+mpi-report-F2008-2011-09-08-changeonlyplustickets.pdf
+P552:14-18 read
+
+  - Set the INTEGER compile-time constant MPI_SUBARRAYS_SUPPORTED to
+    .TRUE. and declare choice buffers using the Fortran 2008 TR 29113 
+    feature assumed-type and assumed-rank, i.e., TYPE(*), DIMENSION(..), 
+    if the underlying Fortran compiler supports it. With this, 
+    non-contiguous sub-arrays can be used as buffers in nonblocking routines.
+
+but should read
+
+  - Set the INTEGER compile-time constant MPI_SUBARRAYS_SUPPORTED to
+    .TRUE. and declare choice buffers using the Fortran 2008 TR 29113 
+    feature assumed-type and assumed-rank, i.e., TYPE(*), DIMENSION(..)
+*   in all nonblocking, split collective and persistent communication
+*   routines, 
+    if the underlying Fortran compiler supports it. With this, 
+    non-contiguous sub-arrays can be used as buffers in nonblocking routines.
+    
+*   Rationale. In all blocking routines, i.e., if the choice-buffer 
+*   is not declared as ASYNCHRONOUS, the TR 29113 feature is not needed
+*   for the support of non-contiguous buffers because the compiler
+*   can pass the buffer by in-and-out-copy through a contiguous scratch
+*   array. End of rationale.
+
+________
+
+mpi-report-F2008-2011-09-08-changeonlyplustickets.pdf
+P555:7-10 read
+
+  - Set the INTEGER compile-time constant MPI_SUBARRAYS_SUPPORTED to 
+    .TRUE. if all choice buffer arguments 
+    are declared with TYPE(*), DIMENSION(..), otherwise set it to 
+    .FALSE.. With MPI_SUBARRAYS_SUPPORTED==.TRUE., non-contiguous 
+    subarrays can be used as buffers in nonblocking routines.
+
+but should read
+
+  - Set the INTEGER compile-time constant MPI_SUBARRAYS_SUPPORTED to 
+    .TRUE. if all choice buffer arguments 
+*   in all nonblocking, split collective and persistent communication
+*   routines
+    are declared with TYPE(*), DIMENSION(..), otherwise set it to 
+    .FALSE.. With MPI_SUBARRAYS_SUPPORTED==.TRUE., non-contiguous 
+    subarrays can be used as buffers in nonblocking routines.
+
+________
+
+mpi-report-F2008-2011-09-08-changeonlyplustickets.pdf
+P559:20-21 reads
+
+  equals .FALSE.. If
+
+but should read
+
+: equals .FALSE., and  
+
+________
+
+mpi-report-F2008-2011-09-08-changeonlyplustickets.pdf
+After p559, line 33, the following text should be added:
+
+For routines without ASYNCHRONOUS choice buffers and that are not
+predefined callback routines,
+the implementor can freely choose to implement the routines 
+according to the rules for MPI_SUBARRAYS_SUPPORTED equals .TRUE.
+or .FALSE., provided that the following rule about routine grouping
+is fulfilled.
+The implementation of routines with ASYNCHRONOUS choice buffers
+depends on the rules for the provided Fortran support method and
+language level of the underlying compiler.
+Predefined callback routines for the mpi_f08 module must be 
+implemented with BIND(C) interfaces, and for the mpi module and mpif.h
+without BIND(C).
+
+TEXT USED IN THE FORMAL READING, OCT. 25, 2011, CHICAGO-MEETING.
+DUE TO BAD READABILITY, IT WAS REQUESTED TO SUBSTITUTE THE FOLLOWING TEXT:
+  To simplify the development of profiling libraries, the MPI routines
+  are grouped together and it is required that
+  if the peer routine of a group is available within an MPI library
+  with one of its possible linker names then all of the routines
+  in this group must be also provided according to the same linker 
+  name scheme, and if the peer routine is not available through
+  a linker name scheme then all other routines have also not to be
+  available through this scheme.
+THIS TEXT IS SUBSTITUTED BY THE FOLLOWING TEXT, RE-READ ON OCT. 26, 2011:
+  Similar MPI routines are grouped together for linker symbol scheme
+  classification. 
+  If the peer routine of a group is available within an MPI library
+  with one of its possible linker names then 
+  all of the routines in this group must provided according
+  to the same linker name scheme. 
+  If the peer routine is not available through
+  a linker name scheme then all other routines 
+  in the group nust not be available through this scheme.
+END OF SUBSTITUTION
+
+Peer routines and their groups:
+ - MPI_ALLOC_MEM
+     MPI_ALLOC_MEM and MPI_WIN_ALLOCATE.
+ - MPI_FREE_MEM
+     Only this routine is in this group.
+ - MPI_GET_ADDRESS
+     MPI_GET_ADDRESS and MPI_ADDRESS.
+ - MPI_SEND
+     All routines with choice buffer arguments that
+     are not declared as ASYNCHRONOUS within the mpi_f08 module.
+ - MPI_ISEND
+     All routines with choice buffer arguments that
+     are declared as ASYNCHRONOUS within the mpi_f08 module.
+ - MPI_OP_CREATE
+     Only this routine is in this group.
+ - MPI_REGISTER_DATAREP
+     Only this routine is in this group.
+ - MPI_COMM_KEYVAL_CREATE
+     All other routines with callback function arguments.
+ - MPI_COMM_DUP_FN
+     All predefined callback routines.
+ - MPI_COMM_RANK
+     All other MPI routines.
+
+Additionally, four C preprocessor macros are available 
+in mpi.h for each routine group.
+The name of the macros are the peer routine name written as in the 
+list above and appended
+with one of the following suffixes and meanings:
+ - _mpi_f08_BIND_C
+   The macro is set to 1 if the BIND(C) linker name with 
+   the linker suffix _f08 is available for all routines 
+   within this group (e.g., MPI_Send_f08), otherwise it is set to 0.
+ - _mpi_f08_BIND_F
+   The macro is set to 1 if the Fortran linker name with 
+   the linker suffix _f08 is available for all routines 
+   within this group (e.g., mpi_send_f08__), otherwise it is set to 0.
+ - _mpi_BIND_C
+   The macro is set to 1 if the BIND(C) linker name with 
+   the linker suffix _f is available for all routines 
+   within this group (e.g., MPI_Send_f), otherwise it is set to 0.
+ - _mpi_BIND_F
+   The macro is set to 1 if the Fortran linker name without 
+   a linker suffix is available for all routines 
+   within this group (e.g., mpi_send__), otherwise it is set to 0.
+
+For example
+ ...
+ #define MPI_SEND_mpi_f08_BIND_C  0
+ #define MPI_SEND_mpi_f08_BIND_F 1
+ #define MPI_SEND_mpi_BIND_C      0
+ #define MPI_SEND_mpi_BIND_F     1
+ 
+ #define MPI_ISEND_mpi_f08_BIND_C  1
+ #define MPI_ISEND_mpi_f08_BIND_F 1
+ #define MPI_ISEND_mpi_BIND_C      1
+ #define MPI_ISEND_mpi_BIND_F     1
+ ...
+ #define MPI_COMM_DUP_FN_mpi_f08_BIND_C  1
+ #define MPI_COMM_DUP_FN_mpi_f08_BIND_F 0
+ #define MPI_COMM_DUP_FN_mpi_BIND_C      0
+ #define MPI_COMM_DUP_FN_mpi_BIND_F     1
+ ...
+TEXT USED IN THE FORMAL READING, OCT. 25, 2011, CHICAGO-MEETING.
+DUE TO BAD READABILITY, IT WAS REQUESTED TO SUBSTITUTE THE FOLLOWING TEXT:
+  shows, that MPI_SEND, MPI_RECV, and all other routines in
+  this group are only available through their Fortran linker
+  names (e.g., mpi_send_f08__, mpi_send__, mpi_recv_f08__, mpi_recv__, ...),
+  while MPI_ISEND, MPI_IRECV, etc. are available with 
+  all four interfaces to support the current modules providing TR quality,
+  but to support also application routines that are compiled with
+  and older MPI library version with .._BIND_C set to 0 and only _BIND_F
+  set to 1.
+THIS TEXT IS SUBSTITUTED BY THE FOLLOWING TEXT, RE-READ ON OCT. 26, 2011:
+  shows, that 
+  - the routines in the MPI_SEND group are only available through
+    their Fortran linker names (e.g., mpi_send_f08__, mpi_send__,
+    mpi_recv_f08__, mpi_recv__, ...),
+  - the routines in the MPI_ISEND group are available with all four
+    interfaces: the MPI library, the mpi_f08 and mpi modules (that
+    provide the TR 29113 quality), and this MPI library supports
+    application routines that are compiled with an older MPI library
+    version with _BIND_C set to 0 and _BIND_F set to 1.
+END OF SUBSTITUTION
+For the predefined callbacks, there is no choice, because
+the interfaces must fit to the callback function prototypes
+which are BIND(C) based for mpi_f08 and without BIND(C) 
+for the mpi module and mpif.h.
+
+Advice to implementors.
+If all following conditions are fulfilled 
+(which is the case for most compilers):
+ - the handles in the mpi_f08 module occupy one Fortran 
+   numerical storage unit (same as an INTEGER handle), 
+ - the internal argument passing used to pass an actual ierror
+   argument to a non optional ierror dummy argument is binary
+   compatible to passing an actual ierror argument to an ierror 
+   dummy argument that is declared as OPTIONAL, 
+ - the internal argument passing for ASYNCHRONOUS and 
+   non-ASYNCHRONOUS arguments is the same, 
+ - the internal routine call mechanism is the same for 
+   the Fortran and the C compiler, 
+ - the compiler does not provide TR 29113,
+then for most groups, the implementor may use the same
+internal routine implementations for all Fortran support 
+methods but with several different linker names.
+For TR 29113 quality, new routines are needed only for
+the routine groups of MPI_ISEND.
+Typical settings for 
+_mpi_f08_BIND_C / _mpi_f08_BIND_F / _mpi_BIND_C / _mpi_BIND_F may be:
+
+                                                   Upgrade for   New impl.
+                             Without   Upgrade to  strided data  with
+                             TR 29113  TR 29113    optimization  TR 29113
+  ------------------------------------------------------------------------
+  MPI_ALLOC_MEM_...          0/1/0/1   0/1/0/1     0/1/0/1       1/0/1/0
+  MPI_FREE_MEM_...           0/1/0/1   0/1/0/1     0/1/0/1       1/0/1/0
+  MPI_GET_ADDRESS_...        0/1/0/1   0/1/0/1     0/1/0/1       1/0/1/0
+  MPI_SEND_...               0/1/0/1   0/1/0/1     1/1/1/1       1/0/1/0
+  MPI_ISEND_...              0/1/0/1   1/1/1/1     1/1/1/1       1/0/1/0
+  MPI_OP_CREATE_...          0/1/0/1   0/1/0/1     0/1/0/1       1/0/1/0
+  MPI_REGISTER_DATAREP_...   0/1/0/1   0/1/0/1     0/1/0/1       1/0/1/0
+  MPI_COMM_KEYVAL_CREATE_... 0/1/0/1   0/1/0/1     0/1/0/1       1/0/1/0
+  MPI_COMM_DUP_FN_...        1/0/0/1   1/0/0/1     1/0/0/1       1/0/0/1
+  MPI_COMM_RANK_...          0/1/0/1   0/1/0/1     0/1/0/1       1/0/1/0
+
+End of advice to implementors.
+
+____________________________________________________________________________________________
+____________________________________________________________________________________________
+
+Annex B.4, MPI_Ineighbor_allgatherv, MPI_Ineighbor_alltoallv, MPI_Ineighbor_alltoallw
+Changes about ASYNCHRONOUS array array arguments in nonblocking collectives:
+-------------------------------------------------------------------------------------
+
+Based on the definition of neighborhood collective communication 
+through the dense collective communication and based on the rule
+about asynchronous arguments in the nonblocking dense collectives,
+the corresponding array arguments in the neighborhood collectives
+are also defined as ASYNCHRONOUS.
+These are:
+
+mpi-report-F2008-2011-09-08-changeonlyplustickets.pdf
+pages 762+763:
+
+  - recvcounts(*), displs(*)  in MPI_Ineighbor_allgatherv
+  - sendcounts(*), sdispls(*),
+    recvcounts(*), rdispls(*)  in MPI_Ineighbor_alltoallv
+  - sendcounts(*), sdispls(*), sendtypes(*),
+    recvcounts(*), rdispls(*), recvtypes(*)  in MPI_Ineighbor_alltoallw
+
+____________________________________________________________________________________________
+____________________________________________________________________________________________
+
+Minor changes, typos and formatting:
+------------------------------------
+
+mpi-report-F2008-2011-09-08-changeonlyplustickets.pdf
+Page 48, Acknowledgements: "docuement" -> document
+
+Page 4, line 43-44: "with with asynchronous" -> "with asynchronous"
+
+Page 13, line 30: "storage unit" -> "storage units"
+
+Page 13, line 33: "If user" -> "If a user"
+
+Page 19, line 5: "The MPI Fortran bindings are" -> "The older MPI Fortran bindings (mpif.h and use mpi) are"
+
+Page 190, line 24, in Example 5.21: remove intent(in) from definition of len.
+
+Page 190, line 32, in Example 5.21: remove "my_function" from "end subroutine" line
+ 
+Page 243, MPI_Comm_compare: Type declaration statements for comm1 and comm2 can be combined into one statement.
+
+Page 301, MPI_Dist_graph_create_adjacent: sourceweights(*) and destweights(*) declaration statements could be combined.
+
+Page 314, MPI_Dist_graph_neighbors: sourceweights and destweights: They could also be combined on one line.
+
+Page 329, line 24 and 27: Cray-pointer --> Cray-pointers
+
+Page 399, MPI_Put: origin_datatype and target_datatype can be combined on one line in type declartion.
+
+Page 400, MPI_Get: origin_datatype and target_datatype can be combined on one line in type declartion.
+
+Page 404, MPI_Accumulate: origin_datatype and target_datatype can be combined on one line in type declartion.
+
+Page 462, MPI_File_set_view: etype and filetype type declarations can be combined
+
+Page 464, MPI_File_get_view: etype and filetype type declarations can be combined
+
+____________________________________________________________________________________________
+____________________________________________________________________________________________ 
+
+Acknowledging the whole Fortran Group about the new Fortran Binding:
+--------------------------------------------------------------------
+
+xxvii:47-48 read
+  
+  Rolf Rabenseifner, Steering committee, Terms and Definitions, Deprecated Functions,
+  Annex Change-Log, and Annex Language Bindings
+
+but should read
+
+  Rolf Rabenseifner, Steering committee, Terms and Definitions, 
+* Fortran Bindings,
+  Deprecated Functions, Annex Change-Log, and Annex Language Bindings
+
+* Craig Rasmussen, Fortran Bindings
+
+(I do not propose a change in Jeff Sqyures' entry, because he is responsible
+ for the total language bindings chapter)
+
+____________________________________________________________________________________________
+____________________________________________________________________________________________
+
+

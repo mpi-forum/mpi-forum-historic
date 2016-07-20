@@ -1,0 +1,14 @@
+Index: chap-inquiry/inquiry.tex
+===================================================================
+--- chap-inquiry/inquiry.tex	(revision 288)
++++ chap-inquiry/inquiry.tex	(working copy)
+@@ -1272,7 +1272,8 @@
+ \mpiiidotiMergeFinalREVIEWbegin{64.o"}%    MPI-2.1 Correction due to Reviews at MPI-2.1 Forum meeting April 26-28, 2008
+ % error handlers or 
+ \mpiiidotiMergeFinalREVIEWendII{64.o"}%    MPI-2.1 End of correction
+-error classes: it
++error classes
++\MPIupdate{2.2}{17}{ or codes}: it
+ is not expected that an application will generate them in significant
+ numbers.
+ \endchangefinii

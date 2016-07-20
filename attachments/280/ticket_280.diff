@@ -1,0 +1,99 @@
+Index: chap-terms/terms-2.tex
+===================================================================
+--- chap-terms/terms-2.tex	(revision 1181)
++++ chap-terms/terms-2.tex	(working copy)
+@@ -278,7 +278,9 @@
+ corresponding data layout in another memory, if the same declarations
+ were used, even if the two systems have different architectures.  On
+ the other hand, if a datatype was constructed using
+-\mpifunc{MPI\_TYPE\_CREATE\_HINDEXED}, \mpifunc{MPI\_TYPE\_CREATE\_HVECTOR} or
++\mpifunc{MPI\_TYPE\_CREATE\_HINDEXED},
++\mpifunc{MPI\_TYPE\_CREATE\_HINDEXED\_BLOCK}, 
++\mpifunc{MPI\_TYPE\_CREATE\_HVECTOR} or
+ \mpifunc{MPI\_TYPE\_CREATE\_STRUCT}, then the datatype contains explicit byte
+ displacements (e.g., providing padding to meet alignment restrictions).
+ These displacements are unlikely to be chosen correctly if they fit
+Index: chap-appLang/appLang-Const.tex
+===================================================================
+--- chap-appLang/appLang-Const.tex	(revision 1181)
++++ chap-appLang/appLang-Const.tex	(working copy)
+@@ -658,6 +658,7 @@
+ \const{MPI\_COMBINER\_HVECTOR\_INTEGER}  & \const{MPI::COMBINER\_HVECTOR\_INTEGER} \\
+ \const{MPI\_COMBINER\_HVECTOR}         & \const{MPI::COMBINER\_HVECTOR} \\
+ \const{MPI\_COMBINER\_INDEXED\_BLOCK}  & \const{MPI::COMBINER\_INDEXED\_BLOCK} \\
++\const{MPI\_COMBINER\_HINDEXED\_BLOCK} & \\
+ \const{MPI\_COMBINER\_INDEXED}         & \const{MPI::COMBINER\_INDEXED} \\
+ \const{MPI\_COMBINER\_NAMED}           & \const{MPI::COMBINER\_NAMED} \\
+ \const{MPI\_COMBINER\_RESIZED}         & \const{MPI::COMBINER\_RESIZED} \\
+Index: chap-datatypes/datatypes.tex
+===================================================================
+--- chap-datatypes/datatypes.tex	(revision 1181)
++++ chap-datatypes/datatypes.tex	(working copy)
+@@ -186,6 +186,7 @@
+ \label{sec:misc-extent}
+ In Fortran, the functions 
+ \mpifunc{MPI\_TYPE\_CREATE\_HVECTOR}, \mpifunc{MPI\_TYPE\_CREATE\_HINDEXED},
++\mpifunc{MPI\_TYPE\_CREATE\_HINDEXED\_BLOCK},
+ \mpifunc{MPI\_TYPE\_CREATE\_STRUCT}, and \mpifunc{MPI\_GET\_ADDRESS}
+ accept arguments of type
+ \ftype{INTEGER(KIND=MPI\_ADDRESS\_KIND)}, wherever arguments of type
+@@ -685,8 +686,25 @@
+ % \mpicppemptybind{MPI::Datatype::Create\_indexed\_block( int~count, int~blocklength, const~int~array\_of\_displacements[])~const}{MPI::Datatype}
+ \mpicppemptybind{MPI::Datatype::Create\_indexed\_block(int~count, int~blocklength, const~int~array\_of\_displacements[])~const}{MPI::Datatype}
+ 
++\paragraph*{Hindexed\_block}
+ 
++The function \mpifunc{MPI\_TYPE\_CREATE\_HINDEXED\_BLOCK} is identical
++to \mpifunc{MPI\_TYPE\_CREATE\_INDEXED\_BLOCK}, except that block
++displacements in \mpiarg{array\_of\_displacements} are specified in
++bytes, rather than in multiples of the \mpiarg{oldtype} extent.
+ 
++\begin{funcdef}{MPI\_TYPE\_CREATE\_HINDEXED\_BLOCK(count, blocklength, array\_of\_displacements, oldtype, newtype)}
++\funcarg{\IN}{count}{length of array of displacements (non-negative integer)}
++\funcarg{\IN}{blocklength}{size of block (non-negative integer)}
++\funcarg{\IN}{array\_of\_displacements} {byte displacement of each block (array of integer)}
++\funcarg{\IN}{oldtype}{old datatype (handle)}
++\funcarg{\OUT}{newtype}{new datatype (handle)}
++\end{funcdef}
++
++\mpibind{MPI\_Type\_create\_hindexed\_block(int~count, int~blocklength, MPI\_Aint~array\_of\_displacements[], MPI\_Datatype~oldtype, MPI\_Datatype~*newtype)}
++
++\mpifbind{MPI\_TYPE\_CREATE\_HINDEXED\_BLOCK(COUNT, BLOCKLENGTH, ARRAY\_OF\_DISPLACEMENTS, OLDTYPE, NEWTYPE, IERROR)\fargs INTEGER COUNT, BLOCKLENGTH, OLDTYPE, NEWTYPE, IERROR\\INTEGER(KIND=MPI\_ADDRESS\_KIND) ARRAY\_OF\_DISPLACEMENTS(*)}
++
+ \paragraph*{Struct}
+ 
+ {\sf MPI\_TYPE\_STRUCT} is the most general type constructor.
+@@ -2255,6 +2273,7 @@
+ \constskipitem{}{\ \ and in some case Fortran}
+ \constskipitem{}{\ \  or \mpifunc{MPI\_TYPE\_CREATE\_HINDEXED}}
+ \constitem{MPI\_COMBINER\_INDEXED\_BLOCK}{\mpifunc{MPI\_TYPE\_CREATE\_INDEXED\_BLOCK}}
++\constitem{MPI\_COMBINER\_HINDEXED\_BLOCK}{\mpifunc{MPI\_TYPE\_CREATE\_HINDEXED\_BLOCK}}
+ \constitem{MPI\_COMBINER\_STRUCT\_INTEGER}{\mpifunc{MPI\_TYPE\_STRUCT} from Fortran}
+ \constitem{MPI\_COMBINER\_STRUCT}{\mpifunc{MPI\_TYPE\_STRUCT} from C or C++}
+ \constskipitem{}{\ \ and in some case Fortran}
+@@ -2615,6 +2634,25 @@
+ \par\noindent
+ and ni = count+2, na = 0, nd = 1.
+ 
++If combiner is \const{MPI\_COMBINER\_HINDEXED\_BLOCK} then
++
++\vskip 0.1truein
++\begin{centering}
++\begin{tabular}{l c c}
++\hline
++Constructor argument &          C \& C++ location &                    Fortran location                \\
++\hline
++count                   &       i[0] &                          I(1)                            \\
++blocklength             &       i[1] &                          I(2)                            \\
++array\_of\_displacements &      a[0] to a[i[0]-1] &             A(1) to A(I(1))                 \\
++oldtype &                       d[0] &                          D(1)                            \\
++\hline
++\end{tabular}
++\end{centering}
++\vskip 0.05truein
++\par\noindent
++and ni = 2, na = count, nd = 1.
++
+ If combiner is \const{MPI\_COMBINER\_STRUCT\_INTEGER} or \const{MPI\_COMBINER\_STRUCT} then
+ 
+ \vskip 0.1truein

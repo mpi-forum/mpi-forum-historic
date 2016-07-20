@@ -1,0 +1,30 @@
+Index: terms-2.tex
+===================================================================
+--- terms-2.tex	(Revision 1920)
++++ terms-2.tex	(Revision 1921)
+@@ -189,22 +189,12 @@
+ terms are used.
+ 
+ \begin{description}
+-\item[\mpiterm{nonblocking}] A procedure is nonblocking if the procedure may return before the
++\item[\mpiterm{nonblocking}] A procedure is nonblocking if it may return before the associated
+ operation completes, and before the user is allowed to reuse
+ resources (such as buffers) specified in the call.
+-A nonblocking request is \mpiterm{started} by the call that initiates it, e.g., 
+-\mpifunc{MPI\_ISEND}.  
+-The word complete is used with respect to operations, requests, and
++The word complete is used with respect to operations and any associated requests and/or
+ communications.  An \mpiterm{operation completes} when the user is allowed
+-to reuse resources, and any output buffers have been updated; i.e., a
+-call to \mpifunc{MPI\_TEST} will return
+-\mpiarg{flag}~=~\consti{true}.  A \mpiterm{request is completed} by a call
+-to wait, which returns, or a test or get status call which returns 
+-\mpiarg{flag}~=~\consti{true}.  This completing call has two effects:
+-the status is extracted from the request; in the case of test and
+-wait, if the request was nonpersistent, it is 
+-\mpiterm{freed}, and becomes \mpiterm{inactive} if it was persistent.
+-A \mpiterm{communication completes} when all participating operations complete.
++to reuse resources, and any output buffers have been updated. 
+ \item[\mpiterm{blocking}] A procedure is blocking if return from the procedure indicates the user
+ is allowed to reuse resources specified in the call.
+ \item[\mpiterm{local}]

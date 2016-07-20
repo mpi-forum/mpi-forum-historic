@@ -1,0 +1,28 @@
+Index: chap-inquiry/inquiry.tex
+===================================================================
+--- chap-inquiry/inquiry.tex	(revision 288)
++++ chap-inquiry/inquiry.tex	(working copy)
+@@ -1658,10 +1658,12 @@
+ %%LANG: C
+ %%SKIPELIPSIS
+ %%ENDHEADER
+-\begin{verbatim}
++\begin{Verbatim}[commandchars=\\\$\^]
++\MPIdelete$2.2^$60^$
+ int main(argc, argv)
+ int argc;
+-char **argv;
++char **argv;^
++\MPIupdate$2.2^$60^$int main(int argc, char** argv)^
+ {
+     MPI_Init(&argc, &argv);
+ 
+@@ -1670,7 +1672,7 @@
+ 
+     MPI_Finalize();     /* see below */
+ }
+-\end{verbatim}
++\end{Verbatim}
+ \rins
+ The Fortran version takes only \const{IERROR}.
+ 

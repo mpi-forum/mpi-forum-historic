@@ -1,0 +1,12 @@
+Index: appLang-Const.tex
+===================================================================
+--- appLang-Const.tex	(Revision 1936)
++++ appLang-Const.tex	(Revision 1937)
+@@ -132,6 +132,7 @@
+ \const{MPI\_T\_ERR\_INVALID\_ITEM} \\
+ \const{MPI\_T\_ERR\_INVALID\_SESSION}\\
+ \const{MPI\_T\_ERR\_INVALID\_HANDLE} \\
++\const{MPI\_T\_ERR\_INVALID\_NAME} \\
+ \const{MPI\_T\_ERR\_OUT\_OF\_HANDLES}\\
+ \const{MPI\_T\_ERR\_OUT\_OF\_SESSIONS}\\
+ \const{MPI\_T\_ERR\_CVAR\_SET\_NOT\_NOW}\\

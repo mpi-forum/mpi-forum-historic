@@ -1,0 +1,42 @@
+Index: terms-2.tex
+===================================================================
+--- terms-2.tex	(Revision 1925)
++++ terms-2.tex	(Revision 1926)
+@@ -649,7 +649,8 @@
+ 
+ Since Fortran is case insensitive, linkers may use either lower case
+ or upper case when resolving Fortran names.  Users of case sensitive
+-languages should avoid the ``mpi\_'' and ``pmpi\_'' prefixes.
++languages should avoid any prefix of the form ``\code{MPI\_}'' and ``\code{PMPI\_}'',
++where any of the letters are either upper or lower case. 
+ 
+ \subsection{Deprecated and Removed Names and Functions}
+ \label{sec:deprecated}
+@@ -776,7 +777,10 @@
+ capitals.  Programs must not declare names, e.g., for 
+ variables, subroutines,
+ functions, parameters, derived types, abstract interfaces, or modules,
+-beginning with the prefix \code{MPI\_}.  To avoid
++beginning with the prefix \code{MPI\_},
++with the exception of \code{MPI\_} routines written by the user 
++to make use of the profiling interface.
++To avoid
+ conflicting with the profiling interface, programs must also avoid subroutines and functions with the prefix \code{PMPI\_}.
+ This is mandated to avoid possible name collisions.
+ 
+@@ -823,9 +827,13 @@
+ Programs must not declare names (identifiers), e.g., for 
+ variables, functions, constants, types, or macros, 
+ beginning with
+-the prefix \code{MPI\_}.  
++any prefix of the form \code{MPI\_},
++where any of the letters are either upper or lower case. 
++An exception are \code{MPI\_} routines written by the user to
++make use of the profiling interface.
+ To support the profiling interface, programs must not declare
+-functions with names beginning with the prefix \code{PMPI\_}.
++functions with names beginning with any prefix of the form \code{PMPI\_},
++where any of the letters are either upper or lower case.
+ 
+ The definition of named constants, function prototypes, and type
+ definitions must be supplied in an include file \code{mpi.h}.  

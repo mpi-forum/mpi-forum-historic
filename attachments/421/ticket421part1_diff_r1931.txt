@@ -1,0 +1,17 @@
+Index: terms-2.tex
+===================================================================
+--- terms-2.tex	(Revision 1930)
++++ terms-2.tex	(Revision 1931)
+@@ -571,6 +571,12 @@
+ conversion.
+ There is the \mpi/ constant \consti{MPI\_BOTTOM} to indicate 
+ the start of the address range.
++For retrieving absolute addresses or any calculation with absolute addresses,
++one should use the routines and functions provided in \sectionref{subsec:pt2pt-addfunc}.
++\sectionref{subsec:pt2pt-segmented} provides additional rules for the correct
++use of absolute addresses. For expressions with relative displacements
++or other usage without absolute addresses, intrinsic operators 
++(e.g., \code{+}, \code{-}, \code{*}) can be used.
+ 
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \subsection{File Offsets}

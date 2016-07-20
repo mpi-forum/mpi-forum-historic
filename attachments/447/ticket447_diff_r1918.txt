@@ -1,0 +1,18 @@
+Index: terms-2.tex
+===================================================================
+--- terms-2.tex	(Revision 1917)
++++ terms-2.tex	(Revision 1918)
+@@ -174,8 +174,12 @@
+ \item The Fortran version of the same
+       function used with \code{USE mpi} or \code{INCLUDE 'mpif.h'}.
+ \end{itemize}
++
++An exception is \sectionref{sec:mpit} ``The \MPI/ Tool Information Interface'', 
++which only provides ISO C interfaces.
++
+ ``Fortran'' in this document refers to Fortran 90 and higher; see
+-Section~\ref{subsec:binding}.
++\sectionref{subsec:binding}.
+ 
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \section{Semantic Terms}

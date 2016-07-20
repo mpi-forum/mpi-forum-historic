@@ -1,0 +1,71 @@
+Index: chap-datatypes/datatypes.tex
+===================================================================
+--- chap-datatypes/datatypes.tex	(revision 871)
++++ chap-datatypes/datatypes.tex	(working copy)
+@@ -1473,9 +1473,9 @@
+ occur multiple times in the datatype are counted with their multiplicity.
+ 
+ \MPIupdateBegin{3.0}{265}
+-If the total size of the datatype can not be expressed by the \mpiarg{size} 
+-argument of \func{MPI\_TYPE\_SIZE} or \func{MPI\_TYPE\_SIZE\_X}, then these functions set 
+-the value of \mpiarg{size} to \const{MPI\_UNDEFINED}, respectively.
++For both functions, if the \OUT\ parameter cannot express the value to
++be returned (e.g., if the parameter is too small to hold the output
++value), it is set to \const{MPI\_UNDEFINED}.
+ \MPIupdateEnd{3.0}
+ %
+ %\begin{users}
+@@ -1636,12 +1636,9 @@
+ (as defined in Section~\ref{subsec:pt2pt-markers} on page~\pageref{subsec:pt2pt-markers}).
+ 
+ \MPIupdateBegin{3.0}{265}
+-If the lower bound of the datatype cannot be expressed by the \mpiarg{lb} 
+-argument of \func{MPI\_TYPE\_GET\_EXTENT} or \func{MPI\_TYPE\_GET\_EXTENT\_X}, then these functions set 
+-this value to \const{MPI\_UNDEFINED}.
+-Likewise, if the extent of the datatype cannot be expressed by the \mpiarg{extent} 
+-argument of \func{MPI\_TYPE\_GET\_EXTENT} or \func{MPI\_TYPE\_GET\_EXTENT\_X}, then these functions set 
+-this value to \const{MPI\_UNDEFINED}.
++For both functions, if either \OUT\ parameter cannot express the value
++to be returned (e.g., if the parameter is too small to hold the output
++value), it is set to \const{MPI\_UNDEFINED}.
+ \MPIupdateEnd{3.0}
+ 
+ 
+@@ -1781,12 +1778,9 @@
+ memory necessary to hold a datatype, uncompressed.
+ 
+ \MPIupdateBegin{3.0}{265}
+-If the lower bound of the datatype cannot be expressed by the \mpiarg{true\_lb} 
+-argument of \func{MPI\_TYPE\_GET\_TRUE\_EXTENT} or \func{MPI\_TYPE\_GET\_TRUE\_EXTENT\_X}, then these functions set 
+-this value to \const{MPI\_UNDEFINED}.
+-Likewise, if the extent of the datatype cannot be expressed by the \mpiarg{true\_extent} 
+-argument of \func{MPI\_TYPE\_GET\_TRUE\_EXTENT} or \func{MPI\_TYPE\_GET\_TRUE\_EXTENT\_X}, then these functions set 
+-this value to \const{MPI\_UNDEFINED}.
++For both functions, if either \OUT\ parameter cannot express the value to
++be returned (e.g., if the parameter is too small to hold the output
++value), it is set to \const{MPI\_UNDEFINED}.
+ \MPIupdateEnd{3.0}
+ 
+ \subsection{Commit and Free}
+@@ -2067,9 +2061,9 @@
+ 
+ The \mpiarg{datatype} argument should match the argument provided by the
+ receive call that set the \mpiarg{status} variable.
+-If the number of basic elements received cannot be expressed by the
+-\mpiarg{count} argument of \func{MPI\_GET\_ELEMENTS} or 
+-\func{MPI\_GET\_ELEMENTS\_X}, then these functions set this value to \const{MPI\_UNDEFINED}.
++For both functions, if the \OUT\ parameter cannot express the value to
++be returned (e.g., if the parameter is too small to hold the output
++value), it is set to \const{MPI\_UNDEFINED}.
+ \MPIupdateEnd{3.0}
+ 
+ The previously defined function
+@@ -3633,7 +3627,7 @@
+ by a call to \mpifunc{MPI\_PACK(inbuf, incount, datatype,
+ outbuf, outcount, position, comm)}.
+ \MPIupdateBegin{3.0}{265}
+-If the packed size of the datatype can not be expressed by the \mpiarg{size} 
++If the packed size of the datatype cannot be expressed by the \mpiarg{size} 
+ parameter, then \func{MPI\_PACK\_SIZE} sets the value of \mpiarg{size} to
+ \const{MPI\_UNDEFINED}.
+ \MPIupdateEnd{3.0}

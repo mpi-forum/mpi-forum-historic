@@ -1,0 +1,19 @@
+Index: terms-2.tex
+===================================================================
+--- terms-2.tex	(Revision 1918)
++++ terms-2.tex	(Revision 1919)
+@@ -386,10 +386,13 @@
+ assignment/comparison is made since 
+ such operations are common.
+ This restricts the domain of possible implementations.
+-The alternative would have been
++The alternative in C would have been
+ to allow handles to have been an arbitrary, opaque type.  This would
+ force the introduction of routines to do assignment and comparison, adding
+ complexity, and was therefore ruled out.
++In Fortran, the handles are defined such that assignment and comparison
++are available through the operators of the language or overloaded
++versions of these operators.
+ \end{rationale}
+ 
+ \begin{users}

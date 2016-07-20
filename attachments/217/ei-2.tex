@@ -1,0 +1,1503 @@
+
+\chapter{External Interfaces}
+\label{sec:ei-2}
+\label{chap:ei-2}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+\label{sec:ei-intro}
+
+This chapter begins with calls used to
+create {\bf generalized requests},
+% The objective of this \mpiii/ addition is to allow users of \mpi/ to be able 
+which allow users 
+to create new nonblocking
+operations with an interface similar to what is present in \mpi/.
+This can be used to layer new functionality on top of \mpi/.  Next,
+Section~\ref{sec:ei-status} deals with setting the information found
+in
+\mpiarg{status}.  
+\MPIreplace{3.0}{0}{This is}{This functionality is} needed for generalized 
+requests.
+
+
+
+The chapter continues, in Section~\ref{sec:ei-threads}, with a
+discussion of how threads are to be handled in 
+% \mpiii/.  
+\mpi/.  
+Although thread compliance is not required, the standard specifies how threads
+are to work if they are provided.  
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Generalized Requests}
+\label{sec:ei-gr}
+
+The goal of 
+% this \mpiii/ extension 
+generalized requests 
+is to allow users to define new
+nonblocking operations.  Such an outstanding nonblocking operation is
+represented by a (generalized) request.  A fundamental property of 
+nonblocking operations is that progress toward the completion of this
+operation occurs asynchronously, i.e., concurrently with normal program
+execution.  Typically, this requires execution of code concurrently
+with the execution of the user code, e.g., in a separate thread or in a
+signal handler.  Operating systems provide a variety of mechanisms in
+support of concurrent execution.
+\MPI/ does not attempt to standardize or 
+replace these mechanisms: it is assumed
+programmers who wish to define new asynchronous operations will use
+the  mechanisms provided by the underlying operating system. 
+Thus, the calls in this section only provide a means for
+defining the effect of \MPI/ calls such as \mpifunc{MPI\_WAIT} or
+\mpifunc{MPI\_CANCEL} when they apply to generalized requests, and for
+signaling to \MPI/ the completion of a generalized operation. 
+
+\begin{rationale}
+It is tempting to also define an \MPI/ standard mechanism for
+achieving concurrent execution of
+user-defined nonblocking operations.  
+However, it is very difficult to define such a mechanism without
+consideration of the specific mechanisms used in the operating system.
+The Forum feels that concurrency mechanisms are a proper part
+of the underlying operating system and should not be standardized by
+\MPI/; the \MPI/ standard should only deal with the interaction of
+such mechanisms with \MPI/.
+\end{rationale}
+
+For a regular request, the operation associated with the request is
+performed by the \MPI/ implementation, and the operation
+completes without intervention by the application.  For a generalized
+request, the operation associated with the request is performed by the
+application; therefore, the application must notify \MPI/ when the
+operation completes.  This is done by making a call to
+\mpifunc{MPI\_GREQUEST\_COMPLETE}.  
+\MPI/ maintains the ``completion'' status of generalized requests.  Any
+other request state has to be maintained by the user. 
+ 
+A new generalized request is started with
+
+\begin{funcdef}{MPI\_GREQUEST\_START(query\_fn, free\_fn, cancel\_fn, extra\_state, request)}
+\funcarg{\IN}{query\_fn}{callback function invoked when request status is queried (function)}
+\funcarg{\IN}{free\_fn}{callback function invoked when request is freed (function)}
+\funcarg{\IN}{cancel\_fn}{callback function invoked when request is cancelled (function)}
+\funcarg{\IN}{extra\_state}{extra state}
+\funcarg{\OUT}{request}{generalized request (handle)}
+\end{funcdef}
+
+\cdeclindex{MPI\_Request}\cdeclindex{MPI::Request}%
+\mpibind{MPI\_Grequest\_start(MPI\_Grequest\_query\_function *query\_fn, MPI\_Grequest\_free\_function *free\_fn, MPI\_Grequest\_cancel\_function *cancel\_fn, void *extra\_state, MPI\_Request *request)}
+
+\mpifbind{MPI\_GREQUEST\_START(QUERY\_FN, FREE\_FN, CANCEL\_FN, EXTRA\_STATE, REQUEST, IERROR)\fargs INTEGER REQUEST, IERROR\\EXTERNAL QUERY\_FN, FREE\_FN, CANCEL\_FN\\INTEGER (KIND=MPI\_ADDRESS\_KIND) EXTRA\_STATE}
+
+\mpicppemptybind{MPI::Grequest::Start(const~MPI::Grequest::Query\_function* query\_fn, const~MPI::Grequest::Free\_function* free\_fn, const~MPI::Grequest::Cancel\_function*~cancel\_fn, void~*extra\_state)}{static MPI::Grequest}
+
+\cdeclmainindex{MPI::Grequest}%
+
+\begin{users}
+Note that a generalized request belongs, in C++, to the class
+\type{MPI::Grequest}, which is a derived class of \type{MPI::Request}.
+It is of the same type as regular requests, in C and Fortran.
+\end{users}
+
+The call starts a generalized request and returns a handle to it in
+\mpiarg{request}.
+
+The syntax and meaning of the callback functions are listed below.
+All callback functions are passed the \mpiarg{extra\_state} argument
+that was associated with the request by the starting call
+\mpifunc{MPI\_GREQUEST\_START}\MPIreplace{3.0}{0}{. This can}{; \mpiarg{extra\_state} can} be used to maintain user-defined
+state for the request.  
+
+In 
+C, the query function is
+\medskip
+
+\cdeclindex{MPI\_Status}\cdeclindex{MPI::Status}%
+\mpitypedefbind{MPI\_Grequest\_query\_function(void *extra\_state, MPI\_Status~*status)} 
+
+\par\noindent
+in Fortran
+
+\medskip
+
+\mpifsubbind{GREQUEST\_QUERY\_FUNCTION(EXTRA\_STATE, STATUS, IERROR)\fargs INTEGER STATUS(MPI\_STATUS\_SIZE), IERROR\\INTEGER(KIND=MPI\_ADDRESS\_KIND) EXTRA\_STATE}
+
+\par\noindent
+and in C++
+
+\medskip
+
+\mpicpptypedefemptybind{MPI::Grequest::Query\_function(void* extra\_state, MPI::Status\&~status)}{int}
+
+\MPIreplace{3.0}{0}{\mpifunc{query\_fn}}{The \mpifunc{query\_fn}} function computes the status
+that should be returned for the generalized request.
+The status
+also includes information about successful/unsuccessful cancellation of
+the request (result to be returned by \mpifunc{MPI\_TEST\_CANCELLED}).
+
+\MPIreplace{3.0}{0}{\mpifunc{query\_fn}}{The \mpifunc{query\_fn}} callback is invoked by the 
+\mpifuncindex{MPI\_WAITANY}% 
+\mpifuncindex{MPI\_WAITSOME}% 
+\mpifuncindex{MPI\_WAITALL}% 
+\mpifuncindex{MPI\_TESTANY}% 
+\mpifuncindex{MPI\_TESTSOME}% 
+\mpifuncindex{MPI\_TESTALL}% 
+\mpiskipfunc{MPI\_\textrm{\{}WAIT$|$TEST\textrm{\}\{}ANY$|$SOME$|$ALL\textrm{\}}} call that
+completed the generalized request associated with this callback.  
+The callback function
+is also 
+invoked by calls to \mpifunc{MPI\_REQUEST\_GET\_STATUS}, if the request is
+complete when the call occurs.  In 
+both
+cases, the callback is passed a reference to the corresponding status variable
+passed by the user to the \MPI/ call; the status set by the callback
+function is returned by the \MPI/ call. 
+If the user provided \const{MPI\_STATUS\_IGNORE} or
+\const{MPI\_STATUSES\_IGNORE} to the \MPI/ function that causes
+\mpifunc{query\_fn} to be called, then \MPI/ will pass
+a valid status object to \mpifunc{query\_fn}, and this status will be
+ignored upon return of the callback function.  
+Note that \mpifunc{query\_fn}
+is invoked only after 
+\mpifunc{MPI\_GREQUEST\_COMPLETE} is called on the request; 
+it may be invoked several times for
+the same generalized request, e.g., if the user calls
+\mpifunc{MPI\_REQUEST\_GET\_STATUS} several times for this request.
+Note also that a call to 
+\mpifuncindex{MPI\_WAITSOME}%
+\mpifuncindex{MPI\_WAITALL}%
+\mpifuncindex{MPI\_TESTSOME}%
+\mpifuncindex{MPI\_TESTALL}%
+\mpiskipfunc{MPI\_\textrm{\{}WAIT$|$TEST\textrm{\}\{}SOME$|$ALL\textrm{\}}} may cause multiple
+invocations of
+\mpifunc{query\_fn} callback functions, one for each
+generalized request that is completed by the \MPI/ call.  The order of
+these invocations is not specified by \mpi/.
+
+In C, the free function is
+\medskip
+
+\mpitypedefbind{MPI\_Grequest\_free\_function(void *extra\_state)} 
+
+\par\noindent
+and in Fortran
+
+\medskip
+
+\mpifsubbind{GREQUEST\_FREE\_FUNCTION(EXTRA\_STATE, IERROR)\fargs INTEGER IERROR\\INTEGER(KIND=MPI\_ADDRESS\_KIND) EXTRA\_STATE}
+
+\par\noindent
+and in C++
+
+\medskip
+
+\mpicpptypedefemptybind{MPI::Grequest::Free\_function(void* extra\_state)}{int}
+
+\MPIreplace{3.0}{0}{\mpifunc{free\_fn}}{The \mpifunc{free\_fn}} function is invoked to clean up user-allocated
+resources when the generalized request is freed. 
+
+\MPIreplace{3.0}{0}{\mpifunc{free\_fn}}{The \mpifunc{free\_fn}} callback is invoked by the 
+\mpifuncindex{MPI\_WAITANY}%
+\mpifuncindex{MPI\_WAITSOME}%
+\mpifuncindex{MPI\_WAITALL}%
+\mpifuncindex{MPI\_TESTANY}%
+\mpifuncindex{MPI\_TESTSOME}%
+\mpifuncindex{MPI\_TESTALL}%
+\mpiskipfunc{MPI\_\textrm{\{}WAIT$|$TEST\textrm{\}\{}ANY$|$SOME$|$ALL\textrm{\}}} call that
+completed the generalized request associated with this
+callback. \mpifunc{free\_fn} is invoked after the call to
+\mpifunc{query\_fn} for the same request.  However, if the \MPI/ call
+completed multiple generalized requests, the order in which
+\mpifunc{free\_fn} callback functions are invoked is not specified by
+\MPI/.
+ 
+\MPIreplace{3.0}{0}{\mpifunc{free\_fn}}{The \mpifunc{free\_fn}} callback 
+is also invoked for generalized requests that are freed by a call to
+\mpifunc{MPI\_REQUEST\_FREE} (no call to 
+\mpifuncindex{MPI\_WAITANY}%
+\mpifuncindex{MPI\_WAITSOME}%
+\mpifuncindex{MPI\_WAITALL}%
+\mpifuncindex{MPI\_TESTANY}%
+\mpifuncindex{MPI\_TESTSOME}%
+\mpifuncindex{MPI\_TESTALL}%
+\mpiskipfunc{WAIT\_\textrm{\{}WAIT$|$TEST\textrm{\}\{}ANY$|$SOME$|$ALL\textrm{\}}} will occur for
+such a request).  In this case, the callback
+function will be called either in the \MPI/ call
+\mpifunc{MPI\_REQUEST\_FREE(request)}, or in the \MPI/ call
+\mpifunc{MPI\_GREQUEST\_COMPLETE(request)}, whichever happens 
+% last.  I.e., 
+last, i.e., 
+in this case the actual freeing code is executed
+as soon as both calls \mpifunc{MPI\_REQUEST\_FREE} and
+\mpifunc{MPI\_GREQUEST\_COMPLETE} have occurred. 
+The \mpiarg{request} is not deallocated until after
+\mpifunc{free\_fn} completes.
+Note that \mpifunc{free\_fn} will be 
+invoked only once per request by a correct program. 
+
+\begin{users}
+Calling \mpifunc{MPI\_REQUEST\_FREE(request)} will cause the
+\mpiarg{request} handle to be set to \consti{MPI\_REQUEST\_NULL}.
+This handle to the generalized request is no longer valid.  However,
+user copies of this handle are valid until after
+\mpifunc{free\_fn} completes since \MPI/ does not deallocate the object
+until then.  Since \mpifunc{free\_fn} is not
+called until after \mpifunc{MPI\_GREQUEST\_COMPLETE}, the user copy of
+the handle can be used to make this call.  Users should note that
+\MPI/ will deallocate the object after \mpifunc{free\_fn}
+executes.  At this point, user copies of the \mpiarg{request} handle no
+longer point to a valid request.  \MPI/ will not set user copies to
+\consti{MPI\_REQUEST\_NULL} in this case, so it is up to the user to
+avoid accessing this stale handle.  This is a special case \MPIreplace{3.0}{0}{where}{in which} \mpi/
+defers deallocating the object until a later time that is known by
+the user.
+\end{users}
+
+\medskip
+  
+In C, the cancel function is
+
+\mpitypedefbind{MPI\_Grequest\_cancel\_function(void *extra\_state, int complete)} 
+
+\par\noindent
+in Fortran
+
+\medskip
+
+\mpifsubbind{GREQUEST\_CANCEL\_FUNCTION(EXTRA\_STATE, COMPLETE, IERROR)\fargs INTEGER IERROR\\INTEGER(KIND=MPI\_ADDRESS\_KIND) EXTRA\_STATE\\LOGICAL COMPLETE}
+
+\par\noindent
+and in C++
+
+\medskip
+
+\mpicpptypedefemptybind{MPI::Grequest::Cancel\_function(void* extra\_state, bool~complete)}{int}
+
+\MPIreplace{3.0}{0}{\mpifunc{cancel\_fn}}{The \mpifunc{cancel\_fn}} function is invoked to start the cancelation of
+a generalized request.
+% It is called by \mpifunc{MPI\_REQUEST\_CANCEL(request)}.
+It is called by \mpifunc{MPI\_CANCEL(request)}.
+\MPI/ passes \MPIreplace{3.0}{0}{to the callback function
+\mpiarg{complete=true}}{\mpiarg{complete=true} to the callback function} if 
+\mpifunc{MPI\_GREQUEST\_COMPLETE} was already called on the request,
+and \mpiarg{complete=false} otherwise.
+
+All callback functions return an error code.  
+The code is passed back and dealt with as appropriate for the error
+code by the \MPI/ function that invoked the callback function.  For
+example, if error codes are returned then the error code returned by
+the callback function will be returned by the \MPI/ function that
+invoked the callback function.
+In the case of
+an 
+\mpifuncindex{MPI\_WAITANY}%
+\mpifuncindex{MPI\_TESTANY}%
+\mpiskipfunc{MPI\_\textrm{\{}WAIT$|$TEST\textrm{\}\{}ANY\textrm{\}}} call that invokes both
+\mpifunc{query\_fn} and \mpifunc{free\_fn}, the \MPI/ call will return
+the error code returned by the last callback, namely
+\mpifunc{free\_fn}.  If one or more of the requests in a call to
+\mpifuncindex{MPI\_WAITSOME}%
+\mpifuncindex{MPI\_WAITALL}%
+\mpifuncindex{MPI\_TESTSOME}%
+\mpifuncindex{MPI\_TESTALL}%
+\mpiskipfunc{MPI\_\textrm{\{}WAIT$|$TEST\textrm{\}\{}SOME$|$ALL\textrm{\}}} failed,
+then the \MPI/ call will return
+\consti{MPI\_ERR\_IN\_STATUS}. 
+In such a case, if the \MPI/ call was
+passed an array of statuses, then \MPI/ will return in each of the
+statuses that correspond to a completed generalized request the error
+code returned by the corresponding invocation of its \mpifunc{free\_fn}
+callback function.  However, if the \MPI/ function was passed
+\const{MPI\_STATUSES\_IGNORE}, then the individual error codes
+returned by each callback functions will be lost.
+
+\begin{users}
+\mpifunc{query\_fn} must {\bf not} set the error field of
+\mpiarg{status}
+since \mpifunc{query\_fn} may be called by \mpifunc{MPI\_WAIT} or
+\mpifunc{MPI\_TEST}, in which case the error field of \mpiarg{status}
+should not change.  The \MPI/ library knows the ``context'' in which
+\mpifunc{query\_fn} is invoked and can decide correctly when to put
+in the error field of status the returned error code.
+\end{users}
+
+\begin{funcdef}{MPI\_GREQUEST\_COMPLETE(request)}
+\funcarg{\INOUT}{request}{generalized request (handle)}
+\end{funcdef}
+
+\cdeclindex{MPI\_Request}\cdeclindex{MPI::Request}%
+\mpibind{MPI\_Grequest\_complete(MPI\_Request request)}
+
+\mpifbind{MPI\_GREQUEST\_COMPLETE(REQUEST, IERROR)\fargs INTEGER REQUEST, IERROR}
+
+\mpicppemptybind{MPI::Grequest::Complete()}{void}
+
+The call informs \MPI/ that the operations represented by the generalized request
+\mpiarg{request} are 
+% complete.  (See 
+complete (see 
+definitions in Section~\ref{terms:semantic}).
+A call to \mpifunc{MPI\_WAIT(request, status)} will return and a call to
+\mpifunc{MPI\_TEST(request, flag, status)} will return \mpiarg{flag=true}
+only after a call to \mpifunc{MPI\_GREQUEST\_COMPLETE} has declared that
+these operations are complete.
+
+\MPI/ imposes no restrictions on the code executed by the callback functions.
+However, new nonblocking operations should be defined so that the general
+semantic rules about \MPI/ calls such as \mpifunc{MPI\_TEST},
+\mpifunc{MPI\_REQUEST\_FREE}, or \mpifunc{MPI\_CANCEL} still hold.  For example, all
+these calls are supposed to be local and nonblocking.  Therefore, the
+callback functions \mpifunc{query\_fn}, \mpifunc{free\_fn}, or
+\mpifunc{cancel\_fn} should invoke blocking \MPI/ communication
+calls only if the context is such that these calls are guaranteed to
+return in finite time.  
+Once \mpifunc{MPI\_CANCEL} is invoked, the cancelled operation
+should complete in finite time, irrespective of the state of
+other processes (the operation has acquired ``local'' semantics).  It
+should either succeed, or fail without side-effects.  The user should
+guarantee these same properties for newly defined operations.  
+
+\begin{implementors}
+A call to \mpifunc{MPI\_GREQUEST\_COMPLETE} may unblock a blocked user
+process/thread. The \MPI/ library should ensure that the blocked user
+computation will resume.
+\end{implementors}
+
+\subsection{Examples}
+
+\begin{example}{\rm
+\exindex{MPI\_Grequest\_start}%
+\exindex{MPI\_Grequest\_complete}%
+This example shows the code for a user-defined reduce operation on an
+{\tt int} using
+a binary tree: each non-root node receives two messages, sums them, 
+and sends them up.  We assume that no status is returned and that the
+operation cannot be cancelled.
+
+%%HEADER
+%%LANG: C
+%%SKIPELIPSIS
+%%DECL: MPI_Grequest_query_function query_fn; 
+%%DECL: MPI_Grequest_cancel_function cancel_fn;
+%%DECL: MPI_Grequest_free_function free_fn;
+%%DECL: typedef int pthread_t;
+%%DECL: void reduce_thread(void *ptr); 
+%%DECL: void pthread_create( pthread_t *, void *, void (*)(void*), void * );
+%%ENDHEADER
+%%HEADER
+%%LANG: C
+%%SKIPELIPSIS
+%%DECL: #include <pthread.h>
+%%DECL: int query_fn(void *extra_state, MPI_Status *status);
+%%DECL: int free_fn(void *extra_state);
+%%DECL: int cancel_fn(void *extra_state, int complete);
+%%DECL: void* reduce_thread(void *ptr);
+%%ENDHEADER
+\begin{verbatim}
+typedef struct {
+   MPI_Comm comm;
+   int tag;
+   int root;
+   int valin;
+   int *valout;
+   MPI_Request request;
+   } ARGS;
+
+
+int myreduce(MPI_Comm comm, int tag, int root, 
+              int valin, int *valout, MPI_Request *request)
+{
+   ARGS *args;
+   pthread_t thread;
+   
+   /* start request */
+   MPI_Grequest_start(query_fn, free_fn, cancel_fn, NULL, request);
+   
+   args = (ARGS*)malloc(sizeof(ARGS));
+   args->comm = comm;
+   args->tag = tag;
+   args->root = root;
+   args->valin = valin;
+   args->valout = valout;
+   args->request = *request;
+   
+   /* spawn thread to handle request */
+   /* The availability of the pthread_create call is system dependent */
+   pthread_create(&thread, NULL, reduce_thread, args);
+   
+   return MPI_SUCCESS;
+}
+
+/* thread code */
+void* reduce_thread(void *ptr) 
+{
+   int lchild, rchild, parent, lval, rval, val;
+   MPI_Request req[2];
+   ARGS *args;
+   
+   args = (ARGS*)ptr;
+   
+   /* compute left,right child and parent in tree; set 
+      to MPI_PROC_NULL if does not exist  */
+   /* code not shown */
+   ...
+     
+   MPI_Irecv(&lval, 1, MPI_INT, lchild, args->tag, args->comm, &req[0]);
+   MPI_Irecv(&rval, 1, MPI_INT, rchild, args->tag, args->comm, &req[1]);
+   MPI_Waitall(2, req, MPI_STATUSES_IGNORE);
+   val = lval + args->valin + rval;
+   MPI_Send( &val, 1, MPI_INT, parent, args->tag, args->comm );
+   if (parent == MPI_PROC_NULL) *(args->valout) = val;
+   MPI_Grequest_complete((args->request));   
+   free(ptr);
+   return(NULL);
+}
+
+int query_fn(void *extra_state, MPI_Status *status)
+{
+   /* always send just one int */
+   MPI_Status_set_elements(status, MPI_INT, 1);
+   /* can never cancel so always true */
+   MPI_Status_set_cancelled(status, 0);
+   /* choose not to return a value for this */
+   status->MPI_SOURCE = MPI_UNDEFINED;
+   /* tag has no meaning for this generalized request */
+   status->MPI_TAG = MPI_UNDEFINED;
+   /* this generalized request never fails */
+   return MPI_SUCCESS;
+}
+
+
+int free_fn(void *extra_state)
+{
+   /* this generalized request does not need to do any freeing */
+   /* as a result it never fails here */
+   return MPI_SUCCESS;
+}
+
+
+int cancel_fn(void *extra_state, int complete)
+{
+   /* This generalized request does not support cancelling.
+      Abort if not already done.  If done then treat as if cancel failed.*/
+   if (!complete) {
+     fprintf(stderr,
+             "Cannot cancel generalized request - aborting program\n");
+     MPI_Abort(MPI_COMM_WORLD, 99);
+     }
+   return MPI_SUCCESS;
+}
+\end{verbatim}
+}
+\end{example}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Associating Information with Status}
+\label{sec:ei-status}
+
+% In \mpii/, requests were associated with 
+\MPI/ supports several different types of requests besides those for
+point-to-point operations.
+% In \mpiii/ there are several different types of requests.  
+These range from 
+% new 
+\mpi/ calls for I/O to generalized requests.  It is desirable to allow
+these calls \MPIreplace{3.0}{0}{use}{to use} the same request \MPIreplace{3.0}{0}{mechanism.  This}{mechanism, which} allows one to
+wait or test on different types of requests.  However,
+\mpifuncindex{MPI\_WAITANY}%
+\mpifuncindex{MPI\_WAITSOME}%
+\mpifuncindex{MPI\_WAITALL}%
+\mpifuncindex{MPI\_TESTANY}%
+\mpifuncindex{MPI\_TESTSOME}%
+\mpifuncindex{MPI\_TESTALL}%
+\mpiskipfunc{MPI\_\textrm{\{}TEST$|$WAIT\textrm{\}\{}ANY$|$SOME$|$ALL\textrm{\}}} returns a status
+with information about the request.  With the generalization of
+requests, one needs to define what information will be returned in the
+status object.
+
+% In \mpiii/, each 
+Each \MPI/
+call fills in the appropriate fields in the status object.  
+Any unused fields will
+have undefined values.  A call to
+\mpifuncindex{MPI\_WAITANY}%
+\mpifuncindex{MPI\_WAITSOME}%
+\mpifuncindex{MPI\_WAITALL}%
+\mpifuncindex{MPI\_TESTANY}%
+\mpifuncindex{MPI\_TESTSOME}%
+\mpifuncindex{MPI\_TESTALL}%
+\mpiskipfunc{MPI\_\textrm{\{}TEST$|$WAIT\textrm{\}\{}ANY$|$SOME$|$ALL\textrm{\}}} can modify any of
+the fields in the status object.  Specifically, it can modify fields
+that are undefined.  The fields with meaningful \MPIreplace{3.0}{0}{value}{values} for a given
+request are defined in the sections with the new request.
+
+Generalized requests raise additional considerations.  Here, the user
+provides the functions to deal with the request.  Unlike other \mpi/
+calls, the user needs to provide the information to be returned in
+status.  The status argument is provided directly to the callback
+function where the status needs to be set.  Users can directly set the
+values in 3 of the 5 status values.  The count and cancel fields are
+opaque.  To overcome this, 
+% new calls 
+these calls 
+are provided:
+
+\begin{funcdef}{MPI\_STATUS\_SET\_ELEMENTS(status, datatype, count)}
+\funcarg{\INOUT}{status}{status
+% to associate count with 
+with which to associate count
+(Status)}
+\funcarg{\IN}{datatype}{datatype associated with count (handle)}
+\funcarg{\IN}{count}{number of elements to associate with status (integer)}
+\end{funcdef}
+
+\cdeclindex{MPI\_Status}\cdeclindex{MPI::Status}%
+\mpibind{MPI\_Status\_set\_elements(MPI\_Status *status, MPI\_Datatype datatype, int~count)}
+
+\mpifbind{MPI\_STATUS\_SET\_ELEMENTS(STATUS, DATATYPE, COUNT, IERROR)\fargs INTEGER STATUS(MPI\_STATUS\_SIZE), DATATYPE, COUNT, IERROR}
+
+\mpicppemptybind{MPI::Status::Set\_elements(const MPI::Datatype\& datatype, int count)}{void}
+
+This call modifies the opaque part of \mpiarg{status} so that a call
+to \mpifunc{MPI\_GET\_ELEMENTS} will return \mpiarg{count}.
+\mpifunc{MPI\_GET\_COUNT} will return a compatible value.
+
+\begin{rationale}
+The number of elements is set instead of the count because the former
+can deal with 
+a 
+nonintegral number of datatypes.
+\end{rationale}
+
+
+A subsequent call to \mpifunc{MPI\_GET\_COUNT(status, datatype, count)} or to
+\mpifunc{MPI\_GET\_ELEMENTS(status, datatype, count)} must use a
+\mpiarg{datatype} argument that has the same type signature as the
+\mpiarg{datatype} argument that was used in the call to
+\mpifunc{MPI\_STATUS\_SET\_ELEMENTS}.
+
+\begin{rationale}
+\MPIreplace{3.0}{0}{This}{The requirement of matching type signatures for these calls} is similar to the restriction that holds 
+% when when 
+when 
+\mpiarg{count} is set by a
+receive operation: in that case, the calls to
+\mpifunc{MPI\_GET\_COUNT} and \mpifunc{MPI\_GET\_ELEMENTS} must use a
+\mpiarg{datatype} with the same signature as the datatype used in the
+receive call.
+\end{rationale}
+
+\begin{funcdef}{MPI\_STATUS\_SET\_CANCELLED(status, flag)}
+\funcarg{\INOUT}{status}{status 
+% to associate cancel flag with 
+with which to associate cancel flag
+(Status)}
+\funcarg{\IN}{flag}{if true indicates request was cancelled (logical)}
+\end{funcdef}
+
+\cdeclindex{MPI\_Status}\cdeclindex{MPI::Status}%
+\mpibind{MPI\_Status\_set\_cancelled(MPI\_Status *status, int flag)}
+
+\mpifbind{MPI\_STATUS\_SET\_CANCELLED(STATUS, FLAG, IERROR)\fargs INTEGER STATUS(MPI\_STATUS\_SIZE), IERROR\\LOGICAL FLAG}
+
+\mpicppemptybind{MPI::Status::Set\_cancelled(bool flag)}{void}
+
+If \mpiarg{flag} is set to \constskip{true} then a subsequent call to 
+\mpifunc{MPI\_TEST\_CANCELLED(status, flag)} will also return \mpiarg{flag = true},
+otherwise it will return 
+% \constskip{false}.
+% Use same as for {flag = true}, above:
+\mpiarg{false}.  
+
+\begin{users}
+Users are advised not to reuse the status fields for values other than
+those for which they were intended.  Doing so may lead to unexpected
+results when using the status object.  For example, calling
+\mpifunc{MPI\_GET\_ELEMENTS} may cause an error if the value is
+out of range or it may be impossible to detect such an error.  The
+\mpiarg{extra\_state} argument provided with a generalized request can
+be used to return information that does not logically belong in
+status.
+Furthermore, modifying the values in a status set internally by \MPI/,
+e.g., \mpifunc{MPI\_RECV}, may lead to unpredictable results and is
+strongly discouraged.
+\end{users}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{\texorpdfstring{\MPI/}{MPI} and Threads}
+\label{sec:ei-threads}
+
+This section specifies the interaction between \MPI/ calls and threads.
+The section lists minimal requirements for 
+{\bf thread compliant}  \MPI/ implementations 
+and defines functions that can
+be used for initializing the thread environment.  
+\MPI/ may be implemented in environments where threads
+are not supported or perform poorly.  Therefore, it is not required
+that all \MPI/ implementations fulfill all the requirements specified
+in this section.
+
+This section
+generally assumes a thread package similar to 
+POSIX threads \cite{posix-1003.1}, but the 
+syntax and semantics of thread calls are not specified here ---
+these are beyond the scope of this document.  
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{General}
+
+In a thread-compliant implementation, an \MPI/ process is a process
+that may be multi-threaded.
+Each thread can issue \MPI/ calls; however, threads are not
+separately addressable: a rank in a send or receive call identifies a
+process, not a thread.  A message sent to a process can be received by
+any thread in this process.
+
+\begin{rationale}
+This model corresponds to the POSIX model of interprocess
+communication: the fact that a process is multi-threaded, rather than
+single-threaded, does not affect the external interface of this
+process.  
+\MPI/ implementations \MPIreplace{3.0}{0}{where}{in which} \MPI/ `processes' are POSIX threads
+inside a single POSIX process are not thread-compliant by this
+definition (indeed, their ``processes'' are single-threaded).
+\end{rationale}
+
+\begin{users}
+It is the user's responsibility to prevent races when threads within the
+same application post conflicting communication calls.  The user can
+make sure that two threads in the same process will not issue
+conflicting communication calls by using distinct communicators at each
+thread.
+\end{users}
+
+The two main requirements for a thread-compliant implementation are listed
+below.
+\begin{enumerate}
+\item
+All \MPI/ calls are {\em thread-safe},  
+% I.e., 
+i.e., 
+two concurrently
+running threads may make \MPI/ calls and the outcome will be as if the
+calls executed in some order, even if their execution is interleaved.
+\item
+Blocking \MPI/ calls will block the calling thread only, allowing
+another thread to execute, if available.
+The calling thread will be blocked until the
+event on which it is waiting occurs.  Once the blocked communication is
+enabled and can proceed, then the call will complete and the thread
+will be marked runnable, within a finite time.
+A blocked thread will not prevent progress of other runnable threads
+on the same process, and will not prevent them from executing \MPI/
+calls.
+\end{enumerate}
+
+\begin{example}{\rm
+\exindex{Threads and \MPI/}
+Process 0 consists of two threads.  The first thread
+executes a blocking send call \cfunc{MPI\_Send(buff1, count, type,
+0, 0, comm)}, whereas the second thread executes a blocking receive
+call \cfunc{MPI\_Recv(buff2, count, type, 0, 0, comm, \&status)},
+% I.e., 
+i.e., 
+the first thread sends a message that is
+received by the second thread.  This communication should always
+succeed.  According to the first requirement, the execution will
+correspond to some interleaving of the two calls.  According to the
+second requirement, a call can only block the calling thread and
+cannot prevent progress of the other thread.  If the send call went
+ahead of the receive call, then the sending thread may block, but this
+will not prevent the receiving thread from executing.  Thus, the
+receive call
+will occur.  Once both calls occur, the communication is enabled
+and both calls will complete.  On the other hand, a
+single-threaded process that posts a send, followed by a matching
+receive, may deadlock.  The progress requirement for multithreaded
+implementations is stronger, as a blocked call cannot prevent progress
+in other threads.
+}
+\end{example}
+
+\begin{implementors}
+\MPI/ calls can be made thread-safe by executing only one at a time,
+e.g., by protecting \MPI/ code with one process-global lock.  However,
+blocked
+operations cannot hold the lock, as this would prevent progress of
+other threads in the process.  The
+lock is held only for the duration of an atomic, locally-completing
+suboperation such as posting a send or completing a send, and is released
+in between.
+Finer locks can provide more concurrency, at the expense of higher
+locking overheads.
+Concurrency can also be achieved by having some of the \MPI/ protocol
+executed by separate server threads.
+\end{implementors}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Clarifications}
+
+\paragraph{Initialization and Completion}
+
+The call to \mpifunc{MPI\_FINALIZE} should occur on the same thread
+that 
+initialized \MPI/. We call this thread the {\bf main
+thread}.  The call should occur only after all the process threads
+have completed their \MPI/ calls, and have no pending communications
+or I/O operations.
+
+\begin{rationale}
+This constraint simplifies implementation.
+\end{rationale}
+
+\paragraph{Multiple threads completing the same request.}
+A program where two threads block, waiting on the same
+request, is erroneous.  Similarly, the same request cannot appear in
+the array of requests of two concurrent 
+\mpifuncindex{MPI\_WAITANY}%
+\mpifuncindex{MPI\_WAITSOME}%
+\mpifuncindex{MPI\_WAITALL}%
+\mpifuncindex{MPI\_TESTANY}%
+\mpifuncindex{MPI\_TESTSOME}%
+\mpifuncindex{MPI\_TESTALL}%
+% \mpiskipfunc{MPI\_WAIT\{ANY$|$SOME$|$ALL\}}
+\mpiskipfunc{MPI\_\textrm{\{}WAIT$|$TEST\textrm{\}\{}ANY$|$SOME$|$ALL\textrm{\}}}
+calls.
+In \mpi/, a request can only be completed once.  Any combination of
+wait or test \MPIreplace{3.0}{0}{which}{that} violates this rule is erroneous.
+
+\begin{rationale}
+\MPIreplace{3.0}{0}{This}{This restriction} is consistent with the view that a multithreaded execution
+corresponds to an interleaving of the \MPI/ calls.
+In a single threaded implementation, once a wait is
+posted on a request
+the request handle will be nullified before it is possible to
+post a second wait on the same handle.
+\mpifuncindex{MPI\_WAITANY}%
+\mpifuncindex{MPI\_WAITSOME}%
+\mpifuncindex{MPI\_WAITALL}%
+With threads, an \mpiskipfunc{MPI\_WAIT\textrm{\{}ANY$|$SOME$|$ALL\textrm{\}}}
+may be blocked without having nullified its request(s) so it
+becomes the user's responsibility to avoid using the same request
+in an \mpifunc{MPI\_WAIT} on another thread.
+This constraint also simplifies
+implementation, as only one thread will be blocked on any
+communication or I/O event.
+\end{rationale}
+
+\paragraph{Probe}
+A receive call that uses source and tag values returned by a preceding
+call to \mpifunc{MPI\_PROBE} or \mpifunc{MPI\_IPROBE} will receive the
+message matched by the probe call only if there was no other matching
+receive
+after the probe and before that receive.  In a multithreaded
+environment, it is up to the user to enforce this condition using
+suitable mutual exclusion logic.
+This can be enforced by
+making sure that each communicator is used by only one thread on each
+process.
+
+\paragraph{Collective calls}
+
+Matching of collective calls on a
+communicator, window, or file handle is done according to the order in which the calls are issued
+at each process.  If concurrent threads issue such calls on the same
+communicator, window or file handle, it is up to
+the user to make sure the calls are correctly ordered, using
+interthread synchronization.
+\begin{users}
+  With three concurrent threads in each \MPI/ process of a communicator \mpiarg{comm},
+  it is allowed that thread A in each \MPI/ process calls a collective 
+  operation on \mpiarg{comm}, thread B calls a file operation on an existing
+  filehandle that was formerly opened on \mpiarg{comm}, and thread C invokes one-sided
+  operations on an existing window handle that was also formerly created 
+  on \mpiarg{comm}. 
+\end{users}
+\begin{rationale}
+  As already specified in \mpifunc{MPI\_FILE\_OPEN} and 
+  \mpifunc{MPI\_WIN\_CREATE}, a file handle and
+  a window handle inherit only the group of processes of the underlying
+  communicator, but not the communicator itself. Accesses to communicators,
+  window handles and file handles cannot affect one another.
+\end{rationale}
+\begin{implementors}
+  \MPIdelete{3.0}{0}{Advice to implementors.}
+  If the implementation of file or window operations internally 
+  uses \MPI/ communication then a duplicated communicator may be cached
+  on the file or window object.  
+\end{implementors}
+
+\paragraph{Exception handlers}
+
+An exception handler does not necessarily execute in the context of the
+thread that made
+the exception-raising \MPI/ call;  the exception handler may be
+executed by a thread that is distinct from the thread that will
+return the error code.
+
+\begin{rationale}
+The \MPI/ implementation may be multithreaded, so that part of the
+communication protocol may execute on a thread that is distinct from
+the thread that made the \MPI/ call.
+The design allows the exception handler to be executed on the
+thread
+where the exception occurred.
+\end{rationale}
+
+\paragraph{Interaction with signals and cancellations}
+
+The outcome is undefined if a thread that executes an \MPI/ call is
+cancelled (by another thread), or if a thread catches a signal while
+executing an \MPI/ call.
+However, a thread of an \MPI/ process may terminate, and may catch
+signals or be cancelled by another thread when not executing \MPI/ calls.
+
+\begin{rationale}
+Few C library functions are signal safe, and many have cancellation
+points --- points \MPIreplace{3.0}{0}{where}{at which} the thread executing them may be cancelled.  The
+above restriction simplifies implementation (no need for the \MPI/
+library to be ``async-cancel-safe'' or \MPIreplace{3.0}{0}{``async-signal-safe.''}{``async-signal-safe'').}  
+\end{rationale}
+
+\begin{users}
+Users can catch signals in separate, non-\MPI/ threads (e.g., by
+masking signals on \MPI/ calling threads, and unmasking them in one or
+more non-\MPI/ threads).  
+A good programming practice is to have a distinct thread blocked
+in a call to {\tt sigwait} for each user expected signal that may occur.
+Users must not catch signals used by the \MPI/ implementation; as 
+each \MPI/ implementation is required to document the signals used 
+internally, users can avoid these signals.
+\end{users}
+
+\begin{implementors}
+The \MPI/ library should not invoke  library calls that are
+not thread safe, if multiple threads execute.
+\end{implementors}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Initialization}
+
+The following function may be used to initialize \MPI/, and initialize
+the \MPI/ thread environment, instead of \mpifunc{MPI\_INIT}.
+
+\begin{funcdef}{MPI\_INIT\_THREAD(required, provided)}
+\funcarg{\IN}{required}{desired level of thread support  (integer)}
+\funcarg{\OUT}{provided}{provided level of thread support (integer)}
+\end{funcdef}
+
+\mpibind{MPI\_Init\_thread(int~*argc, char~*((*argv)[]), int~required, int~*provided)}
+
+\mpifbind{MPI\_INIT\_THREAD(REQUIRED, PROVIDED, IERROR)\fargs INTEGER REQUIRED, PROVIDED, IERROR}
+
+\mpicppemptybind{MPI::Init\_thread(int\& argc, char**\& argv, int required)}{int}
+\mpicppemptybind{MPI::Init\_thread(int required)}{int}
+
+\begin{users}
+In C and C++, the passing of \mpiarg{argc} and \mpiarg{argv} is
+\MPIreplace{3.0}{0}{optional.}{optional, as with \mpifunc{MPI\_INIT} as discussed in Section~\ref{sec:misc-init}.}
+In C, \MPIreplace{3.0}{0}{this is accomplished by passing the appropriate null pointer.}{ null pointers may be passed in their place.}
+In C++, \MPIreplace{3.0}{0}{this is accomplished with two separate bindings to
+cover these two cases.
+This is as with \mpifunc{MPI\_INIT} as discussed in
+Section~\ref{sec:misc-init}.}{two separate bindings support this choice.}
+\end{users}
+
+This call initializes \MPI/ in the same way that a call to \mpifunc{MPI\_INIT}
+would.  In addition, it
+initializes the thread environment.  The argument \mpiarg{required}
+is used to specify the desired level of thread support.  
+The possible values are listed  in increasing order of thread support.
+\begin{description}
+\item[\const{MPI\_THREAD\_SINGLE}] Only one thread will execute. 
+\item[\const{MPI\_THREAD\_FUNNELED}] The process may be multi-threaded, but
+% only the main thread will make \MPI/ calls (all \MPI/ calls are
+% ``funneled'' to the main thread).
+the application must ensure that only the main thread makes \MPI/ calls
+(for the definition of main thread, see \mpifunc{MPI\_IS\_THREAD\_MAIN} 
+on page~\pageref{function:mpiisthreadmain}).
+\item[\const{MPI\_THREAD\_SERIALIZED}] The process may be
+multi-threaded, and multiple threads may make \MPI/ calls, but only
+one at a time: \MPI/ calls are not made concurrently from two distinct
+threads (all \MPI/ calls are ``serialized'').
+\item[\const{MPI\_THREAD\_MULTIPLE}] Multiple threads may call \MPI/, 
+with no restrictions.
+\end{description}
+These values are monotonic; i.e.,
+\const{MPI\_THREAD\_SINGLE}  $<$ \const{MPI\_THREAD\_FUNNELED}
+$<$ \const{MPI\_THREAD\_SERIALIZED} $<$ \const{MPI\_THREAD\_MULTIPLE}. 
+
+Different processes in \consti{MPI\_COMM\_WORLD} may require different
+levels of thread support.
+
+The call returns in \mpiarg{provided} information about the actual
+level of  thread support that will be provided by \MPI/.  It can be one of the
+four values listed above.   
+
+%
+% WDG notes:
+% What if the process is started with MPI_SPAWN instead of mpiexec?  Is
+% this another place that the info arg to spawn is used?
+%
+The level(s) of thread support that can be provided by
+\mpifunc{MPI\_INIT\_THREAD}  will
+depend on the implementation, and may depend on information provided
+by the user before the program started to execute (e.g., with
+\mpifuncindex{mpiexec}%
+arguments to {\tt mpiexec}).    If possible, the call will return
+\mpiarg{provided = required}.  Failing this, the call will return the
+least supported level such that \mpiarg{provided $>$ required} (thus providing
+a stronger level of support than required by the user).  Finally, if the user
+requirement cannot be satisfied, then the call will return 
+in \mpiarg{provided} the highest supported level. 
+
+
+A {\bf thread compliant} \MPI/ implementation will be able to return
+\mpiarg{provided}
+\newline
+\mpiarg{ = MPI\_THREAD\_MULTIPLE}. 
+Such an implementation may always return
+\mpiarg{provided}
+\newline
+\mpiarg{ = MPI\_THREAD\_MULTIPLE}, irrespective of the value
+of \mpiarg{required}.
+At the other extreme, an \MPI/ library that is not thread compliant
+may always return \mpiarg{provided = MPI\_THREAD\_SINGLE}, 
+irrespective of the value of \mpiarg{required}.
+
+A call to \mpifunc{MPI\_INIT} has the same effect as a
+call to \mpifunc{MPI\_INIT\_THREAD} with a \mpiarg{required =
+MPI\_THREAD\_SINGLE}. 
+
+Vendors may provide (implementation
+dependent) means to specify the level(s) of  thread support available when the \MPI/
+\mpifuncindex{mpiexec}%
+program is started, e.g., with arguments to {\tt mpiexec}.  This
+will affect the outcome of calls to \mpifunc{MPI\_INIT} and
+\mpiarg{MPI\_INIT\_THREAD}.  Suppose, for example, that an \MPI/
+program has been started so that only \const{MPI\_THREAD\_MULTIPLE} is
+available.  Then   \mpifunc{MPI\_INIT\_THREAD} will return
+\mpiarg{provided = MPI\_THREAD\_MULTIPLE}, irrespective of the value
+of \mpiarg{required}; a call to \mpifunc{MPI\_INIT} will also
+initialize the \MPI/ thread support level  to
+\const{MPI\_THREAD\_MULTIPLE}.  Suppose, on the other hand, that an
+\MPI/ program has been started so that all four levels of thread
+support are available.  Then, a call to \mpifunc{MPI\_INIT\_THREAD}
+will return \mpiarg{provided = required}; on the other hand, a call to
+\mpifunc{MPI\_INIT} will initialize the \MPI/ thread support level to
+\const{MPI\_THREAD\_SINGLE}.    
+
+
+\begin{rationale}
+Various optimizations are possible when \MPI/ code is executed
+single-threaded, or is executed on multiple threads, but not
+concurrently:  mutual exclusion code may be omitted. Furthermore, if only one
+thread executes, then the \MPI/ library can use library functions that
+are not thread safe, without risking conflicts with user threads.
+Also, the model
+of one communication thread, multiple computation threads fits 
+% well many applications. E.g., 
+many applications well, e.g., 
+if the process code is a sequential
+Fortran/C/C++ program with \MPI/ calls that has been parallelized by a
+compiler for execution on an SMP node, in a cluster of SMPs,
+then the process computation is
+multi-threaded, but \MPI/ calls will likely execute on a single
+thread.
+
+The design accommodates a static specification of the thread support
+level, for environments that require static binding of libraries, and
+for compatibility for current multi-threaded \MPI/ codes.
+\end{rationale}
+
+\begin{implementors}
+If \mpiarg{provided} is not \const{MPI\_THREAD\_SINGLE} then the MPI
+library should not
+invoke C/ C++/Fortran library calls that are
+not thread safe, e.g., in an environment where {\tt malloc} is not thread
+safe, then {\tt malloc} should not be used by the \MPI/ library.
+
+Some implementors may want to use different \MPI/ libraries for
+different levels of thread support.   They can do so using dynamic
+linking and selecting which library will be linked when
+\mpifunc{MPI\_INIT\_THREAD} is invoked.  
+If this is not possible, then optimizations for lower levels
+of thread support will occur only when the level of thread support required
+is specified at link time.  
+\end{implementors}
+ 
+The following function can be used to query the current level of thread
+support.
+
+\begin{funcdef}{MPI\_QUERY\_THREAD(provided)}
+\funcarg{\OUT}{provided}{provided level of thread support (integer)}
+\end{funcdef}
+
+\mpibind{MPI\_Query\_thread(int *provided)}
+
+\mpifbind{MPI\_QUERY\_THREAD(PROVIDED, IERROR)\fargs  INTEGER PROVIDED, IERROR}
+
+\mpicppemptybind{MPI::Query\_thread()}{int}
+
+The call returns in \mpiarg{provided} the current level of thread
+\MPIreplace{3.0}{0}{support.  This}{support, which} will be the value returned in \mpiarg{provided} by
+\mpifunc{MPI\_INIT\_THREAD}, if \MPI/
+was initialized by a call to \mpifunc{MPI\_INIT\_THREAD()}. 
+
+\begin{funcdef}{MPI\_IS\_THREAD\_MAIN(flag)}
+\label{function:mpiisthreadmain} 
+\funcarg{\OUT}{flag}{true if calling thread is main thread, false
+otherwise (logical)}
+\end{funcdef}
+
+\mpibind{MPI\_Is\_thread\_main(int *flag)}
+
+\mpifbind{MPI\_IS\_THREAD\_MAIN(FLAG, IERROR) \fargs LOGICAL FLAG \\ INTEGER IERROR}
+
+\mpicppemptybind{MPI::Is\_thread\_main()}{bool}
+
+This function can be called by a thread to \MPIreplace{3.0}{0}{find out whether}{determine if} it is the
+main thread (the thread that called \mpifunc{MPI\_INIT} or 
+\mpifunc{MPI\_INIT\_THREAD}).  
+
+All routines listed in this section
+must be
+supported by all \MPI/ implementations. 
+
+\begin{rationale}
+\MPI/ libraries are required to provide these calls even if they do
+not support threads, so that portable code that contains invocations
+to these functions \MPIreplace{3.0}{0}{be able to}{can} link correctly.  \mpifunc{MPI\_INIT} 
+continues to be 
+supported so as to provide compatibility with current \MPI/ codes.
+\end{rationale}
+
+\begin{users}
+It is possible to spawn threads before \MPI/ is initialized, but no
+\MPI/ call other than \mpifunc{MPI\_INITIALIZED}  should be executed by these
+threads, until \mpifunc{MPI\_INIT\_THREAD} is invoked by one
+thread (which, thereby, becomes the  main thread).  In particular, it is
+possible to enter the \MPI/ execution with a multi-threaded process.
+
+The level of thread support provided is a global property of the \MPI/
+process that can be specified only once, when \MPI/ is initialized on
+that process (or before).   Portable third party libraries have to be written so as to
+accommodate any provided level of thread support.   
+Otherwise, their usage will be restricted to specific level(s) of thread support.
+If such a library can run only with specific level(s) of thread support, e.g.,
+only with \const{MPI\_THREAD\_MULTIPLE}, then
+\mpifunc{MPI\_QUERY\_THREAD} can be used to check whether the
+user initialized \MPI/ to the correct level of thread support and,
+if not, raise an exception. 
+\end{users}
+
+\MPIupdateBegin{3.0}{217}
+\subsection{Helper Team Functionality}
+
+Motivation: With the end (indefinite suspension) of
+Moore's Law with respect to processor speed,
+advances in computing power are currently being achieved by
+adding more “Processing Elements” (cores and/or hardware
+threads) per chip. This necessitates a programming paradigm
+shift towards multi-threading, both for users of MPI as well as
+implementers. Impacting this is the common practice in HPC of avoiding
+over-subscribing Processing Elements (PEs) in order to eliminate OS
+overheads for context-switching. This makes it objectionable for libraries
+(including MPI) to spawn and use their own threads without the knowledge,
+or consent, of the user.
+
+This proposal is an attempt to increase the cooperation between users
+and implementers of MPI with respect to use of threads. The idea being
+that the application writer knows best how, and when, threads should
+be used. If the application writer is given a mechanism to communicate
+it's use of threads (or rather, the availability of existing, idle,
+threads) to MPI then an MPI implementation can make use of those
+threads with minimal impact to the application.
+
+The following functions provide mechanisms to allow the MPI
+implementation to parallelize its internal processing using
+threads provided by the user. This
+allows an application to temporarily hand-over control of
+its threads for the MPI implementation to use. These functions allow
+the application to create teams of threads, and use these teams to
+perform the processing required by the MPI operations initiated by
+one or more of the threads in the team.
+
+Note, the MPI\_TEAM functions do not provide any functionality to a program, they
+simply provide an MPI implementation with information,
+and threads (or threads attached to MPI\_Endpoints), that
+may be used to accelerate MPI operations. This draws a parallel to OpenMP,
+where the OpenMP constructs do not alter the functionality of a program,
+they simply allow an OpenMP implementation to (optionally) add threads to
+work on certain sections of code. The MPI\_TEAM functions provide the same
+sorts of hints to an MPI implementation, to be used or ignored as decided
+by the implementation.
+
+\begin{funcdef}{MPI\_TEAM\_CREATE(teamsize, info, team)}
+\funcarg{\IN}{teamsize}{The total numbers of threads that will join the team (integer)}
+\funcarg{\IN}{info}{info (handle)}
+\funcarg{\OUT}{team}{The team (handle)}
+\end{funcdef}
+
+\mpibind{MPI\_Team\_create(int teamsize, MPI\_Info info, MPI\_Team *team)}
+
+\mpifbind{MPI\_TEAM\_CREATE(TEAMSIZE, INFO, TEAM, IERROR)\fargs  INTEGER TEAMSIZE, INFO, TEAM, IERROR}
+
+This call creates a team of helper threads to be used with subsequent
+\mpifunc{MPI\_TEAM\_JOIN} -
+\mpifunc{MPI\_TEAM\_LEAVE}
+or
+\mpifunc{MPI\_TEAM\_JOIN} -
+\mpifunc{MPI\_TEAM\_BREAK}
+ calls. This call must only be made by one
+thread. It is not required for the thread creating a team to
+(ever) join the team.
+
+The info argument provides optimization hints to the runtime about
+how the threads team will be used. The following info
+keys are predefined:
+
+\begin{description}
+\item[\const{balanced}] if set to "true", then all threads in the team will
+be calling
+\mpifunc{MPI\_TEAM\_JOIN} and
+\mpifunc{MPI\_TEAM\_LEAVE}.
+
+The MPI implementation may synchronize between all the threads in the
+team in an
+\mpifunc{MPI\_TEAM\_JOIN} or
+\mpifunc{MPI\_TEAM\_LEAVE} call, and assume that
+no thread in the team would call
+\mpifunc{MPI\_TEAM\_BREAK}
+on that team. The
+MPI implementation may thus expect all threads to be available to
+participate in communications.
+\end{description}
+
+\begin{funcdef}{MPI\_TEAM\_FREE(team)}
+\funcarg{\INOUT}{team}{The team (handle)}
+\end{funcdef}
+
+\mpibind{MPI\_Team\_free(MPI\_Team *team)}
+
+\mpifbind{MPI\_TEAM\_FREE(TEAM, IERROR)\fargs  INTEGER TEAM, IERROR}
+
+This call frees the team object team and sets the team handle to
+\const{MPI\_TEAM\_NULL}.
+
+This call must be made by only one thread. It is not required for the
+same thread that created this team to free it.
+\mpifunc{MPI\_TEAM\_FREE} can
+be invoked by a thread only after all team involvement in communications
+has been completed.
+i.e.,
+all threads in the team have called 
+\mpifunc{MPI\_TEAM\_LEAVE} or
+\mpifunc{MPI\_TEAM\_BREAK}
+before the team can be freed.
+
+\begin{users}
+Users should be careful to not free a team handle while other threads
+are operating on it (e.g., using
+\mpifunc{MPI\_TEAM\_JOIN}).
+\end{users}
+
+\begin{implementors}
+Implementors should be careful not to free team resources before
+all the threads in the team have either called
+\mpifunc{MPI\_TEAM\_LEAVE} or
+\mpifunc{MPI\_TEAM\_BREAK},
+possibly by internally reference counting on the handle.
+\end{implementors}
+
+\begin{funcdef}{MPI\_TEAM\_JOIN(team)}
+\funcarg{\IN}{team}{The team (handle)}
+\end{funcdef}
+
+\mpibind{MPI\_Team\_join(MPI\_Team team)}
+
+\mpifbind{MPI\_TEAM\_JOIN(TEAM, IERROR)\fargs  INTEGER TEAM, IERROR}
+
+This call registers the calling thread as a participant in the team,
+indicating that the thread will eventually call a
+\mpifunc{MPI\_TEAM\_BREAK} or
+\mpifunc{MPI\_TEAM\_LEAVE}.
+A thread may only participate in one team at a time.
+
+\begin{users}
+If the team is created with the info key \const{balanced} set to "true", the
+MPI implementation might treat the
+\mpifunc{MPI\_TEAM\_JOIN} call as a "contract"
+that this thread will be available to help MPI operations initiated
+by other members of the team (including itself), while maintaining
+the local/non-local semantics of the MPI operations.
+\end{users}
+
+\begin{funcdef}{MPI\_TEAM\_LEAVE(team)}
+\funcarg{\IN}{team}{The team (handle)}
+\end{funcdef}
+
+\mpibind{MPI\_Team\_leave(MPI\_Team team)}
+
+\mpifbind{MPI\_TEAM\_LEAVE(TEAM, IERROR)\fargs  INTEGER TEAM, IERROR}
+
+This call deregisters the calling thread from being a participant
+in the team. A thread can exit from the
+\mpifunc{MPI\_TEAM\_LEAVE} call only
+after all threads in the team have either called
+\mpifunc{MPI\_TEAM\_LEAVE} or
+\mpifunc{MPI\_TEAM\_BREAK}.
+
+\begin{users}
+The MPI implementation may choose to synchronize all threads in the
+team, that have not called 
+\mpifunc{MPI\_TEAM\_BREAK}, during the
+\mpifunc{MPI\_TEAM\_LEAVE}
+call, to effectively utilize all resources for MPI operations initiated
+by the team members.
+\end{users}
+
+\begin{funcdef}{MPI\_TEAM\_BREAK(team)}
+\funcarg{\IN}{team}{The team (handle)}
+\end{funcdef}
+
+\mpibind{MPI\_Team\_break(MPI\_Team team)}
+
+\mpifbind{MPI\_TEAM\_BREAK(TEAM, IERROR)\fargs  INTEGER TEAM, IERROR}
+
+This call allows a thread to deregister itself from being a participant
+in the team, without synchronizing with other threads in the team. If
+the info key \const{balanced} is set to "true", the user is not allowed to deregister
+using the 
+\mpifunc{MPI\_TEAM\_BREAK} call.
+
+\subsection{Helper Team Examples}
+
+In the following examples, the constant N represents the number of threads
+to be used. For example, if a platform provided 4 PEs per process, then
+one might have N=4.
+
+\begin{example}{\rm
+\exindex{MPI\_Team\_create}%
+\exindex{MPI\_Team\_free}%
+\exindex{MPI\_Team\_join}%
+\exindex{MPI\_Team\_leave}%
+\exindex{MPI\_Info:balanced}%
+
+The following example shows OpenMP code that uses multiple threads
+to help MPI communication using \mpifunc{MPI\_ALLREDUCE} initiated by one thread.
+It also demonstrates use of the info argument key \const{balanced}.
+
+\begin{verbatim}
+MPI_Team team;
+MPI_Info info;
+MPI_Info_create(&info);
+MPI_Info_set(info, "balanced", "true");
+MPI_Team_create(N, info, &team);
+#pragma omp parallel num_threads(N)
+{
+        t = omp_get_thread_num();
+
+        /*
+         * some computation and/or communication
+         */
+
+        MPI_Team_join(team);
+        if (t == 0) {
+                MPI_Allreduce(sendbuf, recvbuf, count, datatype, op, comm);
+        }
+        else {
+                /* The remaining threads directly go to MPI_Team_leave */
+        }
+        MPI_Team_leave(team);
+
+        /*
+         * more computation and/or communication
+         */
+}
+MPI_Team_free(&team);
+\end{verbatim}
+
+}
+\end{example}
+
+\begin{example}{\rm
+\exindex{MPI\_Team\_create}%
+\exindex{MPI\_Team\_free}%
+\exindex{MPI\_Team\_join}%
+\exindex{MPI\_Team\_leave}%
+\exindex{MPI\_Init\_endpoint}%
+\exindex{MPI\_Thread\_associate}%
+
+The following example shows OpenMP code that uses multiple threads,
+and utilizes features of the MPI3 proposal "Supporting Multiple Endpoints per Process",
+to help MPI communication using \mpifunc{MPI\_ALLREDUCE} initiated by one thread.
+
+\begin{verbatim}
+MPI_Endpoint endpts[N];
+MPI_Init_endpoint(N, MPI_THREAD_MULTIPLE, endpts);
+MPI_Team team;
+MPI_Team_create(N, MPI_INFO_NULL, &team);
+#pragma omp parallel num_threads(N)
+{
+        t = omp_get_thread_num();
+        MPI_Thread_associate(endpts[t]);
+
+        /*
+         * some computation and/or communication
+         */
+
+        MPI_Team_join(team);
+        if (t == 0) {
+                MPI_Allreduce(sendbuf, recvbuf, count, datatype, op, comm);
+        }
+        else {
+                /* The remaining threads directly go to MPI_Team_leave */
+        }
+        MPI_Team_leave(team);
+
+        /*
+         * more computation and/or communication
+         */
+
+        MPI_Thread_associate(MPI_ENDPOINT_NULL);
+}
+MPI_Team_free(&team);
+\end{verbatim}
+
+In this example, each OpenMP thread associates itself with a distinct
+endpoint, which represents a set of communications resources.
+When a thread enters an MPI call (in this case, \mpifunc{MPI\_ALLREDUCE} or
+\mpifunc{MPI\_TEAM\_LEAVE}) both the thread and it's associated communications resources
+become available to the MPI implementation to be used to perform
+the \mpifunc{MPI\_ALLREDUCE}.
+
+}
+\end{example}
+
+\begin{example}{\rm
+\exindex{MPI\_Team\_join}%
+\exindex{MPI\_Team\_leave}%
+
+The following example shows a progression of steps to parallelize pseudo-code,
+for both computation as well as communication, using OpenMP and
+\mpifunc{MPI\_TEAM\_JOIN} -
+\mpifunc{MPI\_TEAM\_LEAVE}.
+
+The original pseudo-code is:
+
+\begin{verbatim}
+energy = 0.0
+do {
+    ; Calculate one-electron contributions to Fock
+    One_Electron_Contrib(Density, Fock)
+    ; Calculate two-electron contributions to Fock
+    while (task = next_task()) {
+        {i, j, k} = task.dims
+        X = Get(Density, {i,j,k} .. {i+C,j+C,k+C})
+        ; Cost of O(N^2) to O(N^4)
+        Y = Work({i,j,k}, X) ; <------ compute intensive
+        Accumulate(SUM, Y, Fock, {i,j,k}, {i+C,j+C,k+C})
+    }
+    ; Update the Density matrix for next iteration
+    Update_Density(Density, Fock)  ; <----- communication intensive
+    energy = Gather_Energy()       ; <----- communication intensive
+} while (abs(new_energy - energy) > tolerance)
+\end{verbatim}
+
+Note the lines marked as "compute intensive" and "communication intensive".
+
+To parallelize the computation, the Work function and/or parameters would be
+modified to divide work up amongst threads and then the call would be wrapped
+in an OpenMP pragma to cause it to be executed by multiple threads.
+Depending on the nature of the Work function and parameters, OpenMP might even
+be instructed to divide up the work amongst threads.
+Simplistically, the resulting code would be:
+
+\begin{verbatim}
+energy = 0.0
+do {
+    ; Calculate one-electron contributions to Fock
+    One_Electron_Contrib(Density, Fock)
+    ; Calculate two-electron contributions to Fock
+    while (task = next_task()) {
+        {i, j, k} = task.dims
+        X = Get(Density, {i,j,k} .. {i+C,j+C,k+C})
+#       pragma omp parallel num_thread(N) ;; parallel computation
+        {                                 ;; parallel computation
+            ; Cost of O(N^2) to O(N^4)    ;; parallel computation
+            Y = Work({i,j,k}, X)          ;; parallel computation
+        }                                 ;; parallel computation
+        Accumulate(SUM, Y, Fock, {i,j,k}, {i+C,j+C,k+C})
+    }
+    ; Update the Density matrix for next iteration
+    Update_Density(Density, Fock)  ; <----- communication intensive
+    energy = Gather_Energy()       ; <----- communication intensive
+} while (abs(new_energy - energy) > tolerance)
+\end{verbatim}
+
+Note, the threads created during the OpenMP pragma (used in the call
+to Work) would be idle during the rest of the routine. An efficient
+implementation would not terminate and create the threads each time,
+but rather leave them sleeping or otherwise idle, only performing
+synchronization before and after the Work call.
+
+These threads could be re-purposed to help with communications by
+wrapping the Update\_Density and Gather\_Energy energy calls with
+OpenMP and MPI\_TEAM constructs as shown below:
+
+\begin{verbatim}
+MPI_Team team;
+MPI_Team_create(N, MPI_INFO_NULL, &team);
+energy = 0.0
+do {
+    ; Calculate one-electron contributions to Fock
+    One_Electron_Contrib(Density, Fock)
+    ; Calculate two-electron contributions to Fock
+    while (task = next_task()) {
+        {i, j, k} = task.dims
+        X = Get(Density, {i,j,k} .. {i+C,j+C,k+C})
+#       pragma omp parallel num_thread(N)
+        {
+            ; Cost of O(N^2) to O(N^4)
+            Y = Work({i,j,k}, X) ; <------ compute intensive
+        }
+        Accumulate(SUM, Y, Fock, {i,j,k}, {i+C,j+C,k+C})
+    }
+#   pragma omp parallel num_thread(N)      ;; parallel communication
+    {                                      ;; parallel communication
+        MPI_Team_join(team);               ;; parallel communication
+#       pragma omp master                  ;; parallel communication
+        {                                  ;; parallel communication
+            ; Update the Density matrix for next iteration
+            Update_Density(Density, Fock)  ;; parallel communication
+            energy = Gather_Energy()       ;; parallel communication
+        }                                  ;; parallel communication
+        MPI_Team_leave(team);              ;; parallel communication
+    }                                      ;; parallel communication
+} while (abs(new_energy - energy) > tolerance)
+MPI_Team_free(&team);
+\end{verbatim}
+
+In the above example, only the "master" thread performs the communications calls.
+However, all (N) threads are available to assist as directed by the MPI implementation.
+No modifications are made to the communications functions or parameters.
+It is the MPI implementation that divides the work amongst the team members.
+
+
+}
+\end{example}
+
+\newpage
+
+\MPIupdateEnd{3.0}
+
+[This text and extra page work around a bug in the MPIupdate macros. Otherwise
+the last page is not colored red (marked as a change).]

@@ -1,0 +1,1009 @@
+Index: src/include/mpiimpl.h
+===================================================================
+--- src/include/mpiimpl.h	(revision 9476)
++++ src/include/mpiimpl.h	(revision 9555)
+@@ -1322,6 +1322,7 @@
+    the device may need to create a new contextid */
+ int MPIR_Get_contextid( MPID_Comm *, MPIR_Context_id_t *context_id );
+ int MPIR_Get_contextid_sparse(MPID_Comm *comm_ptr, MPIR_Context_id_t *context_id, int ignore_id);
++int MPIR_Get_contextid_sparse_group(MPID_Comm *comm_ptr, MPID_Group *group_ptr, int tag, MPIR_Context_id_t *context_id, int ignore_id);
+ void MPIR_Free_contextid( MPIR_Context_id_t );
+ 
+ /* ------------------------------------------------------------------------- */
+@@ -1937,6 +1938,7 @@
+ 					   that is separate from user's 
+ 					   versions */
+     PreDefined_attrs  attrs;            /* Predefined attribute values */
++    int               tagged_coll_mask; /* Tag space mask for tagged collectives */
+ 
+     /* The topology routines dimsCreate is independent of any communicator.
+        If this pointer is null, the default routine is used */
+@@ -3728,6 +3730,17 @@
+ 
+ int MPIR_Comm_create( MPID_Comm ** );
+ 
++/* comm_create helper functions, used by both comm_create and comm_create_group */
++int MPIR_Comm_create_calculate_mapping(MPID_Group  *group_ptr,
++                                       MPID_Comm   *comm_ptr,
++                                       MPID_VCR   **mapping_vcr_out,
++                                       int        **mapping_out);
++int MPIR_Comm_create_create_and_map_vcrt(int n,
++                                         int *mapping,
++                                         MPID_VCR *mapping_vcr,
++                                         MPID_VCRT *out_vcrt,
++                                         MPID_VCR **out_vcr);
++
+ int MPIR_Comm_commit( MPID_Comm * );
+ 
+ int MPIR_Comm_is_node_aware( MPID_Comm * );
+@@ -3736,6 +3749,10 @@
+ 
+ void MPIR_Free_err_dyncodes( void );
+ 
++int MPIR_Allreduce_group(void *sendbuf, void *recvbuf, int count,
++                         MPI_Datatype datatype, MPI_Op op, MPID_Comm *comm_ptr,
++                         MPID_Group *group_ptr, int tag, int *errflag);
++
+ /* begin impl functions for NBC */
+ int MPIR_Ibarrier_impl(MPID_Comm *comm_ptr, MPI_Request *request);
+ int MPIR_Ibcast_impl(void *buffer, int count, MPI_Datatype datatype, int root, MPID_Comm *comm_ptr, MPI_Request *request);
+Index: src/include/mpierrs.h
+===================================================================
+--- src/include/mpierrs.h	(revision 9476)
++++ src/include/mpierrs.h	(revision 9555)
+@@ -166,6 +166,10 @@
+     if ((comm_ptr)->comm_kind != MPID_INTRACOMM) {\
+        err = MPIR_Err_create_code(MPI_SUCCESS, MPIR_ERR_RECOVERABLE, FCNAME, __LINE__, MPI_ERR_COMM,"**commnotintra",0);}
+ 
++#define MPIR_ERRTEST_COMM_TAG(tag,err) \
++  if ((tag) < 0 || (tag) > MPIR_Process.attrs.tag_ub) {\
++      err = MPIR_Err_create_code( MPI_SUCCESS, MPIR_ERR_RECOVERABLE, FCNAME, __LINE__, MPI_ERR_TAG, "**tag", "**tag %d", tag);}
++
+ /* Tests for totally meaningless datatypes first, then for
+  * MPI_DATATYPE_NULL as a separate case.
+  */
+Index: src/mpi/coll/Makefile.mk
+===================================================================
+--- src/mpi/coll/Makefile.mk	(revision 9476)
++++ src/mpi/coll/Makefile.mk	(revision 9555)
+@@ -49,6 +49,7 @@
+     src/mpi/coll/iscatterv.c
+ 
+ lib_lib@MPILIBNAME@_la_SOURCES += \
++    src/mpi/coll/allred_group.c   \
+     src/mpi/coll/helper_fns.c     \
+     src/mpi/coll/opsum.c          \
+     src/mpi/coll/opmax.c          \
+Index: src/mpi/coll/allred_group.c
+===================================================================
+--- src/mpi/coll/allred_group.c	(revision 0)
++++ src/mpi/coll/allred_group.c	(revision 9555)
+@@ -0,0 +1,143 @@
++/* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil ; -*- */
++/*
++ *  (C) 2012 by Argonne National Laboratory.
++ *      See COPYRIGHT in top-level directory.
++ */
++
++#include "mpiimpl.h"
++
++/** Map process IDs onto a binary tree.
++ *
++ * @param[in]  comm_ptr  Parent communicator
++ * @param[in]  group_ptr Group on which to map the tree (must be a subgroup of comm_ptr's group)
++ * @param[out] root      Process id of the root
++ * @param[out] up        Process id of my parent
++ * @param[out] left      Process id of my left child
++ * @param[out] right     Process id of my right child
++ */
++static void MPIR_Allreduce_group_bintree(MPID_Comm *comm_ptr, MPID_Group *group_ptr, int *root,
++                                         int *up, int *left, int *right)
++{
++    int ranks_in[4], ranks_out[4];
++    int me, nproc;
++
++    me    = group_ptr->rank;
++    nproc = group_ptr->size;
++
++    *root = 0;
++    *up   = (me == 0) ? MPI_PROC_NULL : (me - 1) / 2;
++
++    *left = 2*me + 1;
++    if (*left >= nproc) *left = MPI_PROC_NULL;
++
++    *right = 2*me + 2;
++    if (*right >= nproc) *right = MPI_PROC_NULL;
++
++    ranks_in[0] = *root;
++    ranks_in[1] = *up;
++    ranks_in[2] = *left;
++    ranks_in[3] = *right;
++
++    MPIR_Group_translate_ranks_impl(group_ptr, 4, ranks_in, comm_ptr->local_group, ranks_out);
++
++    *root = ranks_out[0];
++    *up   = ranks_out[1];
++    *left = ranks_out[2];
++    *right= ranks_out[3];
++}
++
++
++
++/** Perform group-collective allreduce (binary tree reduce-broadcast algorithm).
++ *
++ * @param[in]  sendbuf   Input buffer
++ * @param[out] recvbuf   Output buffer
++ * @param[in]  count     Number of data elements
++ * @param[in]  datatype  Must be MPI_INT
++ * @param[in]  op        One of: MPI_BAND, MPI_MAX
++ * @param[in]  comm_ptr  Parent communicator
++ * @param[in]  group_ptr Group of processes that will participate in the allreduce
++                         (must be a subgroup of comm_ptr's group)
++ * @param[in]  tag       Tag to be used for allreduce messages
++ * @param[out] errflag   Error flag
++ */
++int MPIR_Allreduce_group(void *sendbuf, void *recvbuf, int count, 
++                         MPI_Datatype datatype, MPI_Op op, MPID_Comm *comm_ptr,
++                         MPID_Group *group_ptr, int tag, int *errflag)
++{
++
++    MPI_Status status;
++    int i, bin_root, bin_parent, bin_lchild, bin_rchild;
++    int *buf_left, *buf_right, *in_buf, *out_buf;
++
++    MPIU_Assert(datatype == MPI_INT);
++
++    buf_left  = (int*) MPIU_Malloc(sizeof(int)*count);
++    buf_right = (int*) MPIU_Malloc(sizeof(int)*count);
++    out_buf   = (int*) recvbuf;
++    in_buf    = (int*) ((sendbuf == MPI_IN_PLACE) ? recvbuf : sendbuf);
++
++    /* Map a binary spanning tree on members of group in comm.  Resulting
++     * ranks will be MPI_PROC_NULL if, e.g., a left child does not exist, so
++     * it's fine to unconditionally send/recv since these will be no-ops. */
++    MPIR_Allreduce_group_bintree(comm_ptr, group_ptr, &bin_root, &bin_parent, &bin_lchild, &bin_rchild);
++
++    /** REDUCE **/
++
++    /* Receive from left child */
++    MPIC_Recv(buf_left, count, datatype, bin_lchild, tag, comm_ptr->handle, &status);
++
++    /* Receive from right child */
++    MPIC_Recv(buf_right, count, datatype, bin_rchild, tag, comm_ptr->handle, &status);
++
++    /* Initialize local reduction output to input values */
++    if (sendbuf != MPI_IN_PLACE)
++        for (i = 0; i < count; i++)
++            out_buf[i] = in_buf[i];
++
++    /* Perform local reduction on left-, and right-child values if they exist */
++    if (op == MPI_BAND) {
++        if (bin_lchild != MPI_PROC_NULL) {
++            for (i = 0; i < count; i++)
++                out_buf[i] = out_buf[i] & buf_left[i];
++        }
++
++        if (bin_rchild != MPI_PROC_NULL) {
++            for (i = 0; i < count; i++)
++                out_buf[i] = out_buf[i] & buf_right[i];
++        }
++    }
++    else if (op == MPI_MAX) {
++        if (bin_lchild != MPI_PROC_NULL) {
++            for (i = 0; i < count; i++)
++                out_buf[i] = (out_buf[i] > buf_left[i]) ? out_buf[i] : buf_left[i];
++        }
++        
++        if (bin_rchild != MPI_PROC_NULL) {
++            for (i = 0; i < count; i++)
++                out_buf[i] = (out_buf[i] > buf_right[i]) ? out_buf[i] : buf_right[i];
++        }
++    }
++    else {
++        MPIU_Assert(FALSE);
++    }
++
++    /* Send to parent */
++    MPIC_Send(recvbuf, count, datatype, bin_parent, tag, comm_ptr->handle);
++
++    /** BROADCAST **/
++
++    /* Receive from parent */
++    MPIC_Recv(recvbuf, count, datatype, bin_parent, tag, comm_ptr->handle, &status);
++
++    /* Send to left child */
++    MPIC_Send(recvbuf, count, datatype, bin_lchild, tag, comm_ptr->handle);
++
++    /* Send to right child */
++    MPIC_Send(recvbuf, count, datatype, bin_rchild, tag, comm_ptr->handle);
++
++    MPIU_Free(buf_left);
++    MPIU_Free(buf_right);
++
++    return MPI_SUCCESS;
++}
+Index: src/mpi/comm/comm_create.c
+===================================================================
+--- src/mpi/comm/comm_create.c	(revision 9476)
++++ src/mpi/comm/comm_create.c	(revision 9555)
+@@ -20,17 +20,6 @@
+ 
+ /* prototypes to make the compiler happy in the case that PMPI_LOCAL expands to
+  * nothing instead of "static" */
+-PMPI_LOCAL int MPIR_Comm_create_calculate_mapping(MPID_Group  *group_ptr,
+-                                                  MPID_Comm   *comm_ptr,
+-                                                  MPID_VCR   **mapping_vcr_out,
+-                                                  int        **mapping_out);
+-
+-PMPI_LOCAL int MPIR_Comm_create_create_and_map_vcrt(int n,
+-                                                    int *mapping,
+-                                                    MPID_VCR *mapping_vcr,
+-                                                    MPID_VCRT *out_vcrt,
+-                                                    MPID_VCR **out_vcr);
+-
+ PMPI_LOCAL int MPIR_Comm_create_intra(MPID_Comm *comm_ptr, MPID_Group *group_ptr,
+                                       MPID_Comm **newcomm_ptr);
+ PMPI_LOCAL int MPIR_Comm_create_inter(MPID_Comm *comm_ptr, MPID_Group *group_ptr,
+@@ -53,7 +42,7 @@
+ #define FUNCNAME MPIR_Comm_create_calculate_mapping
+ #undef FCNAME
+ #define FCNAME MPIU_QUOTE(FUNCNAME)
+-PMPI_LOCAL int MPIR_Comm_create_calculate_mapping(MPID_Group  *group_ptr,
++int MPIR_Comm_create_calculate_mapping(MPID_Group  *group_ptr,
+                                                   MPID_Comm   *comm_ptr,
+                                                   MPID_VCR   **mapping_vcr_out,
+                                                   int        **mapping_out)
+@@ -192,7 +181,7 @@
+ #define FUNCNAME MPIR_Comm_create_and_map_vcrt
+ #undef FCNAME
+ #define FCNAME MPIU_QUOTE(FUNCNAME)
+-PMPI_LOCAL int MPIR_Comm_create_create_and_map_vcrt(int         n,
++int MPIR_Comm_create_create_and_map_vcrt(int         n,
+                                                     int        *mapping,
+                                                     MPID_VCR   *mapping_vcr,
+                                                     MPID_VCRT  *out_vcrt,
+@@ -538,46 +527,40 @@
+     MPIU_THREAD_CS_ENTER(ALLFUNC,);
+     MPID_MPI_FUNC_ENTER(MPID_STATE_MPI_COMM_CREATE);
+ 
+-    /* Validate parameters, and convert MPI object handles to object pointers */
++    /* Validate parameters, especially handles needing to be converted */
+ #   ifdef HAVE_ERROR_CHECKING
+     {
+-        MPID_BEGIN_ERROR_CHECKS;
++        MPID_BEGIN_ERROR_CHECKS
+         {
+ 	    MPIR_ERRTEST_COMM(comm, mpi_errno);
++            MPIR_ERRTEST_GROUP(group, mpi_errno);
+             if (mpi_errno) goto fn_fail;
+ 	}
+-        MPID_END_ERROR_CHECKS;
+-	
+-	MPID_Comm_get_ptr( comm, comm_ptr );
+-	
+-        MPID_BEGIN_ERROR_CHECKS;
++        MPID_END_ERROR_CHECKS
++    }
++#   endif
++
++    /* Get handles to MPI objects. */
++    MPID_Comm_get_ptr(comm, comm_ptr);
++    MPID_Group_get_ptr(group, group_ptr);
++
++    /* Validate parameters and objects (post conversion) */
++#   ifdef HAVE_ERROR_CHECKING
+         {
+-            /* Validate comm_ptr */
+-            MPID_Comm_valid_ptr( comm_ptr, mpi_errno );
++        MPID_BEGIN_ERROR_CHECKS
++        {
+ 	    /* If comm_ptr is not valid, it will be reset to null */
+-
+-	    MPIR_ERRTEST_GROUP(group, mpi_errno);
++            MPID_Comm_valid_ptr(comm_ptr, mpi_errno);
+             if (mpi_errno) goto fn_fail;
+-	}
+-        MPID_END_ERROR_CHECKS;
+-	
+-	MPID_Group_get_ptr( group, group_ptr );
+ 
+-        MPID_BEGIN_ERROR_CHECKS;
+-        {
+-	    /* Check the group ptr */
+-	    MPID_Group_valid_ptr( group_ptr, mpi_errno );
++            MPID_Group_valid_ptr(group_ptr, mpi_errno);
+             if (mpi_errno) goto fn_fail;
+         }
+-        MPID_END_ERROR_CHECKS;
++        MPID_END_ERROR_CHECKS
+     }
+-#   else
+-    {
+-	MPID_Comm_get_ptr( comm, comm_ptr );
+-	MPID_Group_get_ptr( group, group_ptr );
+-    }
+ #   endif
+ 
++
+     /* ... body of routine ...  */
+     if (comm_ptr->comm_kind == MPID_INTRACOMM) {
+         mpi_errno = MPIR_Comm_create_intra(comm_ptr, group_ptr, &newcomm_ptr);
+Index: src/mpi/comm/intercomm_create.c
+===================================================================
+--- src/mpi/comm/intercomm_create.c	(revision 9476)
++++ src/mpi/comm/intercomm_create.c	(revision 9555)
+@@ -184,6 +184,7 @@
+     int local_size, *local_gpids=0, *local_lpids=0;
+     int comm_info[3];
+     int is_low_group = 0;
++    int cts_tag;
+     int i;
+     int errflag = FALSE;
+     MPIU_CHKLMEM_DECL(4);
+@@ -191,6 +192,9 @@
+ 
+     MPID_MPI_FUNC_ENTER(MPID_STATE_MPIR_INTERCOMM_CREATE_IMPL);
+ 
++    /* Shift tag into the tagged coll space */
++    cts_tag = tag | MPIR_Process.tagged_coll_mask;
++
+     /*
+      * Error checking for this routine requires care.  Because this
+      * routine is collective over two different sets of processes,
+@@ -217,9 +221,9 @@
+         MPIU_DBG_MSG_FMT(COMM,VERBOSE,(MPIU_DBG_FDEST,"rank %d sendrecv to rank %d", peer_comm_ptr->rank,
+                                        remote_leader));
+         mpi_errno = MPIC_Sendrecv( &local_size,  1, MPI_INT,
+-                                   remote_leader, tag,
++                                   remote_leader, cts_tag,
+                                    &remote_size, 1, MPI_INT,
+-                                   remote_leader, tag,
++                                   remote_leader, cts_tag,
+                                    peer_comm_ptr->handle, MPI_STATUS_IGNORE );
+         if (mpi_errno) MPIU_ERR_POP(mpi_errno);
+ 
+@@ -237,9 +241,9 @@
+ 
+         /* Exchange the lpid arrays */
+         mpi_errno = MPIC_Sendrecv( local_gpids, 2*local_size, MPI_INT,
+-                                   remote_leader, tag,
++                                   remote_leader, cts_tag,
+                                    remote_gpids, 2*remote_size, MPI_INT,
+-                                   remote_leader, tag, peer_comm_ptr->handle, MPI_STATUS_IGNORE );
++                                   remote_leader, cts_tag, peer_comm_ptr->handle, MPI_STATUS_IGNORE );
+         if (mpi_errno) MPIU_ERR_POP(mpi_errno);
+ 
+         /* Convert the remote gpids to the lpids */
+@@ -283,6 +287,7 @@
+                                     local_comm_ptr->local_size, local_comm_ptr->rank ));
+     /* In the multi-threaded case, MPIR_Get_contextid assumes that the
+        calling routine already holds the single criticial section */
++    /* TODO: Make sure this is tag-safe */
+     mpi_errno = MPIR_Get_contextid( local_comm_ptr, &recvcontext_id );
+     if (mpi_errno) MPIU_ERR_POP(mpi_errno);
+     MPIU_Assert(recvcontext_id != 0);
+@@ -293,8 +298,8 @@
+     if (local_comm_ptr->rank == local_leader) {
+         MPIR_Context_id_t remote_context_id;
+ 
+-        mpi_errno = MPIC_Sendrecv( &recvcontext_id, 1, MPIR_CONTEXT_ID_T_DATATYPE, remote_leader, tag,
+-                                   &remote_context_id, 1, MPIR_CONTEXT_ID_T_DATATYPE, remote_leader, tag,
++        mpi_errno = MPIC_Sendrecv( &recvcontext_id, 1, MPIR_CONTEXT_ID_T_DATATYPE, remote_leader, cts_tag,
++                                   &remote_context_id, 1, MPIR_CONTEXT_ID_T_DATATYPE, remote_leader, cts_tag,
+                                    peer_comm_ptr->handle, MPI_STATUS_IGNORE );
+         if (mpi_errno) MPIU_ERR_POP(mpi_errno);
+ 
+@@ -488,6 +493,7 @@
+     {
+         MPID_BEGIN_ERROR_CHECKS;
+         {
++            MPIR_ERRTEST_COMM_TAG(tag, mpi_errno);
+ 	    MPIR_ERRTEST_COMM(local_comm, mpi_errno);
+             if (mpi_errno) goto fn_fail;
+ 	}
+Index: src/mpi/comm/commutil.c
+===================================================================
+--- src/mpi/comm/commutil.c	(revision 9476)
++++ src/mpi/comm/commutil.c	(revision 9555)
+@@ -731,6 +731,15 @@
+ #define FCNAME MPIU_QUOTE(FUNCNAME)
+ int MPIR_Get_contextid_sparse(MPID_Comm *comm_ptr, MPIR_Context_id_t *context_id, int ignore_id)
+ {
++    return MPIR_Get_contextid_sparse_group(comm_ptr, NULL /* group_ptr */, MPIR_Process.attrs.tag_ub /* tag */, context_id, ignore_id);
++}
++
++#undef FUNCNAME
++#define FUNCNAME MPIR_Get_contextid_sparse_group
++#undef FCNAME
++#define FCNAME MPIU_QUOTE(FUNCNAME)
++int MPIR_Get_contextid_sparse_group(MPID_Comm *comm_ptr, MPID_Group *group_ptr, int tag, MPIR_Context_id_t *context_id, int ignore_id)
++{
+     int mpi_errno = MPI_SUCCESS;
+     uint32_t     local_mask[MPIR_MAX_CONTEXT_MASK];
+     int errflag = FALSE;
+@@ -755,8 +764,15 @@
+ 
+     /* Note that this is the unthreaded version */
+     /* Comm must be an intracommunicator */
+-    mpi_errno = MPIR_Allreduce_impl( MPI_IN_PLACE, local_mask, MPIR_MAX_CONTEXT_MASK, 
+-                                     MPI_INT, MPI_BAND, comm_ptr, &errflag);
++    if (group_ptr != NULL) {
++        int coll_tag = tag | MPIR_Process.tagged_coll_mask; /* Shift tag into the tagged coll space */
++        mpi_errno = MPIR_Allreduce_group( MPI_IN_PLACE, local_mask, MPIR_MAX_CONTEXT_MASK,
++                                            MPI_INT, MPI_BAND, comm_ptr, group_ptr, coll_tag, &errflag );
++    } else {
++        mpi_errno = MPIR_Allreduce_impl( MPI_IN_PLACE, local_mask, MPIR_MAX_CONTEXT_MASK,
++                                            MPI_INT, MPI_BAND, comm_ptr, &errflag );
++    }
++
+     if (mpi_errno) MPIU_ERR_POP(mpi_errno);
+     MPIU_ERR_CHKANDJUMP(errflag, mpi_errno, MPI_ERR_OTHER, "**coll_fail");
+ 
+@@ -788,7 +804,19 @@
+    are contending for the mask */
+ #define MPIR_MAXID (1 << 30)
+ static volatile int lowestContextId = MPIR_MAXID;
++static volatile int lowestTag       = -1;
+ 
++#undef FUNCNAME
++#define FUNCNAME MPIR_Get_contextid_sparse
++#undef FCNAME
++#define FCNAME MPIU_QUOTE(FUNCNAME)
++int MPIR_Get_contextid_sparse(MPID_Comm *comm_ptr, MPIR_Context_id_t *context_id, int ignore_id)
++{
++    return MPIR_Get_contextid_sparse_group(comm_ptr, NULL /*group_ptr*/,
++                                           MPIR_Process.attrs.tag_ub /*tag*/,
++                                           context_id, ignore_id);
++}
++
+ /* Allocates a new context ID collectively over the given communicator.  This
+  * routine is "sparse" in the sense that while it is collective, some processes
+  * may not care about the value selected context ID.
+@@ -799,44 +827,66 @@
+  *
+  * Processes that pass ignore_id==TRUE will receive
+  * (*context_id==MPIR_INVALID_CONTEXT_ID) and should not attempt to use it.
++ *
++ * If a group pointer is given, the call is _not_ sparse, and only processes
++ * in the group should call this routine.  That is, it is collective only over
++ * the given group.
+  */
++/* NOTE-C1: We need a special test in this loop for the case where some process
++ * has exhausted its supply of context ids.  In the single threaded case, this
++ * is simple, because the algorithm is deterministic (see above).  In the
++ * multithreaded case, it is more complicated, because we may get a zero for the
++ * context mask because some other thread holds the mask.  In addition, we can't
++ * check for the case where this process did not select MPI_THREAD_MULTIPLE,
++ * because one of the other processes may have selected MPI_THREAD_MULTIPLE.  To
++ * handle this case, after a fixed number of failures, we test to see if some
++ * process has exhausted its supply of context ids.  If so, all processes can
++ * invoke the out-of-context-id error.  That fixed number of tests is in
++ * testCount */
+ #undef FUNCNAME
+-#define FUNCNAME MPIR_Get_contextid_sparse
++#define FUNCNAME MPIR_Get_contextid_sparse_group
+ #undef FCNAME
+ #define FCNAME MPIU_QUOTE(FUNCNAME)
+-int MPIR_Get_contextid_sparse(MPID_Comm *comm_ptr, MPIR_Context_id_t *context_id, int ignore_id)
++int MPIR_Get_contextid_sparse_group(MPID_Comm *comm_ptr, MPID_Group *group_ptr, int tag, MPIR_Context_id_t *context_id, int ignore_id)
+ {
+     int          mpi_errno = MPI_SUCCESS;
+     uint32_t     local_mask[MPIR_MAX_CONTEXT_MASK];
+     int          own_mask = 0;
+-    int          testCount = 10; /* if you change this value, you need to also change 
+-				    it below where it is reinitialized */
++    static const int NUM_CTX_TESTS = 10;
++    int testCount = NUM_CTX_TESTS;
+     int errflag = FALSE;
+     MPID_MPI_STATE_DECL(MPID_STATE_MPIR_GET_CONTEXTID);
+ 
+     MPID_MPI_FUNC_ENTER(MPID_STATE_MPIR_GET_CONTEXTID);
+ 
++    /* Group-collective and ignore_id should never be combined */
++    MPIU_Assert(! (group_ptr != NULL && ignore_id) );
++
+     *context_id = 0;
+ 
+-    /* We lock only around access to the mask.  If another thread is
+-       using the mask, we take a mask of zero */
+     MPIU_DBG_MSG_FMT(COMM, VERBOSE, (MPIU_DBG_FDEST,
+-         "Entering; shared state is %d:%d, my ctx id is %d",
+-         mask_in_use, lowestContextId, comm_ptr->context_id));
+-    /* We need a special test in this loop for the case where some process
+-     has exhausted its supply of context ids.  In the single threaded case, 
+-     this is simple, because the algorithm is deterministic (see above).  In 
+-     the multithreaded case, it is more complicated, because we may get a
+-     zero for the context mask because some other thread holds the mask.  
+-     In addition, we can't check for the case where this process did not
+-     select MPI_THREAD_MULTIPLE, because one of the other processes
+-     may have selected MPI_THREAD_MULTIPLE.  To handle this case, after a 
+-     fixed number of failures, we test to see if some process has exhausted 
+-     its supply of context ids.  If so, all processes can invoke the 
+-     out-of-context-id error.  That fixed number of tests is in testCount */
++         "Entering; shared state is %d:%d:%d, my ctx id is %d, tag=%d",
++         mask_in_use, lowestContextId, lowestTag, comm_ptr->context_id, tag));
++
++
++    /* Deadlock avoidance: Only enter the context id allocation loop when all
++     * processes have called this routine.
++     *
++     * TODO: Create a more efficient group-wise barrier
++     */
++    if (group_ptr != NULL) {
++        int coll_tag = tag | MPIR_Process.tagged_coll_mask; /* Shift tag into the tagged coll space */
++        mpi_errno = MPIR_Allreduce_group(MPI_IN_PLACE, local_mask, 1, MPI_INT, MPI_BAND, comm_ptr, group_ptr, coll_tag, &errflag);
++    } else {
++        mpi_errno = MPIR_Barrier_impl( comm_ptr, &errflag );
++    }
++    if (mpi_errno) MPIU_ERR_POP(mpi_errno);
++    MPIU_ERR_CHKANDJUMP(errflag, mpi_errno, MPI_ERR_OTHER, "**coll_fail");
++
++    /* see NOTE-C1 for info about the "exhausted IDs" test */
+     while (*context_id == 0) {
+-	/* In all but the global-critical-section case, we must ensure that
+-	   only one thread access the context id mask at a time */
++        /* We lock only around access to the mask (except in the global locking
++         * case).  If another thread is using the mask, we take a mask of zero. */
+ 	MPIU_THREAD_CS_ENTER(CONTEXTID,);
+ 	if (initialize_context_mask) {
+ 	    MPIR_Init_contextid();
+@@ -850,35 +900,45 @@
+              * doesn't ever need to "win" the mask */
+         }
+         else {
+-            if (mask_in_use || comm_ptr->context_id > lowestContextId) {
+-                memset( local_mask, 0, MPIR_MAX_CONTEXT_MASK * sizeof(int) );
+-                own_mask        = 0;
+-                if (comm_ptr->context_id < lowestContextId) {
++            /* lowestTag breaks ties when contextIds are the same (happens only
++               in calls to MPI_Comm_create_group. */
++            if (comm_ptr->context_id < lowestContextId ||
++                    (comm_ptr->context_id == lowestContextId && tag < lowestTag)) {
+                     lowestContextId = comm_ptr->context_id;
++                lowestTag       = tag;
+                 }
+-                MPIU_DBG_MSG_D( COMM, VERBOSE, 
+-                   "In in-use, set lowestContextId to %d", lowestContextId );
++
++            if (mask_in_use || ! (comm_ptr->context_id == lowestContextId && tag == lowestTag)) {
++                memset(local_mask, 0, MPIR_MAX_CONTEXT_MASK * sizeof(int));
++                own_mask = 0;
++                MPIU_DBG_MSG_D(COMM, VERBOSE, "In in-use, set lowestContextId to %d", lowestContextId);
+             }
+             else {
+-                MPIU_Memcpy( local_mask, context_mask, MPIR_MAX_CONTEXT_MASK * sizeof(int) );
++                MPIU_Memcpy(local_mask, context_mask, MPIR_MAX_CONTEXT_MASK * sizeof(int));
+                 mask_in_use     = 1;
+                 own_mask        = 1;
+-                lowestContextId = comm_ptr->context_id;
+-                MPIU_DBG_MSG( COMM, VERBOSE, "Copied local_mask" );
++                MPIU_DBG_MSG(COMM, VERBOSE, "Copied local_mask");
+             }
+         }
+ 	MPIU_THREAD_CS_EXIT(CONTEXTID,);
+-	
++
+ 	/* Now, try to get a context id */
+         MPIU_Assert(comm_ptr->comm_kind == MPID_INTRACOMM);
+ 	/* In the global and brief-global cases, note that this routine will
+-	   release that global lock when it needs to wait.  That will allow 
++           release that global lock when it needs to wait.  That will allow
+ 	   other processes to enter the global or brief global critical section.
+-	 */ 
+-	mpi_errno = MPIR_Allreduce_impl( MPI_IN_PLACE, local_mask, MPIR_MAX_CONTEXT_MASK,
+-                                         MPI_INT, MPI_BAND, comm_ptr, &errflag );
++         */
++        if (group_ptr != NULL) {
++            int coll_tag = tag | MPIR_Process.tagged_coll_mask; /* Shift tag into the tagged coll space */
++            mpi_errno = MPIR_Allreduce_group(MPI_IN_PLACE, local_mask, MPIR_MAX_CONTEXT_MASK,
++                                             MPI_INT, MPI_BAND, comm_ptr, group_ptr, coll_tag, &errflag);
++        } else {
++            mpi_errno = MPIR_Allreduce_impl(MPI_IN_PLACE, local_mask, MPIR_MAX_CONTEXT_MASK,
++                                            MPI_INT, MPI_BAND, comm_ptr, &errflag);
++        }
+ 	if (mpi_errno) MPIU_ERR_POP(mpi_errno);
+         MPIU_ERR_CHKANDJUMP(errflag, mpi_errno, MPI_ERR_OTHER, "**coll_fail");
++
+         /* MT FIXME 2/3 cases don't seem to need the CONTEXTID CS, check and
+          * narrow this region */
+         MPIU_THREAD_CS_ENTER(CONTEXTID,);
+@@ -892,28 +952,21 @@
+ 	    /* There is a chance that we've found a context id */
+ 	    /* Find_and_allocate_context_id updates the context_mask if it finds a match */
+ 	    *context_id = MPIR_Find_and_allocate_context_id(local_mask);
+-	    MPIU_DBG_MSG_D( COMM, VERBOSE, 
+-			    "Context id is now %hd", *context_id );
++            MPIU_DBG_MSG_D(COMM, VERBOSE, "Context id is now %hd", *context_id);
+ 	    if (*context_id > 0) {
+ 		/* If we were the lowest context id, reset the value to
+ 		   allow the other threads to compete for the mask */
+-		if (lowestContextId == comm_ptr->context_id) {
++                if (lowestContextId == comm_ptr->context_id && lowestTag == tag) {
+ 		    lowestContextId = MPIR_MAXID;
++                    lowestTag       = -1;
+ 		    /* Else leave it alone; there is another thread waiting */
+ 		}
+ 	    }
+ 	    else {
+ 		/* else we did not find a context id. Give up the mask in case
+-                   there is another thread (with a lower input context id)
+-                   waiting for it.
+-
+-		   We need to ensure that any other threads have the 
+-		   opportunity to run.  We do this by releasing the single
+-		   mutex, yielding, and then reaquiring the mutex.
+-		   We might want to do something more sophisticated, such
+-		   as using a condition variable (if we know for sure that
+-		   there is another thread on this process that is waiting).
+-		*/
++                 * there is another thread (with a lower input context id)
++                 * waiting for it.  We need to ensure that any other threads
++                 * have the opportunity to run, hence yielding */
+ 		MPIU_THREAD_CS_YIELD(CONTEXTID,);
+ 	    }
+ 	    mask_in_use = 0;
+@@ -935,8 +988,14 @@
+ 
+             /* we _must_ release the lock above in order to avoid deadlocking on
+              * this blocking allreduce operation */
+-	    mpi_errno = MPIR_Allreduce_impl( &hasNoId, &totalHasNoId, 1, MPI_INT,
+-                                             MPI_MAX, comm_ptr, &errflag );
++            if (group_ptr != NULL) {
++                int coll_tag = tag | MPIR_Process.tagged_coll_mask; /* Shift tag into the tagged coll space */
++                mpi_errno = MPIR_Allreduce_group(&hasNoId, &totalHasNoId, 1, MPI_INT,
++                                                 MPI_MAX, comm_ptr, group_ptr, coll_tag, &errflag);
++            } else {
++                mpi_errno = MPIR_Allreduce_impl(&hasNoId, &totalHasNoId, 1, MPI_INT,
++                                                MPI_MAX, comm_ptr, &errflag);
++            }
+ 	    if (mpi_errno) MPIU_ERR_POP(mpi_errno);
+             MPIU_ERR_CHKANDJUMP(errflag, mpi_errno, MPI_ERR_OTHER, "**coll_fail");
+ 	    if (totalHasNoId == 1) {
+@@ -949,7 +1008,7 @@
+ 		MPIU_ERR_SETANDJUMP(mpi_errno, MPI_ERR_OTHER, "**toomanycomm");
+ 	    }
+ 	    else { /* reinitialize testCount */
+-		testCount = 10;
++                testCount = NUM_CTX_TESTS;
+                 MPIU_DBG_MSG_D(COMM, VERBOSE, "reinitialized testCount to %d", testCount);
+ 	    }
+ 	}
+@@ -964,6 +1023,7 @@
+ fn_fail:
+     /* Release the masks */
+     if (own_mask) {
++        /* is it safe to access this without holding the CS? */
+         mask_in_use = 0;
+     }
+     goto fn_exit;
+Index: src/mpi/comm/comm_create_group.c
+===================================================================
+--- src/mpi/comm/comm_create_group.c	(revision 9476)
++++ src/mpi/comm/comm_create_group.c	(revision 9555)
+@@ -18,6 +18,8 @@
+ #endif
+ /* -- End Profiling Symbol Block */
+ 
++/* PMPI_LOCAL should be dropped and this prototype moved to mpiimpl.h if we ever
++ * need to use this routine outside of this translation unit */
+ PMPI_LOCAL int MPIR_Comm_create_group(MPID_Comm * comm_ptr, MPID_Group * group_ptr, int tag,
+                                       MPID_Comm ** newcomm);
+ 
+@@ -37,134 +39,85 @@
+ PMPI_LOCAL int MPIR_Comm_create_group(MPID_Comm * comm_ptr, MPID_Group * group_ptr, int tag,
+                                       MPID_Comm ** newcomm_ptr)
+ {
+-    int i, grp_me, me, merge_size;
+-    MPID_Comm *tmp_comm_ptr, *tmp_intercomm_ptr, *comm_self_ptr;
+-    MPID_Group *comm_group_ptr = NULL;
+-    int *granks = NULL, *ranks = NULL, rank_count;
+     int mpi_errno = MPI_SUCCESS;
+-    MPIU_CHKLMEM_DECL(1);
++    MPIR_Context_id_t new_context_id = 0;
++    int *mapping = NULL;
++    int n;
++
+     MPID_MPI_STATE_DECL(MPID_STATE_MPIR_COMM_CREATE_GROUP);
+-
+     MPID_MPI_FUNC_ENTER(MPID_STATE_MPIR_COMM_CREATE_GROUP);
+ 
+-    ranks = NULL;
++    MPIU_Assert(comm_ptr->comm_kind == MPID_INTRACOMM);
+ 
+-    /* Create a group for all of comm and translate it to "group",
+-     * which should be a subset of comm's group. If implemented inside
+-     * MPI, the below translation can be done more efficiently, since
+-     * we have access to the internal lpids directly. */
+-    mpi_errno = MPIR_Comm_group_impl(comm_ptr, &comm_group_ptr);
+-    if (mpi_errno)
+-        MPIU_ERR_POP(mpi_errno);
++    n = group_ptr->size;
++    *newcomm_ptr = NULL;
+ 
+-    rank_count = group_ptr->size;
++    /* Create a new communicator from the specified group members */
+ 
+-    MPIU_CHKLMEM_MALLOC(granks, int *, rank_count * sizeof(int), mpi_errno, "granks");
+-    MPIU_CHKLMEM_MALLOC(ranks, int *, rank_count * sizeof(int), mpi_errno, "ranks");
++    if (group_ptr->rank != MPI_UNDEFINED) {
++        MPID_VCR *mapping_vcr = NULL;
+ 
+-    for (i = 0; i < rank_count; i++)
+-        granks[i] = i;
++        /* For this routine, creation of the id is collective over the input
++           *group*, so processes not in the group do not participate. */
+ 
+-    mpi_errno =
+-        MPIR_Group_translate_ranks_impl(group_ptr, rank_count, granks, comm_group_ptr, ranks);
+-    if (mpi_errno)
+-        MPIU_ERR_POP(mpi_errno);
++        mpi_errno = MPIR_Get_contextid_sparse_group( comm_ptr, group_ptr, tag, &new_context_id, 0 );
++        if (mpi_errno) MPIU_ERR_POP(mpi_errno);
++        MPIU_Assert(new_context_id != 0);
+ 
+-    me = MPIR_Comm_rank(comm_ptr);
++        mpi_errno = MPIR_Comm_create_calculate_mapping(group_ptr, comm_ptr, 
++                                                       &mapping_vcr, &mapping);
++        if (mpi_errno) MPIU_ERR_POP(mpi_errno);
+ 
+-    /* If the group size is 0, return MPI_COMM_NULL */
+-    if (rank_count == 0) {
+-        *newcomm_ptr = NULL;
+-        goto fn_exit;
+-    }
++        /* Get the new communicator structure and context id */
+ 
+-    MPID_Comm_get_ptr(MPI_COMM_SELF, comm_self_ptr);
++        mpi_errno = MPIR_Comm_create( newcomm_ptr );
++        if (mpi_errno) MPIU_ERR_POP(mpi_errno);
+ 
+-    /* If I am the only process in the group, return a dup of
+-     * MPI_COMM_SELF */
+-    if (rank_count == 1 && ranks[0] == me) {
+-        mpi_errno = MPIR_Comm_dup_impl(comm_self_ptr, newcomm_ptr);
+-        if (mpi_errno)
+-            MPIU_ERR_POP(mpi_errno);
++        (*newcomm_ptr)->recvcontext_id = new_context_id;
++        (*newcomm_ptr)->rank           = group_ptr->rank;
++        (*newcomm_ptr)->comm_kind      = comm_ptr->comm_kind;
++        /* Since the group has been provided, let the new communicator know
++           about the group */
++        (*newcomm_ptr)->local_comm     = 0;
++        (*newcomm_ptr)->local_group    = group_ptr;
++        MPIR_Group_add_ref( group_ptr );
+ 
+-        goto fn_exit;
+-    }
++        (*newcomm_ptr)->remote_group   = group_ptr;
++        MPIR_Group_add_ref( group_ptr );
++        (*newcomm_ptr)->context_id     = (*newcomm_ptr)->recvcontext_id;
++        (*newcomm_ptr)->remote_size    = (*newcomm_ptr)->local_size = n;
+ 
+-    /* If I am not a part of the group, return MPI_COMM_NULL */
+-    grp_me = -1;
+-    for (i = 0; i < rank_count; i++) {
+-        if (ranks[i] == me) {
+-            grp_me = i;
+-            break;
+-        }
+-    }
+-    if (grp_me < 0) {
+-        *newcomm_ptr = NULL;
+-        goto fn_exit;
+-    }
++        /* Setup the communicator's vc table.  This is for the remote group,
++           which is the same as the local group for intracommunicators */
++        mpi_errno = MPIR_Comm_create_create_and_map_vcrt(n,
++                                                         mapping,
++                                                         mapping_vcr,
++                                                         &((*newcomm_ptr)->vcrt),
++                                                         &((*newcomm_ptr)->vcr));
++        if (mpi_errno) MPIU_ERR_POP(mpi_errno);
+ 
+-    mpi_errno = MPIR_Comm_dup_impl(comm_self_ptr, &tmp_comm_ptr);
+-    if (mpi_errno)
+-        MPIU_ERR_POP(mpi_errno);
+-
+-    for (merge_size = 1; merge_size < rank_count; merge_size *= 2) {
+-        int gid = grp_me / merge_size;
+-        MPID_Comm *save_comm = tmp_comm_ptr;
+-
+-        if (gid % 2 == 0) {
+-            /* Check if right partner doesn't exist */
+-            if ((gid + 1) * merge_size >= rank_count)
+-                continue;
+-
+-            mpi_errno = MPIR_Intercomm_create_impl(tmp_comm_ptr, 0, comm_ptr,
+-                                                   ranks[(gid + 1) * merge_size], tag,
+-                                                   &tmp_intercomm_ptr);
+-            if (mpi_errno)
+-                MPIU_ERR_POP(mpi_errno);
+-
+-            mpi_errno =
+-                MPIR_Intercomm_merge_impl(tmp_intercomm_ptr, 0 /* LOW */ , &tmp_comm_ptr);
+-            if (mpi_errno)
+-                MPIU_ERR_POP(mpi_errno);
++        mpi_errno = MPIR_Comm_commit(*newcomm_ptr);
++        if (mpi_errno) MPIU_ERR_POP(mpi_errno);
+         }
+         else {
+-            mpi_errno = MPIR_Intercomm_create_impl(tmp_comm_ptr, 0, comm_ptr,
+-                                                   ranks[(gid - 1) * merge_size], tag,
+-                                                   &tmp_intercomm_ptr);
+-            if (mpi_errno)
+-                MPIU_ERR_POP(mpi_errno);
+-
+-            mpi_errno =
+-                MPIR_Intercomm_merge_impl(tmp_intercomm_ptr, 1 /* HIGH */ , &tmp_comm_ptr);
+-            if (mpi_errno)
+-                MPIU_ERR_POP(mpi_errno);
++        /* This process is not in the group */
++        new_context_id = 0;
+         }
+ 
+-        mpi_errno = MPIR_Comm_free_impl(tmp_intercomm_ptr);
+-        if (mpi_errno)
+-            MPIU_ERR_POP(mpi_errno);
++fn_exit:
++    if (mapping)
++        MPIU_Free(mapping);
+ 
+-        if (save_comm->handle != MPI_COMM_SELF) {
+-            mpi_errno = MPIR_Comm_free_impl(save_comm);
+-            if (mpi_errno)
+-                MPIU_ERR_POP(mpi_errno);
++    MPID_MPI_FUNC_EXIT(MPID_STATE_MPIR_COMM_CREATE_GROUP);
++    return mpi_errno;
++fn_fail:
++    if (*newcomm_ptr != NULL) {
++        MPIR_Comm_release(*newcomm_ptr, 0/*isDisconnect*/);
++        new_context_id = 0; /* MPIR_Comm_release frees the new ctx id */
+         }
+-    }
++    if (new_context_id != 0)
++        MPIR_Free_contextid(new_context_id);
+ 
+-    *newcomm_ptr = tmp_comm_ptr;
+-
+-  fn_exit:
+-    if (comm_group_ptr != NULL) {
+-        if (mpi_errno)  /* avoid squashing a more interesting error code */
+-            MPIR_Group_free_impl(comm_group_ptr);
+-        else
+-            mpi_errno = MPIR_Group_free_impl(comm_group_ptr);
+-    }
+-    MPIU_CHKLMEM_FREEALL();
+-    MPID_MPI_FUNC_EXIT(MPID_STATE_MPIR_COMM_CREATE_INTER);
+-    return mpi_errno;
+-
+-  fn_fail:
+     goto fn_exit;
+ }
+ 
+@@ -209,54 +162,45 @@
+     MPIU_THREAD_CS_ENTER(ALLFUNC,);
+     MPID_MPI_FUNC_ENTER(MPID_STATE_MPIX_COMM_CREATE_GROUP);
+ 
+-    /* Validate parameters, and convert MPI object handles to object pointers */
+-#ifdef HAVE_ERROR_CHECKING
++    /* Validate parameters, especially handles needing to be converted */
++#   ifdef HAVE_ERROR_CHECKING
+     {
+-        MPID_BEGIN_ERROR_CHECKS;
++        MPID_BEGIN_ERROR_CHECKS
+         {
++            MPIR_ERRTEST_COMM_TAG(tag, mpi_errno);
+             MPIR_ERRTEST_COMM(comm, mpi_errno);
+-            if (mpi_errno)
+-                goto fn_fail;
++            MPIR_ERRTEST_GROUP(group, mpi_errno);
++            if (mpi_errno) goto fn_fail;
+         }
+-        MPID_END_ERROR_CHECKS;
++        MPID_END_ERROR_CHECKS
++    }
++#   endif
+ 
++    /* Get handles to MPI objects. */
+         MPID_Comm_get_ptr(comm, comm_ptr);
++    MPID_Group_get_ptr(group, group_ptr);
+ 
+-        MPID_BEGIN_ERROR_CHECKS;
++    /* Validate parameters and objects (post conversion) */
++#   ifdef HAVE_ERROR_CHECKING
+         {
+-            /* Validate comm_ptr */
++        MPID_BEGIN_ERROR_CHECKS
++        {
++            /* If comm_ptr is not valid, it will be reset to null */
+             MPID_Comm_valid_ptr(comm_ptr, mpi_errno);
+-            /* If comm_ptr is not valid, it will be reset to null */
++            if (mpi_errno) goto fn_fail;
++            MPIR_ERRTEST_COMM_INTRA(comm_ptr, mpi_errno);
++            if (mpi_errno) goto fn_fail;
+ 
+-            MPIR_ERRTEST_GROUP(group, mpi_errno);
+-            if (mpi_errno)
+-                goto fn_fail;
+-        }
+-        MPID_END_ERROR_CHECKS;
+-
+-        MPID_Group_get_ptr(group, group_ptr);
+-
+-        MPID_BEGIN_ERROR_CHECKS;
+-        {
+-            /* Check the group ptr */
+             MPID_Group_valid_ptr(group_ptr, mpi_errno);
+-            if (mpi_errno)
+-                goto fn_fail;
++            if (mpi_errno) goto fn_fail;
+         }
+-        MPID_END_ERROR_CHECKS;
++        MPID_END_ERROR_CHECKS
+     }
+-#else
+-    {
+-        MPID_Comm_get_ptr(comm, comm_ptr);
+-        MPID_Group_get_ptr(group, group_ptr);
+-    }
+-#endif
++#   endif
+ 
+     /* ... body of routine ...  */
+-    MPIU_Assert(comm_ptr->comm_kind == MPID_INTRACOMM);
+     mpi_errno = MPIR_Comm_create_group(comm_ptr, group_ptr, tag, &newcomm_ptr);
+-    if (mpi_errno)
+-        MPIU_ERR_POP(mpi_errno);
++    if (mpi_errno) MPIU_ERR_POP(mpi_errno);
+ 
+     if (newcomm_ptr)
+         MPIU_OBJ_PUBLISH_HANDLE(*newcomm, newcomm_ptr->handle);
+Index: src/mpi/init/initthread.c
+===================================================================
+--- src/mpi/init/initthread.c	(revision 9476)
++++ src/mpi/init/initthread.c	(revision 9555)
+@@ -410,6 +410,16 @@
+ 			  &has_args, &has_env);
+     if (mpi_errno) MPIU_ERR_POP(mpi_errno);
+ 
++    /* Assert: tag_ub should be a power of 2 minus 1 */
++    MPIU_Assert(((unsigned)MPIR_Process.attrs.tag_ub & ((unsigned)MPIR_Process.attrs.tag_ub + 1)) == 0);
++
++    /* Set aside tag space for tagged collectives */
++    MPIR_Process.attrs.tag_ub     >>= 1;
++    MPIR_Process.tagged_coll_mask   = MPIR_Process.attrs.tag_ub + 1;
++
++    /* Assert: tag_ub is at least the minimum asked for in the MPI spec */
++    MPIU_Assert( MPIR_Process.attrs.tag_ub >= 32767 );
++
+     /* Capture the level of thread support provided */
+     MPIR_ThreadInfo.thread_provided = thread_provided;
+     if (provided) *provided = thread_provided;
+Index: src/mpid/ch3/include/mpidpre.h
+===================================================================
+--- src/mpid/ch3/include/mpidpre.h	(revision 9476)
++++ src/mpid/ch3/include/mpidpre.h	(revision 9555)
+@@ -92,6 +92,10 @@
+     MPIDI_Message_match_parts_t parts;
+     MPIR_Upint whole;
+ } MPIDI_Message_match;
++/* NOTE-T1: We set MPIR_Process.attrs.tag_ub to this value during MPID_Init, but
++ * upper level code may then modify this value after MPID_Init and before the
++ * end of MPIR_Init_thread.  Don't use this value directly, always check the
++ * runtime global value. */
+ #define MPIDI_TAG_UB (0x7fffffff)
+ 
+ /* Packet types are defined in mpidpkt.h .  The intent is to remove the
+Index: src/mpid/ch3/src/mpid_init.c
+===================================================================
+--- src/mpid/ch3/src/mpid_init.c	(revision 9476)
++++ src/mpid/ch3/src/mpid_init.c	(revision 9555)
+@@ -138,7 +138,7 @@
+      * Set global process attributes.  These can be overridden by the channel 
+      * if necessary.
+      */
+-    MPIR_Process.attrs.tag_ub          = MPIDI_TAG_UB;
++    MPIR_Process.attrs.tag_ub = MPIDI_TAG_UB; /* see also mpidpre.h:NOTE-T1 */
+ 
+     /* If the channel requires any setup before making any other 
+        channel calls (including CH3_PG_Init), the channel will define

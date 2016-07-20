@@ -1,0 +1,53 @@
+page 569 line 33
+
+MPI_T_CVAR_GET_INDEX(name, cvar_index)
+IN name
+OUT cvar_index
+
+MPI_T_cvar_get_index(char * name, int * cvar_index)
+
+MPI_T_CVAR_GET_INDEX is a convenience function for retrieving the index of a control variable given a known variable name. The name parameter is provided by the caller, and cvar_index is returned by the MPI implementation. The name parameter is a C style NULL terminated string. 
+
+This routine returns MPI_SUCCESS on success and returns MPI_T_ERR_INVALID_NAME if name does not match the name of any control variable provided by the implementation at the time of the call.
+
+Rationale:
+This routine is provided to enable fast retrieval of control variables by a tool, assuming it knows the name of the variable for which it is looking. The number of variables exposed by the implementation can change over time, so it is not possible for the tool to simply iterate over the list of variables once at initialization. Although using MPI implementation specific variable names is not portable across MPI implementations, tool developers may choose to take this route for lower overhead at runtime because the tool won't have to iterate over the entire set of variables to find a specific one. 
+
+page 577 line 33
+
+MPI_T_PVAR_GET_INDEX(name, pvar_index)
+IN name
+OUT pvar_index
+
+MPI_T_pvar_get_index(char * name, int * pvar_index)
+
+MPI_T_PVAR_GET_INDEX is a convenience function for retrieving the index of a performance variable given a known variable name. The name parameter is provided by the caller, and pvar_index is returned by the MPI implementation. The name parameter is a C style NULL terminated string. 
+
+This routine returns MPI_SUCCESS on success and returns MPI_T_ERR_INVALID_NAME if name does not match the name of any performance variable provided by the implementation at the time of the call.
+
+Rationale:
+This routine is provided to enable fast retrieval of performance variables by a tool, assuming it knows the name of the variable for which it is looking. The number of variables exposed by the implementation can change over time, so it is not possible for the tool to simply iterate over the list of variables once at initialization. Although using MPI implementation specific variable names is not portable across MPI implementations, tool developers may choose to take this route for lower overhead at runtime because the tool won't have to iterate over the entire set of variables to find a specific one. 
+
+page 586 line 35
+
+
+MPI_T_CATEGORY_GET_INDEX(name, cat_index)
+IN name
+OUT cat_index
+
+MPI_T_category_get_index(char * name, int * cat_index)
+
+MPI_T_CATEGORY_GET_INDEX is a convenience function for retrieving the index of a category given a known category name. The name parameter is provided by the caller, and cat_index is returned by the MPI implementation. The name parameter is a C style NULL terminated string. 
+
+This routine returns MPI_SUCCESS on success and returns MPI_T_ERR_INVALID_NAME if name does not match the name of any category provided by the implementation at the time of the call.
+
+Rationale:
+This routine is provided to enable fast retrieval of a category index by a tool, assuming it knows the name of the category for which it is looking. The number of categories exposed by the implementation can change over time, so it is not possible for the tool to simply iterate over the list of categories once at initialization. Although using MPI implementation specific category names is not portable across MPI implementations, tool developers may choose to take this route for lower overhead at runtime because the tool won't have to iterate over the entire set of categories to find a specific one. 
+
+
+
+page 589, line 15
+MPI_T_*_GET_* (instead of specifying INFO)
+
+line 18 add
+MPI_T_ERR_INVALID_NAME   |   The variable or category name is not valid

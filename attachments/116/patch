@@ -1,0 +1,460 @@
+Index: chap-datatypes/datatypes.tex
+===================================================================
+--- chap-datatypes/datatypes.tex	(revision 288)
++++ chap-datatypes/datatypes.tex	(working copy)
+@@ -1362,7 +1362,7 @@
+ % oldtype?
+ %%HEADER
+ %%FRAGMENT
+-%%DECL: int i, ndims, r[10], array_of_psizes[10],newtype;
++%%DECL: int i, ndims, r[10], array_of_psizes[10], newtype, oldtype[10];
+ %%DECL: int array_of_dargs[10], array_of_gsizes[10];
+ %%DECL: extern int cyclic(int,int,int,int,int);
+ %%ENDHEADER
+@@ -1382,7 +1382,7 @@
+ 
+ %%HEADER
+ %%FRAGMENT
+-%%DECL: int i, ndims, r[10], array_of_psizes[10], newtype;
++%%DECL: int i, ndims, r[10], array_of_psizes[10], newtype, oldtype[10];
+ %%DECL: int array_of_dargs[10], array_of_gsizes[10];
+ %%DECL: extern int cyclic(int,int,int,int,int);
+ %%ENDHEADER
+@@ -1527,7 +1527,7 @@
+ %%DECL: integer ierr, size, rank, oldtype, newtype, ndims
+ %%DECL: integer array_of_psizes(3)
+ %%ENDHEADER
+-\begin{verbatim}
++\begin{Verbatim}[commandchars=\\\$\^]
+     ndims = 3
+     array_of_gsizes(1) = 100
+     array_of_distribs(1) = MPI_DISTRIBUTE_CYCLIC
+@@ -1537,7 +1537,7 @@
+     array_of_dargs(2) = 0
+     array_of_gsizes(3) = 300
+     array_of_distribs(3) = MPI_DISTRIBUTE_BLOCK
+-    array_of_dargs(3) = MPI_DISTRIBUTE_DFLT_ARG
++    array_of_dargs(3) = \MPIdelete$2.2^$116^$MPI_DISTRIBUTE_DFLT_ARG^\MPIupdate$2.2^$116^$MPI_DISTRIBUTE_DFLT_DARG^
+     array_of_psizes(1) = 2
+     array_of_psizes(2) = 1
+     array_of_psizes(3) = 3
+@@ -1546,7 +1546,7 @@
+     call MPI_TYPE_CREATE_DARRAY(size, rank, ndims, array_of_gsizes, &
+          array_of_distribs, array_of_dargs, array_of_psizes,        &
+          MPI_ORDER_FORTRAN, oldtype, newtype, ierr)
+-\end{verbatim}
++\end{Verbatim}
+ \end{example}
+ 
+ \begchangeoct
+@@ -2877,7 +2877,7 @@
+ %%FRAGMENT
+ %%DECL: INTEGER LARGE
+ %%ENDHEADER
+-\begin{verbatim}
++\begin{Verbatim}[commandchars=\\\$\^]
+       PARAMETER (LARGE = 1000)
+       INTEGER TYPE, NI, NA, ND, COMBINER, I(LARGE), D(LARGE), IERROR
+       INTEGER(KIND=MPI_ADDRESS_KIND) A(LARGE)
+@@ -2886,10 +2886,10 @@
+       IF ((NI .GT. LARGE) .OR. (NA .GT. LARGE) .OR. (ND .GT. LARGE)) THEN
+         WRITE (*, *) "NI, NA, OR ND = ", NI, NA, ND, &
+         " RETURNED BY MPI_TYPE_GET_ENVELOPE IS LARGER THAN LARGE = ", LARGE
+-        CALL MPI_ABORT(MPI_COMM_WORLD, 99)
++        CALL MPI_ABORT(MPI_COMM_WORLD, 99\MPIupdate$2.2^$116^$, IERROR^)
+       ENDIF
+       CALL MPI_TYPE_GET_CONTENTS(TYPE, NI, NA, ND, I, A, D, IERROR)
+-\end{verbatim}
++\end{Verbatim}
+ 
+ \noindent
+ or in C the analogous calls of:
+@@ -3258,14 +3258,13 @@
+ \exindex{MPI\_SENDRECV}
+ \exindex{MPI\_TYPE\_COMMIT}
+ Copy the (strictly) lower triangular part of a matrix.
+-% block should be blocklen
+ %%HEADER
+ %%LANG: FORTRAN
+ %%FRAGMENT
+ %%DECL: integer i
+ %%AUTOCONTINUE
+ %%ENDHEADER
+-\begin{verbatim}
++\begin{Verbatim}[commandchars=\\\$\^]
+       REAL a(100,100), b(100,100)
+       INTEGER  disp(100), blocklen(100), ltype, myrank, ierr
+       INTEGER status(MPI_STATUS_SIZE)
+@@ -3278,16 +3277,16 @@
+ C     compute start and size of each column
+       DO i=1, 100
+         disp(i) = 100*(i-1) + i
+-        block(i) = 100-i
++        block\MPIupdate$2.2^$116^$len^(i) = 100-i
+       END DO
+ 
+ C     create datatype for lower triangular part
+-      CALL MPI_TYPE_INDEXED( 100, block, disp, MPI_REAL, ltype, ierr)
++      CALL MPI_TYPE_INDEXED( 100, block\MPIupdate$2.2^$116^$len^, disp, MPI_REAL, ltype, ierr)
+ 
+       CALL MPI_TYPE_COMMIT(ltype, ierr)
+       CALL MPI_SENDRECV( a, 1, ltype, myrank, 0, b, 1,
+                     ltype, myrank, 0, MPI_COMM_WORLD, status, ierr)
+-\end{verbatim}
++\end{Verbatim}
+ } \end{example}
+ 
+ \mpiiidotiMergeFromREVIEWbegin{21.h}%    MPI-2.1 Correction due to Reviews to MPI-2.1 draft Feb.23, 2008
+@@ -3403,22 +3402,21 @@
+ 
+ %MPI-1.2-Ballot3
+ \CHANGE{MPI-1.2 errata, Ballot3, item 11}{The variable base should be declared as \mpiarg{MPI\_Aint}, not \mpiarg{int}}
+-% Add int tag, dest; MPI_Comm comm;, etc.?
+ %%HEADER
+ %%LANG: C
+ %%FRAGMENT
+ %%ENDHEADER
+-\begin{verbatim}
++\begin{Verbatim}[commandchars=\\\$\^]
+ struct Partstruct
+    {
+-   int    class;  /* particle class */
+-   double d[6];   /* particle coordinates */
+-   char   b[7];   /* some additional information */
++      int    kind;   /* particle class */
++      double d[6];   /* particle coordinates */
++      char   b[7];   /* some additional information */
+    };
+ 
+ struct Partstruct    particle[1000];
+ 
+-int                  i, dest, rank;
++int          i, dest, rank\MPIupdate$2.2^$116^$, tag^;
+ MPI_Comm     comm;
+ 
+ 
+@@ -3437,7 +3435,7 @@
+ MPI_Address( particle[0].d, disp+1);
+ MPI_Address( particle[0].b, disp+2);
+ base = disp[0];
+-for (i=0; i <3; i++) disp[i] -= base;
++for (i=0; i < 3; i++) disp[i] -= base;
+ 
+ MPI_Type_struct( 3, blocklen, disp, type, &Particletype);
+ 
+@@ -3455,7 +3453,7 @@
+ MPI_Address( particle[0].b, disp1+2);
+ MPI_Address( particle+1, disp1+3);
+ base = disp1[0];
+-for (i=0; i <4; i++) disp1[i] -= base;
++for (i=0; i < 4; i++) disp1[i] -= base;
+ 
+ /* build datatype describing structure */
+ 
+@@ -3479,20 +3477,20 @@
+ MPI_Datatype Ztype;
+ 
+ MPI_Aint     zdisp[1000];
+-int zblock[1000], j, k;
+-int zzblock[2] = {1,1};
++int          zblock[1000], j, k;
++\MPIupdate$2.2^$116^$int          zzblock[2] = {1,1};^
+ MPI_Aint     zzdisp[2];
+ MPI_Datatype zztype[2];
+ 
+ /* compute displacements of class zero particles */
+ j = 0;
+ for(i=0; i < 1000; i++)
+-  if (particle[i].class==0)
+-     {
+-     zdisp[j] = i;
+-     zblock[j] = 1;
+-     j++;
+-     }
++   if (particle[i].kind == 0)
++      {
++        zdisp[j] = i;
++        zblock[j] = 1;
++        j++;
++      }
+ 
+ /* create datatype for class zero particles  */
+ MPI_Type_indexed( j, zblock, zdisp, Particletype, &Zparticles);
+@@ -3510,17 +3508,17 @@
+ 
+        /* A probably more efficient way of defining Zparticles */
+ 
+-/* consecutive particles with index zero are handled as one block */
++/* consecutive particles with \MPIdelete$2.2^$116^$index^\MPIupdate$2.2^$116^$kind^ zero are handled as one block */
+ j=0;
+ for (i=0; i < 1000; i++)
+-  if (particle[i].index==0)
+-    {
+-    for (k=i+1; (k < 1000)&&(particle[k].index == 0) ; k++);
+-    zdisp[j] = i;
+-    zblock[j] = k-i;
+-    j++;
+-    i = k;
+-    }
++   if (particle[i].\MPIdelete$2.2^$116^$index^\MPIupdate$2.2^$116^$kind^ == 0)
++      {
++         for (k=i+1; (k < 1000)&&(particle[k].\MPIdelete$2.2^$116^$index^\MPIupdate$2.2^$116^$kind^ == 0) ; k++);
++         zdisp[j] = i;
++         zblock[j] = k-i;
++         j++;
++         i = k;
++      }
+ MPI_Type_indexed( j, zblock, zdisp, Particletype, &Zparticles);
+ 
+ 
+@@ -3558,7 +3556,7 @@
+ MPI_Type_commit( &Onepair);
+ MPI_Send( particle[0].d, 1000, Onepair, dest, tag, comm);
+ 
+-\end{verbatim}
++\end{Verbatim}
+ } \end{example}
+ 
+ \begin{example} \rm
+@@ -3586,9 +3584,9 @@
+ \begin{Verbatim}[commandchars=\\\$\^]
+ struct Partstruct
+    {
+-   int class;
+-   double d[6];
+-   char b[7];
++      int kind;
++      double d[6];
++      char b[7];
+    };
+ 
+ struct Partstruct particle[1000];
+@@ -3612,7 +3610,7 @@
+             send the entire array */
+ 
+ MPI_Type_commit( &Particletype);
+-MPI_Send( MPI_BOTTOM, 1000, Particletype, dest, tag, comm);
++MPI_Send( MPI_BOTTOM, 1000, Particletype, dest, tag\MPIupdate$2.2^$116^$, MPI_COMM_WORLD^);
+ 
+ 
+                  /* 5.2:
+@@ -3621,22 +3619,22 @@
+ 
+ MPI_Datatype Zparticles, Ztype;
+ 
+-MPI_Aint zdisp[1000]
+-int zblock[1000], i, j, k;
+-int zzblock[2] = {1,1};
++MPI_Aint     zdisp[1000];
++int          zblock[1000], i, j, k;
++int          zzblock[2] = {1,1};
+ MPI_Datatype zztype[2];
+ MPI_Aint     zzdisp[2];
+ 
+ j=0;
+ for (i=0; i < 1000; i++)
+-  if (particle[i].index==0)
+-    {
+-    for (k=i+1; (k < 1000)&&(particle[k].index \MPIupdate$2.2^$16^$=^= 0) ; k++);
+-    zdisp[j] = i;
+-    zblock[j] = k-i;
+-    j++;
+-    i = k;
+-    }
++   if (particle[i].\MPIdelete$2.2^$116^$index^\MPIupdate$2.2^$116^$kind^ == 0)
++      {
++         for (k=i+1; (k < 1000)&&(particle[k].\MPIdelete$2.2^$116^$index^\MPIupdate$2.2^$116^$kind^ \MPIupdate$2.2^$16^$=^= 0) ; k++);
++         zdisp[j] = i;
++         zblock[j] = k-i;
++         j++;
++         i = k;
++      }
+ MPI_Type_indexed( j, zblock, zdisp, Particletype, &Zparticles);
+ /* Zparticles describe particles with class zero, using
+    their absolute addresses*/
+@@ -3649,7 +3647,7 @@
+ MPI_Type_struct(2, zzblock, zzdisp, zztype, &Ztype);
+ 
+ MPI_Type_commit( &Ztype);
+-MPI_Send( MPI_BOTTOM, 1, Ztype, dest, tag, comm);
++MPI_Send( MPI_BOTTOM, 1, Ztype, dest, tag, \MPIdelete$2.2^$116^$comm^\MPIupdate$2.2^$116^$MPI_COMM_WORLD^);
+ 
+ \end{Verbatim}
+ \end{example}
+@@ -3668,11 +3666,11 @@
+ %%HEADER
+ %%FRAGMENT
+ %%ENDHEADER
+-\begin{verbatim}
++\begin{Verbatim}[commandchars=\\\$\^]
+ union {
+    int     ival;
+    float   fval;
+-      } u[1000]
++      } u[1000];
+ 
+ int     utype;
+ 
+@@ -3680,7 +3678,7 @@
+    utype keeps track of their current type */
+ 
+ MPI_Datatype   type[2];
+-int            blocklen[2] = {1,1};
++int            blocklen[2] = {1,1}\MPIupdate$2.2^$116^$, dest, tag^;
+ MPI_Aint       disp[2];
+ MPI_Datatype   mpi_utype[2];
+ MPI_Aint       i,j;
+@@ -3703,8 +3701,8 @@
+ 
+ /* actual communication */
+ 
+-MPI_Send(u, 1000, mpi_utype[utype], dest, tag, comm);
+-\end{verbatim}
++MPI_Send(u, 1000, mpi_utype[utype], dest, tag, \MPIdelete$2.2^$116^$comm^\MPIupdate$2.2^$116^$MPI_COMM_WORLD^);
++\end{Verbatim}
+ } \end{example}
+ 
+ \mpiiidotiMergeFromTWOdotZERObegin%    MPI-2.1 - take lines: 
+@@ -4031,26 +4029,24 @@
+ %%DECL: int myrank;
+ %%SKIPELIPSIS
+ %%ENDHEADER
+-\begin{verbatim}
+-int position, i, j, a[2];
+-char buff[1000];
+-....
++\begin{Verbatim}[commandchars=\\\$\^]
++int        position, i, j, a[2];
++char       buff[1000];
++\MPIupdate$2.2^$116^$MPI_Status status;^
+ 
+ MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+ if (myrank == 0)
+ {
+-   / * SENDER CODE */
++   /\MPIdelete$2.2^$116^$ ^* SENDER CODE */
+ 
+-  position = 0;
+-  MPI_Pack(&i, 1, MPI_INT, buff, 1000, &position, MPI_COMM_WORLD);
+-  MPI_Pack(&j, 1, MPI_INT, buff, 1000, &position, MPI_COMM_WORLD);
+-  MPI_Send( buff, position, MPI_PACKED, 1, 0, MPI_COMM_WORLD);
++   position = 0;
++   MPI_Pack(&i, 1, MPI_INT, buff, 1000, &position, MPI_COMM_WORLD);
++   MPI_Pack(&j, 1, MPI_INT, buff, 1000, &position, MPI_COMM_WORLD);
++   MPI_Send( buff, position, MPI_PACKED, 1, 0, MPI_COMM_WORLD);
+ }
+ else  /* RECEIVER CODE */
+-  MPI_Recv( a, 2, MPI_INT, 0, 0, MPI_COMM_WORLD)
+-
+-}
+-\end{verbatim}
++   MPI_Recv( a, 2, MPI_INT, 0, 0, MPI_COMM_WORLD\MPIupdate$2.2^$116^$, &status^);
++\end{Verbatim}
+ } \end{example}
+ 
+ 
+@@ -4075,16 +4071,16 @@
+ %%DECL: int myrank;
+ %%SKIPELIPSIS
+ %%ENDHEADER
+-\begin{verbatim}
+-int position, i;
++\begin{Verbatim}[commandchars=\\\$\^]
++int   position, i;
+ float a[1000];
+-char buff[1000]
+-....
++char  buff[1000];
++\MPIdelete$2.2^$116^$\.\.\.\.^
+ 
+-MPI_Comm_rank(MPI_Comm_world, &myrank);
++MPI_Comm_rank(\MPIdelete$2.2^$116^$MPI_Comm_world^\MPIupdate$2.2^$116^$MPI_COMM_WORLD^, &myrank);
+ if (myrank == 0)
+ {
+-  / * SENDER CODE */
++  /\MPIdelete$2.2^$116^$ ^* SENDER CODE */
+ 
+   int len[2];
+   MPI_Aint disp[2];
+@@ -4109,7 +4105,7 @@
+   /* Send */
+ 
+   MPI_Send( buff, position, MPI_PACKED, 1, 0,
+-            MPI_COMM_WORLD)
++            MPI_COMM_WORLD)\MPIupdate$2.2^$116^$;^
+ 
+ /* *****
+    One can replace the last three lines with
+@@ -4124,7 +4120,7 @@
+ 
+   /* Receive */
+ 
+-  MPI_Recv( buff, 1000, MPI_PACKED, 0, 0, &status);
++  MPI_Recv( buff, 1000, MPI_PACKED, 0, 0, \MPIupdate$2.2^$116^$MPI_COMM_WORLD, ^&status);
+ 
+   /* Unpack i */
+ 
+@@ -4134,7 +4130,7 @@
+   /* Unpack a[0]...a[i-1] */
+   MPI_Unpack(buff, 1000, &position, a, i, MPI_FLOAT, MPI_COMM_WORLD);
+ }
+-\end{verbatim}
++\end{Verbatim}
+ } \end{example}
+ 
+ \mpiiidotiMergeFromREVIEWbegin{20.c+d+21.j+k}%    MPI-2.1 Correction due to Reviews to MPI-2.1 draft Feb.23, 2008
+@@ -4163,11 +4159,12 @@
+ %%DECL: MPI_Comm comm; int myrank, root, i;
+ %%SKIPELIPSIS
+ %%ENDHEADER
+-\begin{verbatim}
+-int count, gsize, counts[64], totalcount, k1, k2, k,
+-    displs[64], position, concat_pos;
++\begin{Verbatim}[commandchars=\\\$\^]
++int  count, gsize, counts[64], totalcount, k1, k2, k,
++     displs[64], position, concat_pos;
+ char chr[100], *lbuf, *rbuf, *cbuf;
+-...
++\MPIdelete$2.2^$116^$\.\.\.\.^
++
+ MPI_Comm_size(comm, &gsize);
+ MPI_Comm_rank(comm, &myrank);
+ 
+@@ -4184,12 +4181,12 @@
+ 
+ if (myrank != root) {
+       /* gather at root sizes of all packed messages */
+-   MPI_Gather( &position, 1, MPI_INT, NULL, NULL,
+-             NULL, root, comm);
++   MPI_Gather( &position, 1, MPI_INT, NULL, \MPIdelete$2.2^$116^$NULL^\MPIupdate$2.2^$116^$0^,
++             \MPIdelete$2.2^$116^$NULL^\MPIupdate$2.2^$116^$MPI_DATATYPE_NULL^, root, comm);
+ 
+       /* gather at root packed messages */
+-   MPI_Gatherv( &buf, position, MPI_PACKED, NULL,
+-             NULL, NULL, NULL, root, comm);
++   MPI_Gatherv( lbuf, position, MPI_PACKED, NULL,
++             NULL, NULL, \MPIdelete$2.2^$116^$NULL^\MPIupdate$2.2^$116^$MPI_DATATYPE_NULL^, root, comm);
+ 
+ } else {   /* root code */
+       /* gather sizes of all packed messages */
+@@ -4200,7 +4197,7 @@
+    displs[0] = 0;
+    for (i=1; i < gsize; i++)
+      displs[i] = displs[i-1] + counts[i-1];
+-   totalcount = dipls[gsize-1] + counts[gsize-1];
++   totalcount = di\MPIupdate$2.2^$116^$s^pls[gsize-1] + counts[gsize-1];
+    rbuf = (char *)malloc(totalcount);
+    cbuf = (char *)malloc(totalcount);
+    MPI_Gatherv( lbuf, position, MPI_PACKED, rbuf,
+@@ -4216,9 +4213,9 @@
+             &position, cbuf+concat_pos, count, MPI_CHAR, comm);
+       concat_pos += count;
+    }
+-   cbuf[concat_pos] = `\0';
++   cbuf[concat_pos] = \MPIdelete$2.2^$116^$`^\MPIupdate$2.2^$116^$'^\textbackslash0';
+ }
+-\end{verbatim}
++\end{Verbatim}
+ }
+ \end{example}
+ 

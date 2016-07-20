@@ -1,0 +1,1602 @@
+% glossary.tex
+%
+%
+%
+% Version as of Sept-09-2011
+% Edited by Terry Jones
+%
+%
+%
+%%\status{pre First Reading}
+
+
+\chapter{Glossary}
+\label{glossary}
+
+The glossary entries in this document are for illustration purposes only. They are not
+intended to specify the standard.  Furthermore, the glossary entries have not been
+carefully checked or verified.
+
+
+\begin{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label {glossary:absolute_address}
+\item  ~\hypertarget{glossary:absolute_address}{\emph{\textbf{absolute address}}} \\*
+Displacements relative to  \const{MPI\_BOTTOM}, 
+the start of the address space. Note that  \const{MPI\_BOTTOM}
+may be viewed as a "zero address" but need not be zero.
+Refer to Section {\bf 4.1.8 LABEL-TODO} on page {\bf 98 LABEL-TODO}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:access_epoch}
+\item  ~\hypertarget{glossary:access_epoch}{\emph{\textbf{access epoch}}} \\*
+The period during which a target window can be accessed by \RMA/
+operations.
+(See also ~\hyperlink{glossary:exposure_epoch}{exposure epoch} and
+ ~\hyperlink{glossary:RMA}{RMA}.)
+Refer to Section~\ref{sec:1sided-sync} on page~\pageref{sec:1sided-sync}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:active}
+\item  ~\hypertarget{glossary:active}{\emph{\textbf{active}}} \\*
+The property of a process within a parallel procedure that
+belongs to a group that may collectively execute the procedure, and
+some member of that group is currently executing the procedure code.
+If a parallel procedure is active in a process, then this process may
+be receiving messages pertaining to this procedure, even if it
+does not currently execute the code of this procedure.
+Refer to Section~\ref{sec:formalizing} on page~\pageref{sec:formalizing}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:active_target_communication}
+\item  ~\hypertarget{glossary:active_target_communication}{\emph{\textbf{active target communication}}} \\*
+An \RMA/ communication where data is moved from the memory of one
+process to the memory of another, and both processes are explicitly involved in the
+%%communication.  
+synhcronization. Active target communication patterns may be distinguished from point-to-point
+communications in that all the data transfer arguments are provided by
+one process, and the second process only participates in the synchronization.
+(See also ~\hyperlink{glossary:passive_target_communication}{passive target communication}  and
+ ~\hyperlink{glossary:RMA}{RMA}.)
+Refer to Section~\ref{sec:1sided-sync} on page~\pageref{sec:1sided-sync}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:allgather}
+\item  ~\hypertarget{glossary:allgather}{\emph{\textbf{allgather}}} \\*
+A collective operation in which data is sent from all members of a group,
+and all members of the group receive the data. 
+This is shown as ``allgather'' in Figure~\ref{fig:collcom}.
+(See also ~\hyperlink{glossary:gather}{gather},
+~\hyperlink{glossary:scatter}{scatter},
+and ~\hyperlink{glossary:alltoall}{alltoall}.)
+Refer to Section~\ref{sec:coll-intro} on page~\pageref{sec:coll-intro} and  
+Section~\ref{sec:coll-gather} on page~\pageref{sec:coll-gather}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:alltoall}
+\item  ~\hypertarget{glossary:alltoall}{\emph{\textbf{alltoall}}} \\*
+A scatter/gather variation in which data is sent from all members of a group,
+and all members of the group receive the data. This collective operation
+is also called \emph{complete exchange}. 
+This is shown as ``complete exchange'' in Figure~\ref{fig:collcom}.
+(See also ~\hyperlink{glossary:gather}{gather},
+~\hyperlink{glossary:scatter}{scatter},
+and ~\hyperlink{glossary:alltoall}{alltoall}.)
+Refer to Section~\ref{sec:coll-intro} on page~\pageref{sec:coll-intro} and  
+Section~\ref{sec:coll-gather} on page~\pageref{sec:coll-gather}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:associative}
+\item  ~\hypertarget{glossary:associative}{\emph{\textbf{associative}}} \\*
+The property of a collective reduction operation that the order in which the operations are 
+performed does not matter as long as the sequence of the operands is not changed. 
+A binary operation $ \otimes $ is said to be \emph{associative} iff:
+\begin{eqnarray}
+( A \otimes B )  \otimes C = A   \otimes ( B   \otimes C ) 
+\end{eqnarray}
+Reduction operation properties apply to \func{MPI\_OP\_CREATE} argument MPI\_Op~*op.
+(See also ~\hyperlink{glossary:commutative}{commutative}.)
+Refer to Section~\ref{subsec:coll-user-ops} on page~\pageref{subsec:coll-user-ops}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:attributes}
+\item  ~\hypertarget{glossary:attributes}{\emph{\textbf{attributes}}} \\*
+Arbitrary pieces of information cached on three kinds of \MPI/ objects:
+communicators, windows and datatypes.
+(See also ~\hyperlink{glossary:caching}{caching}.)
+Refer to Section~\ref{sec:caching} on page~\pageref{sec:caching}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:basic_datatype}
+\item  ~\hypertarget{glossary:basic_datatype}{\emph{\textbf{basic datatype}}} \\*
+A basic datatype is a named predefined datatype, which corresponds to
+the basic datatypes of the host language. Examples include
+\type{MPI\_INTEGER},
+\type{MPI\_REAL},
+\type{MPI\_DOUBLE\_PRECISION},
+\type{MPI\_COMPLEX},
+\type{MPI\_LOGICAL}, and
+\type{MPI\_CHARACTER}.
+(See also ~\hyperlink{glossary:derived_datatype}{derived datatype}.)
+Refer to Section~\ref{terms:semantic} on page~\pageref{terms:semantic}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:blocking}
+\item  ~\hypertarget{glossary:blocking}{\emph{\textbf{blocking}}} \\*
+A procedure is blocking if return from the procedure indicates the user
+is allowed to reuse resources specified in the call.
+Refer to Section ~\ref{terms:semantic} on page~\pageref{terms:semantic},
+and ~\ref{sec:pt2pt-modes} on page~\pageref{sec:pt2pt-modes}
+and ~\ref{sec:pt2pt-basicsendrecv} on page~\pageref{sec:pt2pt-basicsendrecv}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:broadcast}
+\item  ~\hypertarget{glossary:broadcast}{\emph{\textbf{broadcast}}} \\*
+A collective operation which communicates data from a specified root process to all processes within the 
+user specified participants;
+initially just the first process contains the data, but after the
+broadcast completes successfully all processes contain it.
+Refer to Section~\ref{sec:coll-intro} on page~\pageref{sec:coll-intro}
+and Section~\ref{sec:coll-broadcast} on page~\pageref{sec:coll-broadcast}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:buffered_communication_mode}
+\item  ~\hypertarget{glossary:buffered_communication_mode}{\emph{\textbf{buffered communication mode}}} \\*
+A point-to-point communication mode in which the
+send operation can be started whether or not a
+matching receive has been posted.
+It may complete before a matching receive is posted.  However, unlike
+the standard send, this operation is {\bf local}, and its
+completion does not depend on the occurrence of a matching receive.  Thus, if a
+send is executed and no matching receive is posted, then \MPI/ must buffer the
+outgoing message, so as to allow the send call to complete.   An error will
+occur if there is insufficient buffer space.   The amount of available buffer
+space is controlled by the user.
+Buffer allocation by the user may be required for the buffered mode to be
+effective. 
+(See also ~\hyperlink{glossary:standard_communication_mode}{standard communication mode}, 
+~\hyperlink{glossary:synchronous_communication_mode}{synchronous communication mode},
+~\hyperlink{glossary:ready_communication_mode}{ready communication mode}.)
+Refer to Section~\ref{sec:pt2pt-modes} on page~\pageref{sec:pt2pt-modes}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:caching}
+\item  ~\hypertarget{glossary:caching}{\emph{\textbf{caching}}} \\*
+To store data in a manner for quick re-use later.
+\MPI/ provides a ``caching'' facility that allows an application to
+attach arbitrary pieces of information, called {\bf attributes}, to
+% communicators.  More precisely, the caching
+three kinds of MPI objects: communicators, windows and datatypes.
+More precisely, the caching
+facility allows any library to do the following:
+\begin{itemize}
+\item
+  pass information between calls by associating it
+  with an \MPI/ intra- or in\-ter-\-com\-mun\-i\-ca\-tor, 
+window or datatype,
+\item quickly retrieve that information, and
+\item
+ be guaranteed that out-of-date information is never retrieved, even if
+ % the communicator is freed and its handle subsequently reused by \MPI/.
+ the object is freed and its handle subsequently reused by \MPI/.
+\end{itemize}
+(See also ~\hyperlink{glossary:attributes}{attributes}.)
+Refer to Section~\ref{sec:caching} on page~\pageref{sec:caching}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:cartesian_topology}
+\item  ~\hypertarget{glossary:cartesian_topology}{\emph{\textbf{cartesian topology}}} \\*
+A virtual ordering of the processes according to a cartesian grid.
+Process coordinates in a Cartesian structure begin their numbering at $0$.
+Row-major numbering is always used for the processes in a
+Cartesian structure. This means that, for example, the relation
+between group rank and coordinates for four processes in
+a $(2 \times 2)$ grid is as follows.\\[2.0ex]
+\hspace*{\parindent}
+\begin{tabular}{ll}
+ coord (0,0): & rank 0 \\
+ coord (0,1): & rank 1 \\
+ coord (1,0): & rank 2 \\
+ coord (1,1): & rank 3 \\
+\end{tabular} \\
+(See also ~\hyperlink{glossary:topology}{topology} and ~\hyperlink{glossary:graph_topology}{graph topology}.)
+Refer to Section~\ref{chap:topol} on page~\pageref{chap:topol}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:client}
+\item  ~\hypertarget{glossary:client}{\emph{\textbf{client}}} \\*
+The member of a client/server relationship that makes the request. The \emph{client} connects to the server.
+ \MPI/ provides a mechanism for two sets of \MPI/  processes that do not share a communicator
+to establish communication.
+Establishing contact between two groups of processes that do not share an
+existing communicator is a collective but asymmetric process.  
+(See also ~\hyperlink{glossary:server}{server},  ~\hyperlink{glossary:port_name}{port name},
+and ~\hyperlink{glossary:service_name}{service name}). 
+Refer to Section~\ref{sec:client-server} on page~\pageref{sec:client-server}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:collective call}
+\item  ~\hypertarget{glossary:collective_call}{\emph{\textbf{collective call}}} \\*
+A property of a procedure that all processes in a process group need to invoke the procedure.  A
+collective call may or may not be synchronizing.
+Collective calls over the same communicator
+must be executed in the same order by all members of the process
+group.
+(See also ~\hyperlink{glossary:collective_communication}{collective communication}.)
+Refer to Section~\ref{terms:semantic} on page~\pageref{terms:semantic}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:collective communication}
+\item  ~\hypertarget{glossary:collective_communication}{\emph{\textbf{collective communication}}} \\*
+communication that involves a group
+or groups of processes. Examples include \mpifunc{MPI\_BARRIER}, \mpifunc{MPI\_BCAST},
+\mpifunc{MPI\_GATHER}, \mpifunc{MPI\_GATHERV}, \mpifunc{MPI\_SCATTER}, \mpifunc{MPI\_SCATTERV},
+\mpifunc{MPI\_ALLGATHER}, \mpifunc{MPI\_ALLGATHERV}, \mpifunc{MPI\_ALLTOALL}, \mpifunc{MPI\_ALLTOALLV},
+\mpifunc{MPI\_ALLTOALLW}, \mpifunc{MPI\_ALLREDUCE}, \mpifunc{MPI\_REDUCE}, \mpifunc{MPI\_IREDUCE\_SCATTER},
+\mpifunc{MPI\_SCAN}, and \mpifunc{MPI\_EXSCAN}.
+(See also ~\hyperlink{glossary:collective_call}{collective call}.)
+Refer to Chapter ~\ref{sec:coll} on page~\pageref{sec:coll}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:committed_datatype}
+\item  ~\hypertarget{glossary:committed_datatype}{\emph{\textbf{committed datatype}}} \\*
+A derived dataype needs to
+be \emph{committed} before it can be used in
+communication. A committed dataype is an opaque structure
+possibly optimized by \mpifunc{MPI\_TYPE\_COMMIT}.
+There is no need to commit basic datatypes. They are ``pre-committed.''
+(See also ~\hyperlink{glossary:created_datatype}{created datatype}.)
+Refer to Section~\ref{subsec:pt2pt-comfree} on page~\pageref{subsec:pt2pt-comfree}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:communicator}
+\item  ~\hypertarget{glossary:communicator}{\emph{\textbf{communicator}}} \\*
+ Communicators provide the appropriate
+scope for all communication operations in \MPI/.
+They establish a group with the same communication context.
+(See also ~\hyperlink{glossary:communication_context}{communication context}.)
+ Refer to Section~\ref{subsec:pt2pt-envelope} on page~\pageref{subsec:pt2pt-envelope} and Section {\bf 6.1.2 LABEL-TODO} on page {\bf 188 LABEL-TODO}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:communication_context}
+\item  ~\hypertarget{glossary:communication_context}{\emph{\textbf{communication context}}} \\*
+A prescribed ``communication universe'' that accommodates messages to be 
+received within the \emph{communication context} they were sent, and messages 
+sent in different \emph{communication contexts} do not interfere.
+The communicator also specifies the set of processes that share this
+communication context.
+Contexts provide the ability to have
+a separate safe ``universe''
+of message-passing between the two groups.  
+A context is akin to an additional
+tag that differentiates messages.
+The system manages this differentiation process.
+The use of separate communication
+contexts by distinct libraries (or distinct library invocations)
+insulates communication internal to the library execution from
+external communication.  This allows the invocation of the library even if
+there are pending communications
+on ``other'' communicators, and avoids the need to
+synchronize entry or exit into library code.  Pending point-to-point
+communications are also guaranteed not to interfere with collective
+communications within a single communicator.
+ Refer to Section~\ref{subsec:pt2pt-envelope} on page~\pageref{subsec:pt2pt-envelope},
+Section {\bf 6.1.2 LABEL-TODO} on page {\bf 188 LABEL-TODO},
+and to Section {\bf 6.2.2 LABEL-TODO} on page {\bf 190 LABEL-TODO}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:commutative}
+\item  ~\hypertarget{glossary:commutative}{\emph{\textbf{commutative}}} \\*
+The property of a collective reduction that changing the order of the operands does not change the end result. 
+A binary operation $  \odot $ is said to be \emph{commutative} iff:
+\begin{eqnarray}
+A \odot B = B \odot A
+\end{eqnarray}
+Reduction operation properties apply to \func{MPI\_OP\_CREATE} argument MPI\_Op~*op.
+(See also ~\hyperlink{glossary:associative}{associative}.)
+Refer to Section~\ref{subsec:coll-user-ops} on page~\pageref{subsec:coll-user-ops}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:completion_completed}
+\item  ~\hypertarget{glossary:completion_completed}{\emph{\textbf{completion/completed}}} \\*
+The term \emph{complete} is used with respect to operations, requests, and communications. 
+An operation completes when the user is allowed to reuse resources, and any output 
+buffers have been updated; i.e. a call to \func{MPI\_TEST} will return flag = true. A request is 
+completed by a call to \func{MPI\_WAIT}, which returns, or a \func{MPI\_TEST} or \func{MPI\_GET\_STATUS} 
+call which returns flag = true. 
+This completing call has two effects: the status is extracted from the request; in the case 
+of test and wait, if the request was non persistent, it is freed, and becomes inactive if it 
+was persistent. A communication completes when all participating operations complete.
+Refer to Section~\ref{terms:semantic} on page~\pageref{terms:semantic}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:contiguous}
+\item  ~\hypertarget{glossary:contiguous}{\emph{\textbf{contiguous}}} \\*
+A collection of memory locations that are \emph{adjacent} to one another
+(i.e., in consecutive order)
+without intervening data.
+Refer to Section~\ref{subsec:pt2pt-datatypeconst} on page~\pageref{subsec:pt2pt-datatypeconst}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:conversion}
+\item  ~\hypertarget{glossary:conversion}{\emph{\textbf{conversion}}} \\*
+See ~\hyperlink{glossary:type_conversion}{type conversion} and ~\hyperlink{glossary:representation_conversion}{representation conversion}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:correct_program}
+\item  ~\hypertarget{glossary:correct_program}{\emph{\textbf{correct program}}} \\*
+A program that performs as intended by the program developer; A program that is free of bugs. 
+For example, a  {\bf correct program} that utilizes collective communications
+must invoke collective communications so
+that deadlock will
+not occur, whether collective communications are synchronizing or not.
+(See also ~\hyperlink{glossary:erroneous_program}{erroneous program}.)
+Refer to Section~\ref{coll:correct} on page~\pageref{coll:correct}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:created_datatype}
+\item  ~\hypertarget{glossary:created_datatype}{\emph{\textbf{created datatype}}} \\*
+The initial step in preparing a \emph{derived datatype} (before ``committed datatype'').
+(See also ~\hyperlink{glossary:committed_datatype}{committed datatype}.)
+Refer to Section~\ref{subsec:pt2pt-comfree} on page~\pageref{subsec:pt2pt-comfree}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:data_conversion}
+\item  ~\hypertarget{glossary:data_conversion}{\emph{\textbf{data conversion}}} \\*
+See ~\hypertarget{glossary:type_conversion}{type conversion} and ~\hypertarget{glossary:representation_conversion}{representation conversion}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:datatype}
+\item  ~\hypertarget{glossary:datatype}{\emph{\textbf{datatype}}} \\*
+A \emph{datatype} defines a mechanism to describe any data layout, e.g., an array of
+structures in the memory, which can be used as a message send or receive buffer.
+(See also ~\hyperlink{glossary:basic_datatype}{basic datatype} and
+~\hyperlink{glossary:derived_datatype}{derived datatype}.)
+Refer to Chapter ~\ref{chap:datatypes} on page~\pageref{chap:datatypes}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:datatype_handle}
+\item  ~\hypertarget{glossary:datatype_handle}{\emph{\textbf{datatype handle}}} \\*
+A datatype handle is use to describe the buffer in a communication call.
+Refer to Section~\ref{subsec:pt2pt-comfree} on page~\pageref{subsec:pt2pt-comfree}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:datatype_optional}
+\item  ~\hypertarget{glossary:datatype_optional}{\emph{\textbf{datatype, optional}}} \\*
+A type that is not required by conforming implementations of \MPIIII/ (e.g., \type{MPI\_INTEGER2}).
+Refer to Section~\ref{subsec:pt2pt-comfree} on page~\pageref{subsec:pt2pt-comfree}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:deprecated}
+\item  ~\hypertarget{glossary:deprecated}{\emph{\textbf{deprecated}}} \\*
+Constructs that continue to be part of the \MPI/ standard, 
+as documented in Chapter~\ref{chap:deprecated}, 
+but that users are recommended not to continue using, since 
+better solutions were provided with the current standard.
+Note that deprecated constructs may eventually be withdrawn.
+For example, the Fortran binding 
+for \mpii/ functions that have address arguments uses {\tt INTEGER}.
+This is not consistent with the C binding, and causes problems on
+machines with 32 bit {\tt INTEGER}s and 64 bit addresses.
+Refer to Section~\ref{sec:deprecated} on page~\pageref{sec:deprecated}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:derived_datatype}
+\item  ~\hypertarget{glossary:derived_datatype}{\emph{\textbf{derived datatype}}} \\*
+A derived datatype is any datatype that is not predefined.
+The are opaque objects that specify the following two
+properties:
+\begin{itemize}
+\item
+A sequence of basic datatypes
+\item
+A sequence of integer (byte) displacements that provides the relative
+position of each basic datatype.
+\end{itemize}
+The displacements are not required to be positive, distinct, or
+in increasing order. Therefore, the order of items need not
+coincide with their order in store, and an item may appear more than
+once. (See also ~\hyperlink{glossary:general_datatype}{general datatype}, ~\hyperlink{glossary:basic_datatype}{basic datatype} 
+and  ~\hyperlink{glossary:typemap}{typemap}.)
+Refer to Section~\ref{terms:semantic} on page~\pageref{terms:semantic} and 
+Chapter ~\ref{chap:datatypes} on page~\pageref{chap:datatypes}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:displacement_file}
+\item  ~\hypertarget{glossary:displacement_file}{\emph{\textbf{displacement, file}}} \\*
+A file {\it displacement} is an absolute byte position
+relative to the beginning of a file.
+The displacement defines the location where a {\it view} begins.
+% A displacement is an offset relative to the default view (see below).
+Note that a ``file displacement'' is distinct from a ``typemap displacement.''
+Refer to Section~\ref{subsec:io-2:definitions} on page~\pageref{subsec:io-2:definitions}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:end_of_file}
+\item  ~\hypertarget{glossary:end_of_file}{\emph{\textbf{end of file}}} \\*
+See ~\hyperlink{glossary:file_size}{file size}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:equivalent_datatype}
+\item  ~\hypertarget{glossary:equivalent_datatype}{\emph{\textbf{equivalent datatype}}} \\*
+Two datatypes are equivalent if they appear to have been created with
+the same sequence of calls (and arguments) and thus have the same
+typemap.  Two equivalent datatypes do not necessarily have the same
+cached attributes or the same names.
+Refer to Section~\ref{terms:semantic} on page~\pageref{terms:semantic}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:erroneous_program}
+\item  ~\hypertarget{glossary:erroneous_program}{\emph{\textbf{erroneous program}}} \\*
+A program that does not perform as intended by the program developer; A program that contains bugs. 
+(See also ~\hyperlink{glossary:correct_program}{correct program}.)
+Refer to Section~\ref{coll:correct} on page~\pageref{coll:correct} and
+Section 2.8.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:error_class}
+\item  ~\hypertarget{glossary:error_class}{\emph{\textbf{error class}}} \\*
+A construct designed to allow implementations freedom with their choice
+of error codes while at the same time provide a predefined subset of error
+codes to permit an application to classify a specific error code.
+This is done to allow an implementation to
+provide as much information as possible in the error code (for use with
+\mpifunc{MPI\_ERROR\_STRING}).
+To make it possible for an application to interpret an error code, the routine
+\mpifunc{MPI\_ERROR\_CLASS} %mansplit
+converts any error code into one of a small set of standard error
+codes, called {\em error classes}.  
+% Valid error classes include
+Valid error classes are shown in Table~\ref{table:inquiry:errclasses:part:i}
+and Table~\ref{table:inquiry:errclasses:part:ii}. 
+Refer to Section~\ref{sec:errorhandler} on page~\pageref{sec:errorhandler}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:etype}
+\item  ~\hypertarget{glossary:etype}{\emph{\textbf{etype}}} \\*
+An {\it etype} ({\it elementary} datatype)
+is the unit of data access and positioning for file I/O.
+It can be any \MPI/ predefined or derived datatype.
+Derived etypes can be constructed
+using any of the \MPI/ datatype constructor routines,
+provided all resulting typemap displacements are non-negative
+and monotonically nondecreasing.
+Data access is performed in etype units,
+reading or writing whole data items of type etype.
+Offsets are expressed as a count of etypes;
+file pointers point to the beginning of etypes.
+Depending on context,
+the term ``etype'' is used to describe one of three aspects
+of an elementary datatype:
+a particular \MPI/ type,
+a data item of that type,
+or the extent of that type.
+Refer to Section~\ref{subsec:io-2:definitions} on page~\pageref{subsec:io-2:definitions}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:exscan_operation}
+\item  ~\hypertarget{glossary:exscan_operation}{\emph{\textbf{exscan operation}}} \\*
+A collective procedure in which a partial reduction operation is performed on data supplied by the members of a group.
+In the exclusive scan (see \func{MPI\_EXSCAN}), the prefix reduction on process i only includes data up to i-1. 
+(See also ~\hyperlink{glossary:scan_operation}{scan operation} and
+~\hyperlink{glossary:reduce_operation}{reduce operation}.)
+Refer to Section~\ref{global-reduce} on page~\pageref{global-reduce}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label {glossary:exposure_epoch}
+\item  ~\hypertarget{glossary:exposure_epoch}{\emph{\textbf{exposure epoch}}} \\*
+The period during which a target window can be accessed by \RMA/
+operations in {\it active target} communication.
+(See also ~\hyperlink{glossary:access_epoch}{access epoch},
+~\hyperlink{glossary:active_target}{active target}
+ and ~\hyperlink{glossary:RMA}{RMA}.)
+Refer to Section~\ref{sec:1sided-sync} on page~\pageref{sec:1sided-sync}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:extent}
+\item  ~\hypertarget{glossary:extent}{\emph{\textbf{extent}}} \\*
+The {\bf extent} of a datatype is defined to
+be the span from the first byte to the last byte occupied by entries in this
+datatype, rounded up to satisfy alignment requirements.
+That is, if
+\[
+Typemap = \{ (type_0,disp_0), ..., (type_{n-1}, disp_{n-1}) \} ,
+\]
+then
+\begin{eqnarray}
+lb(Typemap) & = & \min_j disp_j , \nonumber \\
+ub(Typemap) & = & \max_j (disp_j + sizeof(type_j)) + \epsilon , \mbox{ and}
+\nonumber \\ extent(Typemap) & = & ub(Typemap) -lb(Typemap).
+\end{eqnarray}
+If $type_i$ requires alignment to a byte address that 
+% is is 
+is
+a multiple
+of $k_i$,
+then $\epsilon$ is the least non-negative increment needed to round
+$extent(Typemap)$ to the next multiple of $\max_i k_i$.
+For datatypes that 
+have a ``hole'' at its beginning or its end, or a datatype with
+entries that extend above the upper bound or below the lower bound, then
+\label{eq:pt2pt-extent}
+\[
+extent(Typemap) = ub(Typemap) - lb(Typemap)
+\]
+(See also ~\hyperlink{glossary:lower_bound}{lower bound}, ~\hyperlink{glossary:upper_bound}{upper bound}, and ~\hyperlink{glossary:true_extent}{true extent}.)
+Refer to Section~\ref{sec:pt2pt-datatype} on page~\pageref{sec:pt2pt-datatype}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:external32}
+\item  ~\hypertarget{glossary:external32}{\emph{\textbf{external32}}} \\*
+External32 is a data representation format/specification.
+The data on the storage
+medium is always in this canonical External32 representation, and
+the data in memory
+is always in the local process's native representation.
+% is always in the representation of the process that placed it there.
+(See also ~\hyperlink{glossary:native}{native} and ~\hyperlink{glossary:internal}{internal}.)
+Refer to Section~\ref{sec:io-file-interop} on page~\pageref{sec:io-file-interop}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:fairness}
+\item  ~\hypertarget{glossary:fairness}{\emph{\textbf{fairness}}} \\*
+The property of parallel and distributed systems that no process is starved, 
+and all processes are accorded the same \emph{priority}, or right to precedence,
+in allowing their accesses 
+to shared resources. When fairness is imposed, all processes have the 
+chance to make progress regardless of what other processes may be 
+doing at the same time. Note that \MPI/  makes no fairness guarantees.
+Suppose that a send is posted.  Then it is possible
+that the destination process repeatedly posts a receive that matches this
+send (e.g., using tag \const{MPI\_ANY\_SOURCE}), yet the message is never received, because in each case it is overtaken by
+another message, sent from another source.  Similarly, suppose that a
+receive was posted by a multi-threaded process.  Then it is possible that
+messages that
+match this receive are repeatedly received, yet the receive is never satisfied,
+because it is overtaken by other receives posted at this process (by
+other executing threads).  It is the programmer's responsibility to prevent
+starvation in such situations.
+Refer to Section~\ref{sec:pt2pt-semantics} on page~\pageref{sec:pt2pt-semantics}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:file}
+\item  ~\hypertarget{glossary:file}{\emph{\textbf{file}}} \\*
+An \MPI/ file is an ordered collection of typed data items.
+\MPI/ supports random or sequential access to any integral set of these items.
+% An \MPI/ file is an ordered collection of data bytes
+% supporting random or sequential access to any integral set of bytes.
+A file is opened collectively by a group of processes.
+All collective I/O calls on a file are collective over this group.
+Refer to Section~\ref{subsec:io-2:definitions} on page~\pageref{subsec:io-2:definitions}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:file_consistency}
+\item  ~\hypertarget{glossary:file_consistency}{\emph{\textbf{file consistency}}} \\*
+Consistency semantics define the outcome of multiple accesses
+to a single file.
+All file accesses in \MPI/ are relative to a specific file handle
+created from a collective open.
+\MPI/ provides three levels of consistency:
+sequential consistency among all accesses using a single file handle,
+sequential consistency among all accesses
+using file handles created from a single collective open
+with atomic mode enabled,
+and
+user-imposed consistency among accesses other than the above.
+%--via the \func{MPI\_FILE\_SYNC} routine.
+%-weak consistency among accesses not handled above
+%-via the \func{MPI\_FILE\_SYNC} routine.
+Sequential consistency means the behavior of a set of operations
+will be as if the operations were performed in some serial order
+consistent with program order; each access appears atomic,
+although the exact ordering of accesses is unspecified.
+The level of granularity is equal to the size of the access.
+Refer to \func{MPI\_FILE\_SYNC} in Section {\bf 13.6.1 LABEL-TODO} on page {\bf 437 LABEL-TODO}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:file_handle}
+\item  ~\hypertarget{glossary:file_handle}{\emph{\textbf{file handle}}} \\*
+A reference to an opaque structure that enables a program to access a particular file.
+A {\it file handle} is an opaque object created by \func{MPI\_FILE\_OPEN}
+and freed by \func{MPI\_FILE\_CLOSE}.
+All operations on an open file
+reference the file through the file handle.
+Refer to Section~\ref{subsec:io-2:definitions} on page~\pageref{subsec:io-2:definitions}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:file_interoperability}
+\item  ~\hypertarget{glossary:file_interoperability}{\emph{\textbf{file interoperability}}} \\*
+file interoperability is the ability to
+correctly interpret the representation of
+ information previously written to a file.
+\MPI/ supports the External32 data representation (Section~\ref{subsec:ext32}, page~\pageref{subsec:ext32}) as
+well as the data conversion functions (Section~\ref{sec:io-datarep},
+page~\pageref{sec:io-datarep}). 
+Refer to Section~\ref{sec:io-file-interop} on page~\pageref{sec:io-file-interop}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:file_pointer}
+\item  ~\hypertarget{glossary:file_pointer}{\emph{\textbf{file pointer}}} \\*
+A {\it file pointer} is an implicit offset maintained by \MPI/.
+``Individual file pointers'' are file pointers that are local to
+each process that opened the file.
+A ``shared file pointer'' is a file pointer that is shared by
+the group of processes that opened the file.
+Refer to Section~\ref{subsec:io-2:definitions} on page~\pageref{subsec:io-2:definitions}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:file_size}
+\item  ~\hypertarget{glossary:file_size}{\emph{\textbf{file size}}} \\*
+The {\it size} of an \MPI/ file is measured in bytes from the 
+beginning of the file.  A newly created file has a size of zero 
+bytes.  
+If \func{MPI\_FILE\_SET\_SIZE} has resized the file past the
+current file size, the values of data in the new regions in the file (those
+locations with displacements between old file size and the specified new file \textbf{\mpiarg{size}})
+are undefined.
+It is implementation dependent whether the \func{MPI\_FILE\_SET\_SIZE} routine
+allocates file space---use \func{MPI\_FILE\_PREALLOCATE}
+to force file space to be reserved.
+Refer to Section~\ref{subsec:io-2:definitions} on page~\pageref{subsec:io-2:definitions}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:file_view}
+\item  ~\hypertarget{glossary:file_view}{\emph{\textbf{file view}}} \\*
+See ~\hyperlink{glossary:view_file}{view, file} .
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:filetype}
+\item  ~\hypertarget{glossary:filetype}{\emph{\textbf{filetype}}} \\*
+A {\it filetype} is the basis for partitioning a file among processes
+and defines a template for accessing the file.
+A filetype is either a single etype or a derived \MPI/ datatype
+constructed from multiple instances of the same etype.
+In addition,
+the extent of any hole in the filetype
+must be a multiple of the etype's extent.
+The displacements in the typemap of the filetype are not required to be distinct,
+Refer to Section~\ref{subsec:io-2:definitions} on page~\pageref{subsec:io-2:definitions}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:gather}
+\item  ~\hypertarget{glossary:gather}{\emph{\textbf{gather}}} \\*
+A collective operation in which data is sent from \emph{\textbf{n}} 
+processes in the group to the root. The data is concatenated in rank order, and the
+resulting message is received by the root.
+This is shown as ``gather'' in Figure~\ref{fig:collcom}.
+(See also ~\hyperlink{glossary:scatter}{scatter},
+~\hyperlink{glossary:allgather}{allgather},
+and ~\hyperlink{glossary:alltoall}{alltoall}.)
+Refer to Section~\ref{sec:coll-intro} on page~\pageref{sec:coll-intro} and  
+Section~\ref{sec:coll-gather} on page~\pageref{sec:coll-gather}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:generalized_request}
+\item  ~\hypertarget{glossary:generalized_request}{\emph{\textbf{generalized request}}} \\*
+The request object associated with a user-defined non-blocking operation.
+Refer to Section~\ref{sec:ei-intro} on page~\pageref{sec:ei-intro} 
+~\ref{sec:ei-gr} on page~\pageref{sec:ei-gr}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:global}
+\item  ~\hypertarget{glossary:global}{\emph{\textbf{global}}} \\*
+Referring to all members of a group.
+Refer to Section~\ref{sec:coll-intro} on page~\pageref{sec:coll-intro}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:graph_topology}
+\item  ~\hypertarget{glossary:graph_topology}{\emph{\textbf{graph topology}}} \\*
+A virtual ordering of the processes according to a generalized graph.
+(See also ~\hyperlink{glossary:topology}{topology} and ~\hyperlink{glossary:cartesian_topology}{cartesian topology}.)
+Refer to Section~\ref{chap:topol} on page~\pageref{chap:topol}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:groups}
+\item  ~\hypertarget{glossary:groups}{\emph{\textbf{groups}}} \\*
+Groups define an ordered collection of processes, each with a rank. 
+Thus, groups define a scope for process
+names in point-to-point communication.  
+%% In addition, groups define the scope of collective operations.  (from Torsten Hoefler: not sure I agree. )
+Groups may be manipulated separately from
+communicators in \MPI/. While it is not permissible to communicate over just a group,
+a group may be used in one-sided communications to restrict the members associated with an epoch. 
+Each process in
+the group is assigned a rank between {\tt 0} and {\tt n-1}.
+(See also ~\hyperlink{glossary:topology}{topology}.)
+Refer to Section ~\ref{subsec:pt2pt-envelope} on page~\pageref{subsec:pt2pt-envelope},
+and Section {\bf 6.1.2 LABEL-TODO} on page {\bf 188 LABEL-TODO}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:handle}
+\item  ~\hypertarget{glossary:handle}{\emph{\textbf{handle}}} \\*
+A reference to an opaque structure. A reference enables a program to access the structure;
+programs may only manipulate the opaque structures through operations defined on them. 
+Opaque structures are used in \MPI/ for communicators, files, requests, etc.
+Refer to Section~\ref{terms:opaque-objects} on page~\pageref{terms:opaque-objects}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:implementation}
+\item  ~\hypertarget{glossary:implementation}{\emph{\textbf{implementation}}} \\*
+A specific fulfillment of a specification.  
+Refer to Section~\ref{terms:semantic} on page~\pageref{terms:semantic}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:IN}
+\item  ~\hypertarget{glossary:IN}{\emph{\textbf{IN}}} \\*
+An argument of an \MPI/ procedure call with the following property: the call may use the input value but does 
+not update the argument. 
+(See also ~\hyperlink{glossary:INOUT}{INOUT} and ~\hyperlink{glossary:OUT}{OUT}.)
+%%% Note: this should be section 2.3, but there is no appropriate label
+Refer to Section {\bf 2.3 LABEL-TODO} on page {\bf 10 LABEL-TODO}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:INOUT}
+\item  ~\hypertarget{glossary:INOUT}{\emph{\textbf{INOUT}}} \\*
+An argument of an \MPI/ procedure call with the following property: the call may both use and update the argument.
+(See also ~\hyperlink{glossary:IN}{IN} and ~\hyperlink{glossary:OUT}{OUT}.)
+%%% Note: this should be section 2.3, but there is no appropriate label
+Refer to Section {\bf 2.3 LABEL-TODO} on page {\bf 10 LABEL-TODO}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:in_place}
+\item  ~\hypertarget{glossary:in_place}{\emph{\textbf{in place}}} \\*
+Communication in which the input buffer is reused as the output buffer.
+This is specified by
+providing a special argument value, \const{MPI\_IN\_PLACE}, instead of the
+send buffer or the receive buffer argument,
+depending on the operation performed. 
+Refer to Section {\bf 5.2.1 LABEL-TODO} on page {\bf 134 LABEL-TODO}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:intercommunicator}
+\item  ~\hypertarget{glossary:intercommunicator}{\emph{\textbf{intercommunicator}}} \\*
+A communicator that identifies two distinct groups (local and remote) of processes
+linked with a context.  (See also ~\hyperlink{glossary:intracommunicator}{intracommunicator}.)
+Refer to Section~\ref{sec:coll-communicator} on page~\pageref{sec:coll-communicator}  
+and Section~\ref{sec:context-intercom} on page~\pageref{sec:context-intercom}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:interface}
+\item  ~\hypertarget{glossary:interface}{\emph{\textbf{interface}}} \\*
+Syntax and semantics for invoking services from within an executing application.  
+Refer to Section~\ref{terms:semantic} on page~\pageref{terms:semantic}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:internal_data_representation}
+\item  ~\hypertarget{glossary:internal_data_representation}{\emph{\textbf{internal data representation}}} \\*
+Data in \emph{internal} data representation can be used for I/O operations in a homogeneous or
+heterogeneous environment; the implementation will perform type
+conversions if necessary. The implementation is free to store data in
+any format of its choice,
+with the restriction that it will maintain constant extents
+for all predefined datatypes in any one file.
+The environment in which the resulting file 
+can be reused is implementation-defined
+and must be documented by the implementation.
+(See also ~\hyperlink{glossary:native_data_representation}{native data representation} and ~\hyperlink{glossary:external32}{external32}.)
+Refer to Section~\ref{sec:io-file-interop} on page~\pageref{sec:io-file-interop}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:intracommunicator}
+\item  ~\hypertarget{glossary:intracommunicator}{\emph{\textbf{intracommunicator}}} \\*
+A communicator in which the communication domain does not extend beyond the members of a single local group. 
+(See also ~\hyperlink{glossary:intercommunicator}{intercommunicator}.)
+Refer to Section~\ref{sec:coll-communicator} on page~\pageref{sec:coll-communicator}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:local_group}
+\item  ~\hypertarget{glossary:local_group}{\emph{\textbf{local group}}} \\*
+The recipients of a procedure for an intercommunicator. 
+(See also ~\hyperlink{glossary:intercommunicator}{intercommunicator} and
+~\hyperlink{glossary:remote_group}{remote group}.)
+Refer to Section~\ref{sec:coll-communicator} on page~\pageref{sec:coll-communicator}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:local operation}
+\item  ~\hypertarget{glossary:local_operation}{\emph{\textbf{local operation}}} \\*
+A procedure is local if 
+it returns irrespective of the status of other processes.
+(See also ~\hyperlink{glossary:non-local_operation}{non-local operation}.)
+Refer to Section~\ref{terms:semantic} on page~\pageref{terms:semantic}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:lower_bound_datatype}
+\item  ~\hypertarget{glossary:lower_bound_datatype}{\emph{\textbf{lower bound, datatype}}} \\*
+The displacement of the lowest unit of addressable memory within the datatype. 
+%%In general, if
+%%\begin{displaymath}
+%%Typemap = \{ (type_0 , disp_0 ) , ... , (type_{n-1} , disp_{n-1}) \} ,
+%%\end{displaymath}
+%%then the {\bf lower bound} of $Typemap$ is defined to be
+%%\[
+%%lb(Typemap) = \left\{ \begin{array}{ll}
+%%\min_j disp_j & \mbox{if no entry has basic type {\sf lb}} \\
+%%\min_j \{ disp_j \ \mbox{such that}\ type_j = {\sf lb} \} & \mbox{otherwise}
+%%\end{array}
+%%\right. \]
+(See also ~\hyperlink{glossary:upper_bound}{upper bound} and ~\hyperlink{glossary:extent}{extent}.)
+Refer to \emph{lb(Typemap)} in Section {\bf 4.1.6 LABEL-TODO} on page {\bf 96 LABEL-TODO}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:matching}
+\item  ~\hypertarget{glossary:matching}{\emph{\textbf{matching}}} \\*
+(a) A language type (e.g., float) matches an MPI datatype (e.g., \type{MPI\_FLOAT}). 
+(b) Two datatypes match if their type signatures are identical.
+(c) A message matches a receive operation, if (c.1) the communicators are identical, 
+(c.2) the source ranks either are identical or a wildcard source was specified by the receive operation, 
+and (c.3) the tags are identical or a wildcard tag was specified by the receive operation.
+ Refer to Section~\ref{subsec:pt2pt-typematch} on page~\pageref{subsec:pt2pt-typematch}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:message_envelope}
+\item  ~\hypertarget{glossary:message_envelope}{\emph{\textbf{message envelope}}} \\*
+The non-data portion of a message that can be used to
+distinguish messages and selectively receive them.  This information consists
+of a fixed number of fields, which are collectively called
+the {\bf message envelope}.   These fields are, source, 
+destination, tag, communicator, and length.
+(See also ~\hyperlink{glossary:return_status}{return status} 
+Refer to Section~\ref{subsec:pt2pt-envelope} on page~\pageref{subsec:pt2pt-envelope}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:native_data_representation}
+\item  ~\hypertarget{glossary:native_data_representation}{\emph{\textbf{native data representation}}} \\*
+A format for storing data.
+Data in \emph{native} representation is stored in a file exactly
+as it is in memory.
+The advantage of this data representation is that
+data precision and I/O performance are not lost in type conversions
+with a purely homogeneous environment.
+The disadvantage is the loss of transparent interoperability within a
+heterogeneous \MPI/ environment.
+(See also ~\hyperlink{glossary:internal_data_representation}{internal data representation} and ~\hyperlink{glossary:external32}{external32}.)
+Refer to Section~\ref{sec:io-file-interop} on page~\pageref{sec:io-file-interop}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:non-local_operation}
+\item  ~\hypertarget{glossary:non-local_operation}{\emph{\textbf{non-local operation}}} \\*
+The property of a procedure that completion of the procedure may require
+the execution of some \MPI/ procedure on another process.  Such a
+procedure may require
+communication occurring with another user process.
+That is, the return of the procedure is dependent on other processes.
+(See also ~\hyperlink{glossary:local_operation}{local operation}.)
+Refer to Section~\ref{terms:semantic} on page~\pageref{terms:semantic}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:non-overtaking}
+\item  ~\hypertarget{glossary:non-overtaking}{\emph{\textbf{non-overtaking}}} \\*
+The requirement that
+if a sender sends two messages in succession to the same destination, and
+both match the same receive, then the receiver cannot receive the
+second message if the first one is still pending.
+Refer to Section~\ref{sec:pt2pt-semantics} on page~\pageref{sec:pt2pt-semantics}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:nonblocking}
+\item  ~\hypertarget{glossary:nonblocking}{\emph{\textbf{nonblocking}}} \\*
+The property of a procedure that it may return before the
+operation completes, and before the user is allowed to reuse
+resources (such as buffers) specified in the call.
+A nonblocking request is {\bf started} by the call that initiates it, e.g.,
+\mpifunc{MPI\_ISEND}.
+(See also ~\hyperlink{glossary:completion_completed}{completion/completed})
+Refer to Section~\ref{terms:semantic} on page~\pageref{terms:semantic} and
+Section~\ref{sec:pt2pt-nonblock} on page~\pageref{sec:pt2pt-nonblock}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:nondeterminism}
+\item  ~\hypertarget{glossary:nondeterminism}{\emph{\textbf{nondeterminism}}} \\*
+A nondeterministic program is one in which either (a) repeated executions 
+of the program with the same input may yield different results (weak 
+nondeterminism); or (b) the sequence of states through which the program 
+passes is not uniquely determined by the input even if the results are the 
+same (strong nondeterminism). Nondeterminism may originate from 
+multiple factors including the use of wildcards, 
+\func{MPI\_CANCEL}, \func{MPI\_WAITANY}, and rounding errors in floating-point 
+reduction operations.
+Refer to ``message order'' in Section~\ref{sec:pt2pt-semantics} on page~\pageref{sec:pt2pt-semantics}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:null_handle}
+\item  ~\hypertarget{glossary:null_handle}{\emph{\textbf{null handle}}} \\*
+A handle with a reserved value indicating that it refers to no object.
+(See also ~\hyperlink{glossary:null_process}{null process})
+Refer to Section~\ref{subsec:pt2pt-commend} on page~\pageref{subsec:pt2pt-commend}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:null_process}
+\item  ~\hypertarget{glossary:null_process}{\emph{\textbf{null process}}} \\*
+A ``dummy'' source or
+destination (\const{MPI\_PROC\_NULL}) that can be used
+for communication.  This simplifies the code that is needed for dealing with
+boundaries, for example, in the case of a non-circular shift done with calls to
+send-receive.
+The special value \const{MPI\_PROC\_NULL} can be used
+instead of a rank wherever a
+source or a destination argument is required in a call.   A communication
+with process \const{MPI\_PROC\_NULL} has no effect.
+(See also ~\hyperlink{glossary:null_handle}{null handle})
+Refer to Section~\ref{sec:pt2pt-nullproc} on page~\pageref{sec:pt2pt-nullproc}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:null_request}
+\item  ~\hypertarget{glossary:null_request}{\emph{\textbf{null request}}} \\*
+A request handle with a reserved value (\const{MPI\_REQUEST\_NULL}) indicating that it refers to no object.
+(See also ~\hyperlink{glossary:null_handle}{null handle})
+Refer to Section~\ref{subsec:pt2pt-commend} on page~\pageref{subsec:pt2pt-commend}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:offset}
+\item  ~\hypertarget{glossary:offset}{\emph{\textbf{offset}}} \\*
+An {\it offset} is a position
+in the file
+relative to the current view,
+expressed as a count of etypes.
+Holes in the view's filetype are skipped when calculating this position.
+Offset 0 is the location of the first etype visible in the view
+(after skipping the displacement and any initial holes in the view).
+% The beginning of the view,
+% which is {\it displacement} bytes from the beginning of the file,
+% is at offset 0.
+% Holes in the view's filetype are ignored when calculating this position.
+An ``explicit offset'' is an offset that is used as a formal parameter
+in explicit data access routines.
+Refer to Section~\ref{subsec:io-2:definitions} on page~\pageref{subsec:io-2:definitions}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:one-sided_communication}
+\item  ~\hypertarget{glossary:one-sided_communication}{\emph{\textbf{one-sided communication}}} \\*
+See ~\hyperlink{glossary:RMA}{RMA}.
+Refer to Chapter ~\ref{chap:one-side-2} on page~\pageref{chap:one-side-2}.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:opaque}
+\item  ~\hypertarget{glossary:opaque}{\emph{\textbf{opaque}}} \\*
+Data structures managed by MPI whose size and content or fields are not visible to the user. 
+Opaque structures are accessed by the application program through {\bf handles}, e.g., a communicator handle. 
+Refer to Section~\ref{terms:opaque-objects} on page~\pageref{terms:opaque-objects}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:order}
+\item  ~\hypertarget{glossary:order}{\emph{\textbf{order}}} \\*
+The arrangement of operations relative to each other according to sequence of invocation.
+\MPI/ places several requirements upon order: (a) Point-to-point messages are ~\hyperlink{glossary:non-overtaking}{non-overtaking};
+(b) Nonblocking communication operations are ordered to the execution order;
+(c) Collective operations must be exectued in the same order at all members of the communication group.
+Refer to Section~\ref{subsec:pt2pt-semantics} on page~\pageref{subsec:pt2pt-semantics}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:origin_process}
+\item  ~\hypertarget{glossary:origin_process}{\emph{\textbf{origin process}}} \\*
+The process that performs the call in one-sided communications.
+(See also ~\hyperlink{glossary:RMA}{RMA} and ~\hyperlink{glossary:target_process}{target process})
+Refer to Section {\bf 11.1 LABEL-TODO} on page {\bf 335 LABEL-TODO}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:OUT}
+\item  ~\hypertarget{glossary:OUT}{\emph{\textbf{OUT}}} \\*
+An argument of an \MPI/ procedure call with the following property: the call may update the argument but does not use its input value.
+(See also ~\hyperlink{glossary:IN}{IN} and ~\hyperlink{glossary:INOUT}{INOUT}.)
+Refer to Section {\bf 2.3 LABEL-TODO} on page {\bf 10 LABEL-TODO}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:pack}
+\item  ~\hypertarget{glossary:pack}{\emph{\textbf{pack}}} \\*
+The process of copying user data specified by an \MPI/ datatype into a contiguous buffer.
+Note that an \MPI/ datatype may specify a non-contiguous structure.
+(See also ~\hyperlink{glossary:unpack}{unpack}.)
+Refer to Section~\ref{sec:pt2pt-packing} on page~\pageref{sec:pt2pt-packing}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:passive_target_communication}
+\item  ~\hypertarget{glossary:passive_target_communication}{\emph{\textbf{passive target communication}}} \\*
+An \RMA/ communication where data is moved from the memory of one
+process to the memory of another, and only the origin process is
+explicitly involved
+in
+the transfer.  Thus, two origin processes may communicate by accessing
+the same location in a target window.  The process that owns the
+target window may be distinct from the two communicating processes, 
+in which case it does not participate explicitly in the communication.
+This communication
+paradigm is closest to a shared memory model, where shared data can be
+accessed by all processes, irrespective 
+of location. (See also ~\hyperlink{glossary:active_target_communication}{active target communication} and
+~\hyperlink{glossary:RMA}{RMA}.)
+Refer to Section~\ref{sec:1sided-sync} on page~\pageref{sec:1sided-sync}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:persistent_communication}
+\item  ~\hypertarget{glossary:persistent_communication}{\emph{\textbf{persistent communication}}} \\*
+A type of communication that binds the list of communication arguments to a {\bf persistent} communication
+request once and, then, repeatedly uses
+the request to initiate and complete messages.
+For example, this is useful when
+a communication pattern with the same argument list is repeatedly
+executed within the inner loop of a parallel computation.   The
+persistent request thus created can be thought of as a
+communication port or a ``half-channel.''
+It does not provide the full functionality of a conventional channel,
+since there is no binding of the send port to the receive port. This
+construct allows reduction of the overhead for communication
+between the process and communication controller, but not of the overhead for
+communication between one communication controller and another.
+It is not necessary that messages sent with a persistent request be received
+by a receive operation using a persistent request, or vice versa.
+Refer to Section~\ref{sec:pt2pt-persistent} on page~\pageref{sec:pt2pt-persistent}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:PMPI}
+\item  ~\hypertarget{glossary:PMPI}{\emph{\textbf{PMPI}}} \\*
+Profiling \MPI/ interface. A \emph{name-shift} (i.e., an alternate entry point name)
+ interface that provides a mechanism to analyze \MPI/ function usage.
+{\tt PMPI\_} provides an entry point for each \MPI/ function with the prefix  \mpifunc{PMPI\_}
+Refer to Chapter~\ref{chap:prof} on page~\pageref{chap:prof}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:point-to-point communication}
+\item  ~\hypertarget{glossary:point-to-point_communication}{\emph{\textbf{point-to-point communication}}} \\*
+Messages delivered from one sending process to one receiving process. (See also ~\hyperlink{glossary:collective}{collective}.)
+Refer to Chapter~\ref{chap:pt2pt} on page~\pageref{chap:pt2pt}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:port_name}
+\item  ~\hypertarget{glossary:port_name}{\emph{\textbf{port name}}} \\*
+A \mpiarg{port\_name} is a {\em system-supplied} string that encodes a
+low-level network address at which a server can be
+contacted. Typically this is an IP address and a port number, but an
+implementation is free to use any protocol or naming convention.
+(See also ~\hyperlink{glossary:service_name}{service name},
+~\hyperlink{glossary:client}{client} and ~\hyperlink{glossary:server}{server}). 
+Refer to Section {\bf 10.4.1 LABEL-TODO} on page {\bf 318 LABEL-TODO}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:portable_datatype}
+\item  ~\hypertarget{glossary:portable_datatype}{\emph{\textbf{portable datatype}}} \\*
+A datatype is portable if it is a predefined datatype or it is derived
+from a portable datatype using only the type constructors
+\mpifunc{MPI\_TYPE\_CONTIGUOUS}, \mpifunc{MPI\_TYPE\_VECTOR},
+\mpifunc{MPI\_TYPE\_INDEXED},
+% \mpifunc{MPI\_TYPE\_INDEXED\_BLOCK}, %% This name does not exist
+\mpifunc{MPI\_TYPE\_CREATE\_INDEXED\_BLOCK},
+\mpifunc{MPI\_TYPE\_CREATE\_SUBARRAY}, \mpifunc{MPI\_TYPE\_DUP}, and
+\mpifunc{MPI\_TYPE\_CREATE\_DARRAY}.
+Such a datatype is portable because all displacements in the datatype
+are in terms of extents of one predefined datatype.  Therefore, if such a
+datatype fits a data layout in one memory, it will fit the
+corresponding data layout in another memory, if the same declarations
+were used, even if the two systems have different architectures.  On
+the other hand, if a datatype was constructed using
+\mpifunc{MPI\_TYPE\_CREATE\_HINDEXED} or \mpifunc{MPI\_TYPE\_CREATE\_HVECTOR}, 
+%% or \mpifunc{MPI\_TYPE\_CREATE\_STRUCT},      %% deprecated
+then the datatype contains explicit byte
+displacements (e.g., providing padding to meet alignment restrictions).
+These displacements are unlikely to be chosen correctly if they fit
+data layout on one memory, but are used for data layouts on another
+process, running on a processor with a different architecture.
+Refer to Section~\ref{terms:semantic} on page~\pageref{terms:semantic}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:predefined_datatype}
+\item  ~\hypertarget{glossary:predefined_datatype}{\emph{\textbf{predefined datatype}}} \\*
+The fundamental datatypes of the host language. Examples include
+\type{MPI\_INTEGER},
+\type{MPI\_REAL},
+\type{MPI\_DOUBLE\_PRECISION},
+\type{MPI\_COMPLEX},
+\type{MPI\_LOGICAL}, and
+\type{MPI\_CHARACTER}.
+(See also ~\hyperlink{glossary:basic_datatype}{basic datatype} and
+~\hyperlink{glossary:derived_datatype}{derived datatype}.)
+Refer to Annex~\ref{chap:binding} on page~\pageref{chap:binding}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:process}
+\item  ~\hypertarget{glossary:process}{\emph{\textbf{process}}} \\*
+An \MPI/ program consists of autonomous processes, executing their own
+code, in an 
+MIMD style. The codes executed by each process need not be
+identical.  The processes communicate via calls to \MPI/ communication
+primitives.  Typically, each process executes in its own address
+space, although shared-memory implementations of \MPI/ are possible.
+A process is represented in \MPI/ by a (group, rank) pair. 
+A (group, rank) pair specifies a unique process but 
+a process does not determine a unique (group, rank) pair, since
+a process may belong to several groups.
+Note that an \MPI/ process may or may not be correlated with
+the operating system notion of a process.
+Refer to Section~\ref{sec:macros} on page~\pageref{sec:macros}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:process_group}
+\item  ~\hypertarget{glossary:process_group}{\emph{\textbf{process group}}} \\*
+See ~\hyperlink{glossary:groups}{groups}.
+Refer to Section~\ref{subsec:pt2pt-envelope} on page~\pageref{subsec:pt2pt-envelope}, and
+Section~\ref{sec:context} on page~\pageref{sec:context}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:progress}
+\item  ~\hypertarget{glossary:progress}{\emph{\textbf{progress}}} \\*
+The property of parallel and distributed systems that
+posted operations must complete in finite time
+unless an exceptional condition (such as resource exhaustion)
+causes an error.
+Refer to point-to-point progress in Section~\ref{pt2pt-exE} on page~\pageref{pt2pt-exE},
+file I/O progress in Section ~\ref{sec:io-intro-progress} on page ~\pageref{sec:io-intro-progress},
+and RMA progress in Section ~\ref{sec:1sided-semantics} on page ~\pageref{sec:1sided-semantics}).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:ready_communication_mode}
+\item  ~\hypertarget{glossary:ready_communication_mode}{\emph{\textbf{ready communication mode}}} \\*
+A point-to-point communication protocol in which the communication
+may be started {\em only} if the matching receive is already posted.
+Otherwise, the operation is erroneous and its outcome is undefined.
+On some systems, this allows the removal of a hand-shake
+operation that is otherwise required and results in improved
+performance.
+The completion of the send operation does not depend on the
+status of a matching receive, and merely indicates that the send
+buffer can be reused.   A send operation that uses the ready mode has
+the same semantics as a standard send operation, or a synchronous send
+operation; it is merely that the sender provides additional
+information to the system (namely that a matching receive is already
+posted), that can save some overhead.  In a correct program, therefore, a
+ready send could be replaced by a standard send with no effect on the
+behavior of the program other than performance.
+(See also ~\hyperlink{glossary:standard_communication_mode}{standard communication mode}, 
+~\hyperlink{glossary:buffered_communication_mode}{buffered communication mode},
+~\hyperlink{glossary:synchronous_communication_mode}{synchronous communication mode}.)
+Refer to Section~\ref{sec:pt2pt-modes} on page~\pageref{sec:pt2pt-modes}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:reduce_operation}
+\item  ~\hypertarget{glossary:reduce_operation}{\emph{\textbf{reduce operation}}} \\*
+A collective procedure in which an operation is performed on data supplied by the members of a group.
+The reduction operation can be either one of a predefined list of
+operations or a user-defined operation.
+The global reduction functions come in several variations: a reduce that
+returns the result of the reduction
+%at one node,
+to one member of a group,
+an all-reduce that
+returns this result
+%at all nodes,
+to all members of a group,
+% a scan (parallel prefix) operation.  
+scan (parallel prefix) operations,
+non-blocking reductions,
+and certain RMA accumulate operations.  
+Refer to Section~\ref{global-reduce} on page~\pageref{global-reduce}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:remote_group}
+\item  ~\hypertarget{glossary:remote_group}{\emph{\textbf{remote group}}} \\*
+The destinations of a procedure for an intercommunicator. 
+(See also ~\hyperlink{glossary:intercommunicator}{intercommunicator} and
+~\hyperlink{glossary:local_group}{local group}.)
+Refer to Section~\ref{sec:coll-communicator} on page~\pageref{sec:coll-communicator}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:representation_conversion}
+\item  ~\hypertarget{glossary:representation_conversion}{\emph{\textbf{representation conversion}}} \\*
+Changing the binary representation of a value,
+e.g., from Hex floating point to IEEE floating point. Note that the buffer size required for the receive can be affected by data conversions and
+by the stride and other datatype layout factors of the receive datatype.  
+(See also ~\hyperlink{glossary:type_conversion}{type conversion}.)
+Refer to Section~\ref{subsec:pt2pt-conversion} on page~\pageref{subsec:pt2pt-conversion}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:return_status}
+\item  ~\hypertarget{glossary:return_status}{\emph{\textbf{return status}}} \\*
+Information returned by the \mpiarg{status} argument of an \MPI/ function. For example, the return status
+for an \mpifunc{MPI\_RECV} may be used to determine the
+source or tag of a received message when wildcard
+values are used in the receive operation.
+Also, if multiple requests
+are completed by a single \MPI/ function (see
+Section~\ref{subsec:pt2pt-multiple}), a distinct error code may need to be
+returned for each request.
+(See also~\hyperlink{glossary:message_envelope}{message envelope}.)
+Refer to Section~\ref{subsec:pt2pt-status} on page~\pageref{subsec:pt2pt-status}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:RMA}
+\item  ~\hypertarget{glossary:RMA}{\emph{\textbf{RMA}}} \\*
+Remote Memory Access (\RMA/) extends the communication mechanisms of \MPI/ by
+allowing one process to specify all communication parameters, both for
+the sending side and for the receiving side.
+In some systems, message-passing and remote-memory-access (\RMA/) operations
+run faster when accessing specially allocated memory (e.g., memory that is
+shared by the other processes in the communicating group on an SMP).  \MPI/
+provides a mechanism for allocating and freeing such special memory.  
+(See also ~\hyperlink{glossary:active_target}{active target},
+~\hyperlink{glossary:passive_target}{passive target},
+~\hyperlink{glossary:window}{window},
+~\hyperlink{glossary:access_epoch}{access epoch},
+~\hyperlink{glossary:exposure_epoch}{exposure epoch},
+~\hyperlink{glossary:origin_process}{origin process},
+and ~\hyperlink{glossary:target_process}{target process}.)
+Refer to Chapter~\ref{chap:one-side-2} on page~\pageref{chap:one-side-2}
+and Section~\ref{sec:misc-memalloc} on page~\pageref{sec:misc-memalloc}).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:root}
+\item  ~\hypertarget{glossary:root}{\emph{\textbf{root}}} \\*
+The single process that originates communication for a broadcast type communication,
+or the single process that receives communication from a gather type communication.
+(See also ~\hyperlink{glossary:gather}{gather} and ~\hyperlink{glossary:scatter}{scatter}.)
+Refer to Section~\ref{sec:coll-intro} on page~\pageref{sec:coll-intro}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:scan_operation}
+\item  ~\hypertarget{glossary:scan_operation}{\emph{\textbf{scan operation}}} \\*
+A collective procedure in which a partial reduction operation is performed on data supplied by the members of a group.
+In the inclusive scan (see \func{MPI\_SCAN}), the prefix reduction on process i includes the data from process i. 
+(See also ~\hyperlink{glossary:exscan_operation}{exscan operation} and
+~\hyperlink{glossary:reduce_operation}{reduce operation}.)
+Refer to Section~\ref{global-reduce} on page~\pageref{global-reduce}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:scatter}
+\item  ~\hypertarget{glossary:scatter}{\emph{\textbf{scatter}}} \\*
+A collective operation in which data is sent from  the root 
+to \emph{\textbf{n}} processes in the group. The data is initially concatenated
+with each process receiving its portion of the concatenated data in rank order.
+This is shown as ``scatter'' in Figure~\ref{fig:collcom}.
+(See also ~\hyperlink{glossary:gather}{gather},
+~\hyperlink{glossary:allgather}{allgather},
+and ~\hyperlink{glossary:alltoall}{alltoall}.)
+Refer to Section~\ref{sec:coll-intro} on page~\pageref{sec:coll-intro} and  
+Section~\ref{sec:coll-gather} on page~\pageref{sec:coll-gather}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:scope}
+\item  ~\hypertarget{glossary:scope}{\emph{\textbf{scope}}} \\*
+The domain over which the \mpiarg{service\_name} 
+can be retrieved when establishing communication among
+two sets of \MPI/ processes that do not share a communicator.
+Refer to Section~\ref{sec:client-server} on page~\pageref{sec:client-server}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:send-receive_operation}
+\item  ~\hypertarget{glossary:send-receive_operation}{\emph{\textbf{send-receive operation}}} \\*
+Operations that combine in one call the sending of a
+message to one destination and the receiving of another message, from
+another process.  The two (source and destination) may be the same.
+A send-receive operation is
+useful for executing a shift operation across a chain of
+processes.  If blocking sends and receives are used for such a shift,
+then one needs to order the sends and receives correctly (for
+example, even processes
+send, then receive, odd processes receive first, then send) so as to prevent
+cyclic dependencies that may lead to deadlock.  When a send-receive
+operation is used, the communication subsystem takes care of
+these ordering issues.
+Refer to Section~\ref{sec:pt2pt-sendrecv} on page~\pageref{sec:pt2pt-sendrecv}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:sequential_storage}
+\item  ~\hypertarget{glossary:sequential_storage}{\emph{\textbf{sequential storage}}} \\*
+Variables that belong to the same array,
+to the same {\sf COMMON} block in Fortran, or to the same structure in C.
+Refer to Section~\ref{subsec:pt2pt-segmented} on page~\pageref{subsec:pt2pt-segmented}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:serialized}
+\item  ~\hypertarget{glossary:serialized}{\emph{\textbf{serialized}}} \\*
+Proceeding with no temporal overlap.
+MPI calls are not made concurrently from two distinct threads in same process (all MPI calls are \emph{serialized}).
+Refer to Section {\bf 12.4.3 LABEL-TODO} on page {\bf 385 LABEL-TODO}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:server}
+\item  ~\hypertarget{glossary:server}{\emph{\textbf{server}}} \\*
+The member of a client/server relationship that accepts requests.
+ \MPI/ provides a mechanism for two sets of \MPI/  processes that do not share a communicator
+to establish communication.
+Establishing contact between two groups of processes that do not share an
+existing communicator is a collective but asymmetric process.  One group of
+processes indicates its willingness to accept connections from other groups of
+processes.  This group is called the (parallel) \emph{server}, even if this
+is not a client/server type of application.  
+(See also ~\hyperlink{glossary:client}{client}, ~\hyperlink{glossary:port_name}{port name},
+and ~\hyperlink{glossary:service_name}{service name}.) 
+Refer to Section~\ref{sec:client-server} on page~\pageref{sec:client-server}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:service_name}
+\item  ~\hypertarget{glossary:service_name}{\emph{\textbf{service name}}} \\*
+A \mpiarg{service\_name} is an {\em application-supplied} string for 
+establishing communication between two independently running \MPI/ applications.
+A service name can be published so that it
+can be used by a client to connect to a server without knowing the  \mpiarg{port\_name}.
+(See also ~\hyperlink{glossary:port_name}{port name}). 
+Refer to Section~\ref{sec:client-server} on page~\pageref{sec:client-server}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:split_collective}
+\item  ~\hypertarget{glossary:split_collective}{\emph{\textbf{split collective}}} \\*
+        \textbf{begin discussion ~\textgreater{}---------------------} \\*
+        \emph{ this may be deprecated in mpi-3 } \\
+        \textbf{---------------------~\textless{} end discussion}  \\
+A restricted form of ``nonblocking'' operations
+for collective file data access.
+These routines are referred to as ``split'' collective routines
+because a single collective operation is split in two:
+a begin routine and an end routine.
+The begin routine begins the operation,
+much like a nonblocking data access (e.g., \func{MPI\_FILE\_IREAD}).
+The end routine completes the operation,
+much like the matching test or wait (e.g., \func{MPI\_WAIT}).
+As with nonblocking data access operations,
+the user must not use the buffer
+% the user must not change the parameters
+passed to a begin routine while the routine is outstanding;
+the operation must be completed with an end routine before it
+is safe to free buffers, etc.
+Refer to Section~\ref{sec:io-split-collective} on page~\pageref{sec:io-split-collective}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:standard_communication_mode}
+\item  ~\hypertarget{glossary:standard_communication_mode}{\emph{\textbf{standard communication mode}}} \\*
+A point-to-point communication protocol that leaves it up to \MPI/ to decide whether outgoing
+messages will be buffered.  \MPI/ may
+buffer outgoing messages.  In such a case, the send call may complete
+before a matching receive is invoked.  On the other hand, buffer space may be
+unavailable, or \MPI/ may choose not to buffer
+outgoing messages, for performance reasons. In this case,
+the send call will not complete until a matching receive has been posted, and
+the data has been moved to the receiver.
+Thus, a send in standard mode can be started whether or not a
+matching receive has been posted.  It may complete before a matching receive
+is posted.  The
+standard mode send is {\bf non-local}:  successful completion of the send
+operation may depend on the occurrence of a matching receive. 
+(See also ~\hyperlink{glossary:buffered_communication_mode}{buffered communication mode}, 
+~\hyperlink{glossary:synchronous_communication_mode}{synchronous communication mode},
+~\hyperlink{glossary:ready_communication_mode}{ready communication mode}.)
+Refer to Section~\ref{sec:pt2pt-modes} on page~\pageref{sec:pt2pt-modes}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:synchronizing_collective_communication}
+\item  ~\hypertarget{glossary:synchronizing_collective_communication}{\emph{\textbf{synchronizing collective communication}}} \\*
+Communication between \MPI/ processes with the effect of constraining the relative temporal
+order that those \MPI/  processes execute code. For example, \func{MPI\_BARRIER} 
+blocks the caller until all group members have called it. The call returns at any process 
+only after all group members have
+entered the call.
+Refer to Section~\ref{sec:coll-intro} on page~\pageref{sec:coll-intro}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:synchronous_communication_mode}
+\item  ~\hypertarget{glossary:synchronous_communication_mode}{\emph{\textbf{synchronous communication mode}}} \\*
+A point-to-point communication mode in which the
+communication can be started whether or
+not a matching receive was posted.  However, the send will only complete 
+successfully once a matching receive is posted, and the
+receive operation has started to receive the message sent by the
+synchronous send.
+Thus, the completion of a synchronous send not only indicates that the
+send buffer can be reused, but 
+it also indicates that the receiver has
+reached a certain point in its execution, namely that it has started
+executing the matching receive.  If both sends and receives are
+blocking operations then the use of the synchronous mode provides
+synchronous communication semantics: a communication does not complete
+at either end before both processes rendezvous at the
+communication.  A send executed in this mode is non-local.
+(See also ~\hyperlink{glossary:standard_communication_mode}{standard communication mode}, 
+~\hyperlink{glossary:buffered_communication_mode}{buffered communication mode},
+~\hyperlink{glossary:ready communication_mode}{ready communication mode}.)
+Refer to Section~\ref{sec:pt2pt-modes} on page~\pageref{sec:pt2pt-modes}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:tag}
+\item  ~\hypertarget{glossary:tag}{\emph{\textbf{tag}}} \\*
+An integer in point-to-point communication included as part of the \emph{message envelope}.
+This integer can be used by the program to distinguish different types of
+messages.
+The range of valid tag values is {\sf 0,...,UB}, where the value of {\sf UB} is
+implementation dependent.
+(See also ~\hyperlink{glossary:message_envelope}{message envelope}.)
+Refer to Section~\ref{subsec:pt2pt-envelope} on page~\pageref{subsec:pt2pt-envelope}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:target_process}
+\item  ~\hypertarget{glossary:target_process}{\emph{\textbf{target process}}} \\*
+The process in which the memory is accessed in one-sided communications.
+(See also ~\hyperlink{glossary:origin_process}{origin process} and 
+~\hyperlink{glossary:RMA}{RMA}.)
+Refer to Section~\ref{sec:one-side-2} on page~\pageref{sec:one-side-2}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:thread_compliant_implementation}
+\item  ~\hypertarget{glossary:thread_compliant_implementation}{\emph{\textbf{thread compliant implementation}}} \\*
+An MPI process that may be multithreaded.
+(See also ~\hyperlink{glossary:thread_safe}{thread safe} and ~\hyperlink{glossary:serialized}{serialized}.)
+Refer to Section~\ref{sec:ei-threads} on page~\pageref{sec:ei-threads}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:thread_safe}
+\item  ~\hypertarget{glossary:thread_safe}{\emph{\textbf{thread safe}}} \\*
+The property that two concurrently
+running threads may make \MPI/ calls and the outcome will be as if the
+calls executed in some order, even if their execution is interleaved.
+(See also ~\hyperlink{glossary:thread_compliant_implementation}{thread compliant implementation}.)
+Refer to Section~\ref{sec:ei-threads} on page~\pageref{sec:ei-threads}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:topology}
+\item  ~\hypertarget{glossary:topology}{\emph{\textbf{topology}}} \\*
+The layout of processes within a virtual structure such as two or three
+dimensional grid.
+A topology is an extra,
+optional attribute that one can give to an intra-communicator; topologies
+cannot be added to inter-communicators.  A topology can provide a convenient
+naming mechanism for the processes of a group (within a communicator), and
+additionally, may assist the runtime system in mapping the processes onto
+hardware.
+(See also ~\hyperlink{glossary:groups}{groups},
+~\hyperlink{glossary:cartesian_topology}{cartesian topology}, 
+and ~\hyperlink{glossary:graph_topology}{graph topology}.)
+Refer to Section~\ref{sec:topol} on page~\pageref{sec:topol}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:true_extent}
+\item  ~\hypertarget{glossary:true_extent}{\emph{\textbf{true extent}}} \\*
+The true size of a datatype, i.e., the extent of the corresponding typemap, ignoring
+\consti{MPI\_LB} and \mpiarg{MPI\_UB} markers, and performing no
+rounding for alignment.  The \mpiarg{true\_extent} is the minimum number of bytes of
+memory necessary to hold a datatype. 
+If the typemap associated with
+\mpiarg{datatype} is
+\[
+Typemap = \{ (type_0, disp_0), \ldots , (type_{n-1}, disp_{n-1})\}
+\]
+Then
+\[
+true\_lb(Typemap) = min_j  \{ disp_j ~:~ type_j \ne {\bf lb, ub} \},
+\]
+\[
+true\_ub (Typemap) = max_j \{disp_j + sizeof(type_j) ~:~ type_j \ne
+{\bf lb, ub}\} ,
+\]
+and
+\[
+true\_extent (Typemap) = true\_ub(Typemap) - true\_lb(typemap).
+\]
+(See also ~\hyperlink{glossary:lower_bound_datatype}{lower bound datatype}, ~\hyperlink{glossary:upper_bound_datatype}{upper bound datatype}, and ~\hyperlink{glossary:extent}{extent}.)
+Refer to Section {\bf 4.1.8 LABEL-TODO} on page {\bf 98 LABEL-TODO}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:type_conversion}
+\item  ~\hypertarget{glossary:type_conversion}{\emph{\textbf{type conversion}}} \\*
+Changing the datatype of a value, e.g., by rounding a
+\ftype{REAL} to an \ftype{INTEGER}.  The type matching rules imply that MPI communication  never entails type conversion.
+(See also ~\hyperlink{glossary:representation_conversion}{representation conversion}.)
+Refer to Section~\ref{subsec:pt2pt-conversion} on page~\pageref{subsec:pt2pt-conversion}.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:type_map}
+\item  ~\hypertarget{glossary:type_map}{\emph{\textbf{type map}}} \\*
+The pair of sequences (or sequence of pairs) associated with a general dataype.
+The displacements are not required to be positive, distinct, or
+in increasing order. Therefore, the order of items need not
+coincide with their order in store, and an item may appear more than
+once. Type maps take the form
+\[
+Typemap = \{ (type_0,disp_0), ..., (type_{n-1}, disp_{n-1}) \} ,
+\]
+where $type_i$ are basic types, and
+$disp_i$ are  displacements.
+(See also ~\hyperlink{glossary:type_signature}{type signature},
+~\hyperlink{glossary:basic_datatype}{basic datatype},
+and ~\hyperlink{glossary:derived_datatype}{derived datatype}.)
+Refer to Section~\ref{sec:pt2pt-datatype} on page~\pageref{sec:pt2pt-datatype}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:type_signature}
+\item  ~\hypertarget{glossary:type_signature}{\emph{\textbf{type signature}}} \\*
+The sequences of types associated with a general dataype.
+Type signatures may be used to validate matching types between sender and receiver; they take the form
+\[
+Typesig = \{ type_0 , ... , type_{n-1} \}
+\]
+where $type_i$ are basic datatypes.
+(See also ~\hyperlink{glossary:type_map}{type map} and ~\hyperlink{glossary:basic_datatype}{basic datatype}.)
+Refer to Section~\ref{sec:pt2pt-datatype} on page~\pageref{sec:pt2pt-datatype}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:unpack}
+\item  ~\hypertarget{glossary:unpack}{\emph{\textbf{unpack}}} \\*
+The process of copying a contiguous buffer to a second buffer according to an \MPI/ datatype.
+Note that an \MPI/ datatype may specify a non-contiguous structure.
+(See also ~\hyperlink{glossary:pack}{pack}.)
+Refer to Section~\ref{sec:pt2pt-packing} on page~\pageref{sec:pt2pt-packing}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:upper_bound_datatype}
+\item  ~\hypertarget{glossary:upper_bound_datatype}{\emph{\textbf{upper bound, datatype}}} \\*
+The displacement of the highest unit of store which is addressed by the datatype. 
+%%In general, if
+%%\begin{displaymath}
+%%Typemap = \{ (type_0 , disp_0 ) , ... , (type_{n-1} , disp_{n-1}) \} ,
+%%\end{displaymath}
+%%then the {\bf upper bound} of $Typemap$ is defined to be
+%%\[
+%%ub(Typemap) = \left\{ \begin{array}{ll}
+%%\max_j disp_j + sizeof(type_j) + \epsilon & \mbox{if no entry has basic type
+%%{\sf ub}}
+%%\\ \max_j \{ disp_j \ \mbox{such that}\ type_j = {\sf ub} \} & \mbox{otherwise}
+%%\end{array}
+%%\right. \]
+(See also ~\hyperlink{glossary:lower_bound}{lower bound} and ~\hyperlink{glossary:extent}{extent}.)
+Refer to ub(Typemap) in Section~\ref{pt2pt-exX} on page~\pageref{pt2pt-exX}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:view_file}
+\item  ~\hypertarget{glossary:view_file}{\emph{\textbf{view, file}}} \\*
+A {\it view} defines the current set of data visible
+and accessible from an open file as an ordered set of etypes.
+Each process has its own view of the file,
+defined by three quantities:
+a displacement, an etype, and a filetype.
+The pattern described by a filetype is repeated,
+beginning at the displacement, to define the view.
+The pattern of repetition is defined to be the same pattern
+that \func{MPI\_TYPE\_CONTIGUOUS} would produce if it were passed
+the filetype and an arbitrarily large count.
+%%Figure~\ref{fig:glossary-io-filetype} shows how the tiling works; note 
+%%that the filetype in this example must have explicit 
+%%lower and upper bounds set in order for the initial and final holes to be
+%%repeated in the view.
+%%Views can be changed by the user during program execution.
+%%The default view is a linear byte stream
+%%(displacement is zero, etype and filetype equal to \type{MPI\_BYTE}).
+%%
+%%\begin{figure}[htpb]
+%%  \centerline{\includegraphics[width=4.0in]{figures/io-filetype}}
+%%  \caption{Etypes and filetypes}
+%%  \label{fig:glossary-io-filetype}
+%%\end{figure}
+%%
+%%A group of processes can use complementary views to
+%%achieve a global data distribution such as a scatter/gather pattern
+%%(see Figure~\ref{fig:gloss-io-comp-filetypes}).
+%%
+%%\begin{figure}[htpb]
+%%  \centerline{\includegraphics[width=4.0in]{figures/io-comp-filetypes}}
+%%  \caption{Partitioning a file among parallel processes}
+%%  \label{fig:gloss-io-comp-filetypes}
+%%\end{figure}
+Refer to Section~\ref{subsec:io-2:definitions} on page~\pageref{subsec:io-2:definitions}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:wildcard}
+\item  ~\hypertarget{glossary:wildcard}{\emph{\textbf{wildcard}}} \\*
+The receive of a point-to-point message may utilize
+a special \emph{tag} (\const{MPI\_ANY\_TAG}) 
+or \emph{source} (\const{MPI\_ANY\_SOURCE}) that
+indicates any source and/or tag are acceptable.  Note that
+wildcards may not be used to constrain \emph{communicators}.
+Refer to Section~\ref{sec:one-side-2} on page~\pageref{sec:one-side-2}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{glossary:window}
+\item  ~\hypertarget{glossary:window}{\emph{\textbf{window}}} \\*
+A range of memory that is made accessible to accesses by remote 
+processes using one sided communication. 
+In one-sided communications, each process specifies
+a window of existing memory that it exposes to \RMA/ accesses by the
+processes in the group of  \mpiarg{comm}.
+The window consists of \mpiarg{size} bytes,
+starting at address \mpiarg{base}.
+(See also ~\hyperlink{glossary:RMA}{RMA}.)
+Refer to Section~\ref{sec:one-side-2} on page~\pageref{sec:one-side-2}.
+
+
+\end{itemize}

@@ -1,0 +1,201 @@
+Index: chap-coll/coll.tex
+===================================================================
+--- chap-coll/coll.tex	(revision 199)
++++ chap-coll/coll.tex	(working copy)
+@@ -966,7 +966,7 @@
+ MPI\_Recv(recvbuf+i\cdot recvcount\cdot extent(recvtype), recvcount, recvtype, i ,...),
+ \]
+ where {\tt extent(recvtype)} is the type extent obtained from a call to
+-{\tt MPI\_Type\_extent()}.
++{\tt MPI\_Type\_get\_extent()}.
+ 
+ An alternative description is that the {\tt n} messages sent by the
+ processes in the group are concatenated in rank order, and the
+@@ -1491,6 +1491,7 @@
+ %%HEADER
+ %%LANG: C
+ %%FRAGMENT
++%%SUBST:disp,:(void*) disp,
+ %%SKIPELIPSIS
+ %%ENDHEADER
+ \begin{verbatim}
+@@ -1516,7 +1517,7 @@
+     disp[0] = 0;       disp[1] = 150*sizeof(int);
+     type[0] = MPI_INT; type[1] = MPI_UB;
+     blocklen[0] = 1;   blocklen[1] = 1;
+-    MPI_Type_struct( 2, blocklen, disp, type, &stype );
++    MPI_Type_create_struct( 2, blocklen, disp, type, &stype );
+     MPI_Type_commit( &stype );
+     sptr = &sendarray[0][myrank];
+     MPI_Gatherv( sptr, 100-myrank, stype, rbuf, rcounts, displs, MPI_INT,
+@@ -1623,13 +1624,14 @@
+ %%HEADER
+ %%LANG: C
+ %%FRAGMENT
++%%SUBST:disp,:(void*) disp,
+ %%SKIPELIPSIS
+ %%ENDHEADER
+ \begin{verbatim}
+     MPI_Comm comm;
+     int gsize,sendarray[100][150],*sptr;
+-    int root, *rbuf, stride, myrank, disp[2], blocklen[2];
+-    MPI_Datatype stype,types[2];
++    int root, *rbuf, myrank, disp[2], blocklen[2];
++    MPI_Datatype stype,type[2];
+     int *displs,i,*rcounts,num;
+ 
+     ...
+@@ -1658,7 +1660,7 @@
+     disp[0] = 0;       disp[1] = 150*sizeof(int);
+     type[0] = MPI_INT; type[1] = MPI_UB;
+     blocklen[0] = 1;   blocklen[1] = 1;
+-    MPI_Type_struct( 2, blocklen, disp, type, &stype );
++    MPI_Type_create_struct( 2, blocklen, disp, type, &stype );
+     MPI_Type_commit( &stype );
+     sptr = &sendarray[0][myrank];
+     MPI_Gatherv( sptr, num, stype, rbuf, rcounts, displs, MPI_INT,
+@@ -1977,6 +1979,7 @@
+ %%HEADER
+ %%LANG: C
+ %%FRAGMENT
++%%DECL: int stride = 200;
+ %%SKIPELIPSIS
+ %%ENDHEADER
+ \begin{verbatim}
+@@ -2040,7 +2043,7 @@
+ \begin{verbatim}
+     MPI_Comm comm;
+     int gsize,recvarray[100][150],*rptr;
+-    int root, *sendbuf, myrank, bufsize, *stride;
++    int root, *sendbuf, myrank, *stride;
+     MPI_Datatype rtype;
+     int i, *displs, *scounts, offset;
+     ...
+@@ -2176,7 +2179,7 @@
+ %%SKIPELIPSIS
+ %%ENDHEADER
+ \begin{verbatim}
+-   MPI_GATHER(sendbuf,sendcount,sendtype,recvbuf,recvcount,
++   MPI_Gather(sendbuf,sendcount,sendtype,recvbuf,recvcount,
+                                                  recvtype,root,comm),
+ \end{verbatim}
+ for {\tt root = 0 , ..., n-1}.  The rules for correct usage of
+@@ -2741,7 +2744,7 @@
+ %specified to \mpifunc{MPI\_ALLTOALLV}. The first two sub-cubes of the
+ %first column require a vector type containing five blocks each
+ %containing one element. If the stride of this datatype is 
+-%set to one (using \mpifunc{MPI\_TYPE\_STRUCT}) the first two sub-cubes
++%set to one (using \mpifunc{MPI\_TYPE\_CREATE\_STRUCT}) the first two sub-cubes
+ %can be specified by using a count of five. The second two sub-cubes
+ %of the first column can use the same datatype, so long as they
+ %specify a count of four.
+@@ -3179,6 +3182,7 @@
+ %%HEADER
+ %%LANG: FORTRAN
+ %%SKIPELIPSIS
++%%TAIL:END
+ %%ENDHEADER
+ \begin{verbatim}
+ SUBROUTINE PAR_BLAS1(m, a, b, c, comm)
+@@ -3211,6 +3215,7 @@
+ %%HEADER
+ %%LANG: FORTRAN
+ %%SKIPELIPSIS
++%%TAIL:END
+ %%ENDHEADER
+ \begin{verbatim}
+ SUBROUTINE PAR_BLAS2(m, n, a, b, c, comm)
+@@ -3438,7 +3443,7 @@
+ disp[1] = sizeof(float)
+ block[0] = 1
+ block[1] = 1
+-MPI_TYPE_STRUCT(2, block, disp, type, MPI_FLOAT_INT)
++MPI_TYPE_CREATE_STRUCT(2, block, disp, type, MPI_FLOAT_INT)
+ \end{verbatim}
+ % !!! I may want to change this -- S Otto -- assumes C struct alignment /
+ % MPI derived type compatibility
+@@ -3591,7 +3596,7 @@
+     /* global minloc */
+ MPI_Comm_rank(comm, &myrank);
+ in.index = myrank*LEN + in.index;
+-MPI_Reduce( in, out, 1, MPI_FLOAT_INT, MPI_MINLOC, root, comm );
++MPI_Reduce( &in, &out, 1, MPI_FLOAT_INT, MPI_MINLOC, root, comm );
+     /* At this point, the answer resides on process root
+      */
+ if (myrank == root) {
+@@ -3778,11 +3783,11 @@
+ %%FRAGMENT
+ %%SUBST: rank-1,\.\.\.:rank-1,0,comm,&status
+ %%SUBST: rank\+1, \.\.\.:rank+1, 0, comm
+-%%SUBST: groupsize-1,\.\.\.:groupsize-1,0,comm,
++%%SUBST: groupsize-1,\.\.\.:groupsize-1,0,comm
+ %%SUBST: root, \.\.\.:root, 0, comm
+ %%SUBST: \.\.\. now:--- now
+ %%DECL: MPI_Comm comm;
+-%%DECL: int groupsize, rank, count, *tempbuf, *sendbuf, root;
++%%DECL: int groupsize, rank, count, *tempbuf, *sendbuf, *recvbuf, root;
+ %%DECL: MPI_Datatype datatype;
+ %%DECL: MPI_Request req;
+ %%DECL: MPI_Status status;
+@@ -3868,6 +3873,7 @@
+ % (the "and to call it" should not be within the verbatim)
+ %%HEADER
+ %%LANG: C
++%%SUBST:myProd,:(MPI_User_function*) myProd,
+ %%SUBST:it\.\.\.:it---
+ %%SUBST:\.\.\.:void test(MPI_Comm comm,int root){
+ %%TAIL:}
+@@ -3910,7 +3916,7 @@
+     MPI_Type_commit( &ctype );
+     /* create the complex-product user-op
+      */
+-    MPI_Op_create( myProd, True, &myOp );
++    MPI_Op_create( myProd, 1, &myOp );
+ 
+     MPI_Reduce( a, answer, 100, ctype, myOp, root, comm );
+ 
+@@ -4045,6 +4051,7 @@
+ %%HEADER
+ %%LANG: FORTRAN
+ %%SKIPELIPSIS
++%%TAIL:END
+ %%ENDHEADER
+ \begin{verbatim}
+ SUBROUTINE PAR_BLAS2(m, n, a, b, c, comm)
+@@ -4532,12 +4539,13 @@
+ %%LANG: C
+ %%DECL: typedef struct {double val;int log;} SegScanPair;
+ %%DECL: MPI_Comm comm;
++%%DECL: extern MPI_User_function* segScan;
+ %%FRAGMENT
+ %%SKIPELIPSIS
+ %%ENDHEADER
+ \begin{verbatim}
+     int i,base;
+-    SeqScanPair  a, answer;
++    SegScanPair  a, answer;
+     MPI_Op       myOp;
+     MPI_Datatype type[2] = {MPI_DOUBLE, MPI_INT};
+     MPI_Aint     disp[2];
+@@ -4546,17 +4554,17 @@
+ 
+     /* explain to MPI how type SegScanPair is defined
+      */
+-    MPI_Address( a, disp);
+-    MPI_Address( a.log, disp+1);
++    MPI_Get_address( &a, disp);
++    MPI_Get_address( &a.log, disp+1);
+     base = disp[0];
+     for (i=0; i<2; ++i) disp[i] -= base;
+-    MPI_Type_struct( 2, blocklen, disp, type, &sspair );
++    MPI_Type_create_struct( 2, blocklen, disp, type, &sspair );
+     MPI_Type_commit( &sspair );
+     /* create the segmented-scan user-op
+      */
+     MPI_Op_create( segScan, 0, &myOp );
+     ...
+-    MPI_Scan( a, answer, 1, sspair, myOp, comm );
++    MPI_Scan( &a, &answer, 1, sspair, myOp, comm );
+ \end{verbatim}
+ 
+ } \end{example}

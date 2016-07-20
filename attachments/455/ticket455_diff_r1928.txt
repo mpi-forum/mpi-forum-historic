@@ -1,0 +1,19 @@
+Index: terms-2.tex
+===================================================================
+--- terms-2.tex	(Revision 1927)
++++ terms-2.tex	(Revision 1928)
+@@ -851,14 +851,6 @@
+ 
+ Choice arguments are pointers of type \code{void *}.
+ 
+-Address arguments are of \MPI/ defined type
+-\type{MPI\_Aint}\cdeclindex{MPI\_Aint}.
+-File displacements are of type \type{MPI\_Offset}\cdeclindex{MPI\_Offset}.
+-\const{MPI\_Aint} is defined to be an integer of the size needed to
+-hold any valid address on the target architecture.
+-\type{MPI\_Offset} is defined to be an integer of the size needed to
+-hold any valid file size on the target architecture.
+-
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
+ \subsection{Functions and Macros}

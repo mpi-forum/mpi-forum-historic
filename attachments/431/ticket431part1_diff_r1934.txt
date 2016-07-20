@@ -1,0 +1,20 @@
+Index: terms-2.tex
+===================================================================
+--- terms-2.tex	(Revision 1933)
++++ terms-2.tex	(Revision 1934)
+@@ -557,11 +557,12 @@
+ \end{implementors}
+ 
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+-\subsection{Addresses}
++\subsection{Absolute Addresses and Relative Address Displacements}
+ 
+ Some \MPI/ procedures use \emph{address} arguments that represent an absolute
+-address in the calling program.  
+-The datatype of such an argument
++address in the calling program,
++or relative displacement arguments that represent differences of two absolute addresses.  
++The datatype of such arguments
+ \cdeclmainindex{MPI\_Aint}%
+ is \type{MPI\_Aint} in C and \ftype{INTEGER
+ (KIND=\const{MPI\_ADDRESS\_KIND})}\cdeclmainindex{MPI\_ADDRESS\_KIND} in Fortran.

@@ -1,0 +1,185 @@
+Index: chap-io/io-2.tex
+===================================================================
+--- chap-io/io-2.tex	(revision 806)
++++ chap-io/io-2.tex	(revision 871)
+@@ -1460,7 +1460,7 @@
+ The number of \mpiarg{datatype} entries and predefined elements accessed
+ by the calling process
+ can be extracted from \mpiarg{status} by using
+-\func{MPI\_GET\_COUNT} and \func{MPI\_GET\_ELEMENTS}, respectively.
++\func{MPI\_GET\_COUNT} and \func{MPI\_GET\_ELEMENTS}\MPIupdate{3.0}{265}{(or \func{MPI\_GET\_ELEMENTS\_X})}, respectively.
+ The interpretation of the {\tt MPI\_ERROR} field is the same as for other
+ operations --- normally undefined, but meaningful if an \MPI/ routine returns \const{MPI\_ERR\_IN\_STATUS}.
+ The user can pass (in C and Fortran) \const{MPI\_STATUS\_IGNORE}
+Index: chap-pt2pt/pt2pt.tex
+===================================================================
+--- chap-pt2pt/pt2pt.tex	(revision 806)
++++ chap-pt2pt/pt2pt.tex	(revision 871)
+@@ -328,18 +328,18 @@
+ C++ applications can use the C bindings with no loss of functionality.
+ \end{rationale}
+ 
+-The datatypes \type{MPI\_AINT} 
+-\MPIreplace{3.0}{265}{and }{,}
+-\type{MPI\_OFFSET} 
+-\MPIupdate{3.0}{265}{, and \type{MPI\_COUNT}}
++The datatypes \type{MPI\_AINT}
++\MPIreplace{3.0}{265}{ and}{,}
++\type{MPI\_OFFSET}
++\MPIreplace{3.0}{265}{ }{, and \type{MPI\_COUNT}}
+ correspond to the 
+-\MPI/-defined C types \type{MPI\_Aint} 
+-\MPIreplace{3.0}{265}{and }{,}
+-\type{MPI\_Offset} 
+-\MPIupdate{3.0}{265}{, and \type{MPI\_Count}}
++\MPI/-defined C types \type{MPI\_Aint}
++\MPIreplace{3.0}{265}{ and}{,}
++\type{MPI\_Offset}
++\MPIreplace{3.0}{265}{ }{, and \type{MPI\_Count}}
+ and their Fortran 
+ equivalents \ftype{INTEGER (KIND=\const{MPI\_ADDRESS\_KIND})}
+-\MPIreplace{3.0}{265}{and }{,}
++\MPIreplace{3.0}{265}{ and}{,}
+ \ftype{INTEGER (KIND=\const{MPI\_OFFSET\_KIND})}
+ \MPIupdateBegin{3.0}{265}
+ , and \ftype{INTEGER (KIND=\const{MPI\_COUNT\_KIND})}
+@@ -2151,7 +2151,7 @@
+ {\bf empty} status is a status which is set to return \mpiarg{tag =}
+ \const{MPI\_ANY\_TAG}, \mpiarg{source =} \const{MPI\_ANY\_SOURCE}, \mpiarg{error =}
+ \const{MPI\_SUCCESS},  and is also internally configured so that calls to
+-\mpifunc{MPI\_GET\_COUNT} and \mpifunc{MPI\_GET\_ELEMENTS} return
++\mpifunc{MPI\_GET\_COUNT}\MPIreplace{3.0}{265}{ and}{,} \mpifunc{MPI\_GET\_ELEMENTS}\MPIupdate{3.0}{265}{, and \func{MPI\_GET\_ELEMENTS\_X}} return
+ \mpiarg{count = 0}
+ and \mpifunc{MPI\_TEST\_CANCELLED} returns \const{false}.
+ We set a status variable to empty when the value returned by it is not
+Index: chap-ei/ei-2.tex
+===================================================================
+--- chap-ei/ei-2.tex	(revision 806)
++++ chap-ei/ei-2.tex	(revision 871)
+@@ -580,7 +580,7 @@
+ \mpifbind{MPI\_STATUS\_SET\_ELEMENTS\_X(STATUS, DATATYPE, COUNT, IERROR)\fargs INTEGER STATUS(MPI\_STATUS\_SIZE), DATATYPE, IERROR\\INTEGER (KIND=MPI\_COUNT\_KIND) COUNT}
+ \MPIupdateEnd{3.0}
+ 
+-This call modifies the opaque part of \mpiarg{status} so that a call
++\MPIreplace{3.0}{265}{This call modifies}{These functions modify} the opaque part of \mpiarg{status} so that a call
+ to \mpifunc{MPI\_GET\_ELEMENTS} 
+ \MPIupdate{3.0}{265}{
+ or \mpifunc{MPI\_GET\_ELEMENTS\_X}
+@@ -613,7 +613,7 @@
+ when 
+ \mpiarg{count} is set by a
+ receive operation: in that case, the calls to
+-\mpifunc{MPI\_GET\_COUNT} and \mpifunc{MPI\_GET\_ELEMENTS} must use a
++\mpifunc{MPI\_GET\_COUNT}\MPIreplace{3.0}{265}{ and}{,} \mpifunc{MPI\_GET\_ELEMENTS}\MPIupdate{3.0}{265}{, and \mpifunc{MPI\_GET\_ELEMENTS\_X}} must use a
+ \mpiarg{datatype} with the same signature as the datatype used in the
+ receive call.
+ \end{rationale}
+Index: chap-datatypes/datatypes.tex
+===================================================================
+--- chap-datatypes/datatypes.tex	(revision 806)
++++ chap-datatypes/datatypes.tex	(revision 871)
+@@ -1474,8 +1474,8 @@
+ 
+ \MPIupdateBegin{3.0}{265}
+ If the total size of the datatype can not be expressed by the \mpiarg{size} 
+-parameter, then \func{MPI\_TYPE\_SIZE} and \func{MPI\_TYPE\_SIZE\_X} set 
+-the value of \mpiarg{size} to \const{MPI\_UNDEFINED}.
++argument of \func{MPI\_TYPE\_SIZE} or \func{MPI\_TYPE\_SIZE\_X}, then these functions set 
++the value of \mpiarg{size} to \const{MPI\_UNDEFINED}, respectively.
+ \MPIupdateEnd{3.0}
+ %
+ %\begin{users}
+@@ -1594,8 +1594,8 @@
+ the three functions
+ \mpifunc{MPI\_TYPE\_UB}, \mpifunc{MPI\_TYPE\_LB} and \mpifunc{MPI\_TYPE\_EXTENT}
+ \MPIreplace{3.0}{265}{.  It also returns}{and also return}
+-address
+-sized integers\MPIdelete{3.0}{265}{,} in the Fortran binding.
++address \MPIupdate{3.0}{265}{and count}
++sized integers,\MPIupdate{3.0}{265}{ respectively,} in the Fortran binding.
+ The use of \mpifunc{MPI\_TYPE\_UB}, \mpifunc{MPI\_TYPE\_LB} and
+ \mpifunc{MPI\_TYPE\_EXTENT} is deprecated.
+ 
+@@ -1635,6 +1635,14 @@
+ % (as defined by the \MPII/ standard, Section 3.12.2).
+ (as defined in Section~\ref{subsec:pt2pt-markers} on page~\pageref{subsec:pt2pt-markers}).
+ 
++\MPIupdateBegin{3.0}{265}
++If the lower bound of the datatype cannot be expressed by the \mpiarg{lb} 
++argument of \func{MPI\_TYPE\_GET\_EXTENT} or \func{MPI\_TYPE\_GET\_EXTENT\_X}, then these functions set 
++this value to \const{MPI\_UNDEFINED}.
++Likewise, if the extent of the datatype cannot be expressed by the \mpiarg{extent} 
++argument of \func{MPI\_TYPE\_GET\_EXTENT} or \func{MPI\_TYPE\_GET\_EXTENT\_X}, then these functions set 
++this value to \const{MPI\_UNDEFINED}.
++\MPIupdateEnd{3.0}
+ 
+ 
+ \MPI/ allows one to change the extent of a datatype, using lower bound
+@@ -1772,9 +1780,15 @@
+ The \mpiarg{true\_extent} is the minimum number of bytes of
+ memory necessary to hold a datatype, uncompressed.
+ 
++\MPIupdateBegin{3.0}{265}
++If the lower bound of the datatype cannot be expressed by the \mpiarg{true\_lb} 
++argument of \func{MPI\_TYPE\_GET\_TRUE\_EXTENT} or \func{MPI\_TYPE\_GET\_TRUE\_EXTENT\_X}, then these functions set 
++this value to \const{MPI\_UNDEFINED}.
++Likewise, if the extent of the datatype cannot be expressed by the \mpiarg{true\_extent} 
++argument of \func{MPI\_TYPE\_GET\_TRUE\_EXTENT} or \func{MPI\_TYPE\_GET\_TRUE\_EXTENT\_X}, then these functions set 
++this value to \const{MPI\_UNDEFINED}.
++\MPIupdateEnd{3.0}
+ 
+-
+-
+ \subsection{Commit and Free}
+ \label{subsec:pt2pt-comfree}
+ 
+@@ -2050,10 +2064,15 @@
+ \mpibind{MPI\_Get\_elements\_x(MPI\_Status~*status, MPI\_Datatype~datatype, MPI\_Count~*count)}
+ 
+ \mpifbind{MPI\_GET\_ELEMENTS\_X(STATUS, DATATYPE, COUNT, IERROR)\fargs INTEGER  STATUS(MPI\_STATUS\_SIZE), DATATYPE, IERROR\\INTEGER (KIND=MPI\_COUNT\_KIND) COUNT}
++
++The \mpiarg{datatype} argument should match the argument provided by the
++receive call that set the \mpiarg{status} variable.
++If the number of basic elements received cannot be expressed by the
++\mpiarg{count} argument of \func{MPI\_GET\_ELEMENTS} or 
++\func{MPI\_GET\_ELEMENTS\_X}, then these functions set this value to \const{MPI\_UNDEFINED}.
+ \MPIupdateEnd{3.0}
+ 
+-The previously defined
+-function
++The previously defined function
+ \func{MPI\_GET\_COUNT} 
+ (Section~\ref{subsec:pt2pt-status}), 
+ has a different behavior.
+@@ -2075,15 +2094,9 @@
+ the value 
+ \MPIupdate{3.0}{265}{of \mpiarg{count} to }
+ \const{MPI\_UNDEFINED}.
+-The \mpiarg{datatype} argument should match the argument provided by the
+-receive call that set the \mpiarg{status} variable.
++\MPIdelete{3.0}{265}{The \mpiarg{datatype} argument should match the argument provided by the
++receive call that set the \mpiarg{status} variable.}
+ 
+-\MPIupdateBegin{3.0}{265}
+-If the number of basic elements received exceeds the limits of the 
+-\mpiarg{count} parameter, then \func{MPI\_GET\_ELEMENTS} and 
+-\func{MPI\_GET\_ELEMENTS\_X} set the value of \mpiarg{count} to \const{MPI\_UNDEFINED}.
+-\MPIupdateEnd{3.0}
+-
+ \begin{example} {\rm
+ \label{pt2pt-exBB}
+ \exindex{MPI\_GET\_COUNT}%
+@@ -2130,11 +2143,9 @@
+ \func{MPI\_GET\_COUNT}
+ \MPIreplace{3.0}{265}{and}{,} 
+ \func{MPI\_GET\_ELEMENTS}
+-\MPIupdateBegin{3.0}{265}
+-and \func{MPI\_GET\_ELEMENTS\_X}
+-\MPIupdateEnd{3.0}
++\MPIupdate{3.0}{265}{, and \func{MPI\_GET\_ELEMENTS\_X}}
+ return the same values when they are used
+-with basic datatypes.
++with basic datatypes\MPIupdate{3.0}{265}{ so long as the limits of their respective \mpiarg{count} arguments are not exceeded}.
+ 
+ 
+ \begin{rationale}

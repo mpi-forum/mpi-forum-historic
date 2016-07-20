@@ -1,0 +1,180 @@
+Interesting results:
+ -  compiler/intel/12.0.4  mpi/openmpi/1.5.4-intel-12.0.4 and
+ -  compiler/intel/12.0    mpi/mvapich2/1.6-intel-12.0
+ -  PrgEnv-cray/4.0.36
+
+  dt= 0.000008 nnodes=     240=16*15       best  ndims= 2 dims= 20 12
+  dt= 0.000545 nnodes=    3840=16*16*15    best  ndims= 3 dims= 20 16 12
+  dt= 0.069598 nnodes=   61440=16*16*16*15 best  ndims= 4 dims= 20 16 16 12
+
+In all 3 cases, the results 
+  (20 12), (20 16 12) and (20 16 16 12)
+are worse than the optimum which would be
+  (16 15), (16 16 15) and (16 16 16 15)
+ 
+Only OpenMPI and CrayMPI (mvapich2 seems to be in an endless loop): 
+  dt=34.429274 nnodes= 1843200=16*15*12*10*8*8   ndims= 6 dims= 16 12 12 10 10  8 
+
+The result  (16 12 12 10 10  8) is worse than 
+the optimum (16 15 12 10 8   8).
+Reason: 
+The result has the ratios 16/12=1.3333 12/12=1 12/10=1.2 10/10=1 10/8=1.25,
+i.e., maximum ratio = 1.3333 and average ratio=1.1567
+The optimum has the ratios 16/15=1.0667 15/12=1.25 12/10=1.2 10/8=1.25 8/8=1,
+i.e., maximum ratio = 1.2500 and average ratio=1.1533
+ 
+dt values are reported by OpenMPI
+dt by mvapich2 and CrayMPI: between 0.000000 and 0.000004 sec
+
+Feb. 5, 2012, Rolf Rabenseifner
+=====================================================================
+ 
+NEC Nehalem Cluster:
+
+    http://www.hlrs.de/systems/platforms/nec-nehalem-cluster/
+    https://wickie.hlrs.de/platforms/index.php/NEC_Nehalem_Cluster
+
+With OpenMPI:
+ 
+hpc43598 cl3fr1 207$ module load compiler/intel/12.0.4 mpi/openmpi/1.5.4-intel-12.0.4 
+hpc43598 cl3fr1 208$mpicc -o dims_create_test dims_create_test.c
+/sw/laki/hlrs/compiler/intel/Compiler/12.0.4/lib/intel64/libimf.so: warning: warning: feupdateenv is not implemented and will always fail
+hpc43598 cl3fr1 209$mpirun -np 1 ./dims_create_test
+dt= 0.000005 nnodes=       6=6, 2             ndims= 2 dims=  3  2
+dt= 0.011469 nnodes=   15360=16*12*10*8       ndims= 4 dims= 16 12 10  8
+dt= 0.011458 nnodes=   15360=16*15*8*8        ndims= 4 dims= 16 12 10  8
+dt= 0.759356 nnodes=  230400=16*12*12*10*10   ndims= 5 dims= 16 12 12 10 10
+dt= 0.758712 nnodes=  230400=16*15*12*10* 8   ndims= 5 dims= 16 12 12 10 10
+dt=34.429799 nnodes= 1843200=16*12*12*10*10*8 ndims= 6 dims= 16 12 12 10 10  8
+dt=34.429274 nnodes= 1843200=16*15*12*10* 8*8 ndims= 6 dims= 16 12 12 10 10  8
+dt= 0.000008 nnodes=     240=2**4 *3*5         ndims= 2 dims= 20 12
+dt= 0.000008 nnodes=     240=16*15             ndims= 2 dims= 20 12
+dt= 0.000007 nnodes=     240=20*12             ndims= 2 dims= 20 12
+dt= 0.000550 nnodes=    3840=2**8 *3*5         ndims= 3 dims= 20 16 12
+dt= 0.000545 nnodes=    3840=16*16*15    best  ndims= 3 dims= 20 16 12
+dt= 0.000548 nnodes=    3840=20*16*12    worse ndims= 3 dims= 20 16 12
+dt= 0.069603 nnodes=   61440=2**12*3*5         ndims= 4 dims= 20 16 16 12
+dt= 0.069598 nnodes=   61440=16*16*16*15 best  ndims= 4 dims= 20 16 16 12
+dt= 0.069599 nnodes=   61440=20*16*16*12 worse ndims= 4 dims= 20 16 16 12
+dt= 0.000004 nnodes=     120=2**3 *3*5         ndims= 6 dims=  5  3  2  2  2  1
+dt= 0.000007 nnodes=     240=2**4 *3*5         ndims= 6 dims=  5  3  2  2  2  2
+dt= 0.000019 nnodes=     480=2**5 *3*5         ndims= 6 dims=  5  4  3  2  2  2
+dt= 0.000055 nnodes=     960=2**6 *3*5         ndims= 6 dims=  5  4  4  3  2  2
+dt= 0.000171 nnodes=    1920=2**7 *3*5         ndims= 6 dims=  5  4  4  4  3  2
+dt= 0.000547 nnodes=    3840=2**8 *3*5         ndims= 6 dims=  5  4  4  4  4  3
+dt= 0.001787 nnodes=    7680=2**9 *3*5         ndims= 6 dims=  6  5  4  4  4  4
+dt= 0.005970 nnodes=   15360=2**10*3*5         ndims= 6 dims=  8  6  5  4  4  4
+dt= 0.005970 nnodes=   15360=8*6*5*4*4*4 best  ndims= 6 dims=  8  6  5  4  4  4
+dt= 0.005971 nnodes=   15360=8*8*5*4*4*3 worse ndims= 6 dims=  8  6  5  4  4  4
+dt= 0.020161 nnodes=   30720=2**11*3*5         ndims= 6 dims=  8  8  6  5  4  4
+dt= 0.020163 nnodes=   30720=8*8*6*5*4*4 best  ndims= 6 dims=  8  8  6  5  4  4
+dt= 0.020161 nnodes=   30720=8*8*8*5*4*3 worse ndims= 6 dims=  8  8  6  5  4  4
+dt= 0.069596 nnodes=   61440=2**12*3*5         ndims= 6 dims=  8  8  8  6  5  4
+dt= 0.069598 nnodes=   61440=8*8*8*6*5*4 best  ndims= 6 dims=  8  8  8  6  5  4
+dt= 0.069600 nnodes=   61440=8*8*8*8*5*3 worse ndims= 6 dims=  8  8  8  6  5  4
+hpc43598 cl3fr1 211$ module unload compiler/intel/12.0.4 mpi/openmpi/1.5.4-intel-12.0.4 
+
+
+With MVAPICH2:
+ 
+hpc43598 cl3fr1 212$module load compiler/intel/12.0 mpi/mvapich2/1.6-intel-12.0
+hpc43598 cl3fr1 213$mpicc -o dims_create_test dims_create_test.c
+/opt/compiler/intel/ics/lib/intel64/libimf.so: warning: warning: feupdateenv is not implemented and will always fail
+hpc43598 cl3fr1 214$ll dims_create_test dims_create_test.c
+-rwx------ 1 hpcrabe hpc43598 88528 Feb  5 12:27 dims_create_test
+-rw-r--r-- 1 hpcrabe hpc43598  2487 Feb  5 12:26 dims_create_test.c
+hpc43598 cl3fr1 215$mpirun -np 1 ./dims_create_test
+dt= 0.000006 nnodes=       6=6, 2             ndims= 2 dims=  3  2
+dt= 0.000003 nnodes=   15360=16*12*10*8       ndims= 4 dims= 16 12 10  8
+dt= 0.000002 nnodes=   15360=16*15*8*8        ndims= 4 dims= 16 12 10  8
+dt= 0.000003 nnodes=  230400=16*12*12*10*10   ndims= 5 dims= 16 12 12 10 10
+dt= 0.000003 nnodes=  230400=16*15*12*10* 8   ndims= 5 dims= 16 12 12 10 10
+            16*12*12*10*10*8 missing
+            16*15*12*10* 8 missing
+dt= 0.000002 nnodes=     240=2**4 *3*5         ndims= 2 dims= 20 12
+dt= 0.000000 nnodes=     240=16*15             ndims= 2 dims= 20 12
+dt= 0.000000 nnodes=     240=20*12             ndims= 2 dims= 20 12
+dt= 0.000001 nnodes=    3840=2**8 *3*5         ndims= 3 dims= 20 16 12
+dt= 0.000001 nnodes=    3840=16*16*15    best  ndims= 3 dims= 20 16 12
+dt= 0.000001 nnodes=    3840=20*16*12    worse ndims= 3 dims= 20 16 12
+dt= 0.000002 nnodes=   61440=2**12*3*5         ndims= 4 dims= 20 16 16 12
+dt= 0.000002 nnodes=   61440=16*16*16*15 best  ndims= 4 dims= 20 16 16 12
+dt= 0.000001 nnodes=   61440=20*16*16*12 worse ndims= 4 dims= 20 16 16 12
+dt= 0.000002 nnodes=     120=2**3 *3*5         ndims= 6 dims=  5  3  2  2  2  1
+dt= 0.000001 nnodes=     240=2**4 *3*5         ndims= 6 dims=  5  3  2  2  2  2
+dt= 0.000002 nnodes=     480=2**5 *3*5         ndims= 6 dims=  5  4  3  2  2  2
+dt= 0.000001 nnodes=     960=2**6 *3*5         ndims= 6 dims=  5  4  4  3  2  2
+dt= 0.000002 nnodes=    1920=2**7 *3*5         ndims= 6 dims=  5  4  4  4  3  2
+dt= 0.000001 nnodes=    3840=2**8 *3*5         ndims= 6 dims=  5  4  4  4  4  3
+dt= 0.000001 nnodes=    7680=2**9 *3*5         ndims= 6 dims=  6  5  4  4  4  4
+dt= 0.000002 nnodes=   15360=2**10*3*5         ndims= 6 dims=  8  6  5  4  4  4
+dt= 0.000001 nnodes=   15360=8*6*5*4*4*4 best  ndims= 6 dims=  8  6  5  4  4  4
+dt= 0.000002 nnodes=   15360=8*8*5*4*4*3 worse ndims= 6 dims=  8  6  5  4  4  4
+dt= 0.000002 nnodes=   30720=2**11*3*5         ndims= 6 dims=  8  8  6  5  4  4
+dt= 0.000002 nnodes=   30720=8*8*6*5*4*4 best  ndims= 6 dims=  8  8  6  5  4  4
+dt= 0.000002 nnodes=   30720=8*8*8*5*4*3 worse ndims= 6 dims=  8  8  6  5  4  4
+dt= 0.000001 nnodes=   61440=2**12*3*5         ndims= 6 dims=  8  8  8  6  5  4
+dt= 0.000002 nnodes=   61440=8*8*8*6*5*4 best  ndims= 6 dims=  8  8  8  6  5  4
+dt= 0.000002 nnodes=   61440=8*8*8*8*5*3 worse ndims= 6 dims=  8  8  8  6  5  4
+hpc43598 cl3fr1 216$
+ 
+Cray XE6 HERMIT
+
+    http://www.hlrs.de/systems/platforms/cray-xe6-hermit/
+    https://wickie.hlrs.de/platforms/index.php/Cray_XE6
+ 
+hpcrabe@eslogin003:~> module list
+Currently Loaded Modulefiles:
+  1) modules/3.2.6.6                      13) xe-sysroot/4.0.36
+  2) xtpe-network-gemini                  14) rca/1.0.0-2.0400.30002.5.75.gem
+  3) xtpe-interlagos                      15) xt-asyncpe/5.06
+  4) cce/8.0.1                            16) atp/1.4.1
+  5) acml/4.4.0                           17) PrgEnv-cray/4.0.36
+  6) xt-libsci/11.0.04                    18) xt-mpich2/5.4.2
+  7) udreg/2.3.1-1.0400.3911.5.13.gem     19) eswrap/1.0.9
+  8) ugni/2.3-1.0400.4127.5.20.gem        20) torque/2.5.9
+  9) pmi/3.0.0-1.0000.8661.28.2807.gem    21) moab/6.1.5.s1992
+ 10) dmapp/3.2.1-1.0400.3965.10.63.gem    22) system/ws_tools
+ 11) gni-headers/2.1-1.0400.4156.6.1.gem  23) system/hlrs-defaults
+ 12) xpmem/0.1-2.0400.30792.5.6.gem
+hpcrabe@eslogin003:~> cc -o dims_create_test dims_create_test.c
+hpcrabe@eslogin003:~> qsub -I -l mppwidth=32 -l mppnppn=32 -l walltime=00:10:00
+qsub: waiting for job 27601.sdb to start
+qsub: job 27601.sdb ready
+
+hpcrabe@nid03320:~> aprun -N 1 -n 1 ./dims_create_test
+dt= 0.000002 nnodes=       6=6, 2             ndims= 2 dims=  3  2
+dt= 0.000002 nnodes=   15360=16*12*10*8       ndims= 4 dims= 16 12 10  8
+dt= 0.000002 nnodes=   15360=16*15*8*8        ndims= 4 dims= 16 12 10  8
+dt= 0.000003 nnodes=  230400=16*12*12*10*10   ndims= 5 dims= 16 12 12 10 10
+dt= 0.000002 nnodes=  230400=16*15*12*10* 8   ndims= 5 dims= 16 12 12 10 10
+dt= 0.000004 nnodes= 1843200=16*12*12*10*10*8 ndims= 6 dims= 16 12 12 10 10  8
+dt= 0.000004 nnodes= 1843200=16*15*12*10* 8*8 ndims= 6 dims= 16 12 12 10 10  8
+dt= 0.000001 nnodes=     240=2**4 *3*5         ndims= 2 dims= 20 12
+dt= 0.000001 nnodes=     240=16*15             ndims= 2 dims= 20 12
+dt= 0.000000 nnodes=     240=20*12             ndims= 2 dims= 20 12
+dt= 0.000003 nnodes=    3840=2**8 *3*5         ndims= 3 dims= 20 16 12
+dt= 0.000001 nnodes=    3840=16*16*15    best  ndims= 3 dims= 20 16 12
+dt= 0.000001 nnodes=    3840=20*16*12    worse ndims= 3 dims= 20 16 12
+dt= 0.000002 nnodes=   61440=2**12*3*5         ndims= 4 dims= 20 16 16 12
+dt= 0.000001 nnodes=   61440=16*16*16*15 best  ndims= 4 dims= 20 16 16 12
+dt= 0.000001 nnodes=   61440=20*16*16*12 worse ndims= 4 dims= 20 16 16 12
+dt= 0.000001 nnodes=     120=2**3 *3*5         ndims= 6 dims=  5  3  2  2  2  1
+dt= 0.000000 nnodes=     240=2**4 *3*5         ndims= 6 dims=  5  3  2  2  2  2
+dt= 0.000001 nnodes=     480=2**5 *3*5         ndims= 6 dims=  5  4  3  2  2  2
+dt= 0.000001 nnodes=     960=2**6 *3*5         ndims= 6 dims=  5  4  4  3  2  2
+dt= 0.000001 nnodes=    1920=2**7 *3*5         ndims= 6 dims=  5  4  4  4  3  2
+dt= 0.000001 nnodes=    3840=2**8 *3*5         ndims= 6 dims=  5  4  4  4  4  3
+dt= 0.000001 nnodes=    7680=2**9 *3*5         ndims= 6 dims=  6  5  4  4  4  4
+dt= 0.000002 nnodes=   15360=2**10*3*5         ndims= 6 dims=  8  6  5  4  4  4
+dt= 0.000001 nnodes=   15360=8*6*5*4*4*4 best  ndims= 6 dims=  8  6  5  4  4  4
+dt= 0.000002 nnodes=   15360=8*8*5*4*4*3 worse ndims= 6 dims=  8  6  5  4  4  4
+dt= 0.000002 nnodes=   30720=2**11*3*5         ndims= 6 dims=  8  8  6  5  4  4
+dt= 0.000001 nnodes=   30720=8*8*6*5*4*4 best  ndims= 6 dims=  8  8  6  5  4  4
+dt= 0.000002 nnodes=   30720=8*8*8*5*4*3 worse ndims= 6 dims=  8  8  6  5  4  4
+dt= 0.000002 nnodes=   61440=2**12*3*5         ndims= 6 dims=  8  8  8  6  5  4
+dt= 0.000002 nnodes=   61440=8*8*8*6*5*4 best  ndims= 6 dims=  8  8  8  6  5  4
+dt= 0.000001 nnodes=   61440=8*8*8*8*5*3 worse ndims= 6 dims=  8  8  8  6  5  4
+Application 433952 resources: utime ~0s, stime ~0s
+hpcrabe@nid03320:~> 
+

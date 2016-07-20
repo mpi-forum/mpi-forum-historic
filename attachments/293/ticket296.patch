@@ -1,0 +1,60 @@
+Index: chap-context/context.tex
+===================================================================
+--- chap-context/context.tex	(revision 1104)
++++ chap-context/context.tex	(working copy)
+@@ -3075,8 +3075,7 @@
+       /* other stuff, whatever else we want */
+    } gop_stuff_type;
+ 
+-   Efficient_Collective_Op (comm, ...)
+-   MPI_Comm comm;
++   Efficient_Collective_Op (MPI_Comm comm, ...)
+    {
+      gop_stuff_type *gop_stuff;
+      MPI_Group       group;
+@@ -3086,13 +3085,11 @@
+ 
+      if (gop_key == MPI_KEYVAL_INVALID) /* get a key on first call ever */
+      {
+-       if ( ! MPI_Comm_create_keyval( gop_stuff_copier,
+-                                gop_stuff_destructor,
+-                                &gop_key, (void *)0));
+        /* get the key while assigning its copy and delete callback
+           behavior. */
+-
+-       MPI_Abort (comm, 99);
++       MPI_Comm_create_keyval(gop_stuff_copier,
++                              gop_stuff_destructor,
++                              &gop_key, (void *)0);
+      }
+ 
+      MPI_Comm_get_attr (comm, gop_key, &gop_stuff, &foundflag);
+@@ -3125,11 +3122,8 @@
+ 
+    /* The following routine is called by MPI when a group is freed */
+ 
+-   gop_stuff_destructor (comm, keyval, gop_stuff, extra)
+-   MPI_Comm comm;
+-   int keyval;
+-   gop_stuff_type *gop_stuff;
+-   void *extra;
++   gop_stuff_destructor (MPI_Comm comm, int keyval,
++                         gop_stuff_type *gop_stuff, void *extra)
+    {
+      if (keyval != gop_key) { /* abort -- programming error */ }
+ 
+@@ -3143,11 +3137,9 @@
+    }
+ 
+    /* The following routine is called by MPI when a group is copied */
+-   gop_stuff_copier (comm, keyval, extra, gop_stuff_in, gop_stuff_out, flag)
+-   MPI_Comm comm;
+-   int keyval;
+-   gop_stuff_type *gop_stuff_in, *gop_stuff_out;
+-   void *extra;
++   gop_stuff_copier (MPI_Comm comm, int keyval, void *extra,
++                     gop_stuff_type *gop_stuff_in,
++                     gop_stuff_type *gop_stuff_out, int *flag)
+    {
+      if (keyval != gop_key) { /* abort -- programming error */ }
+ 

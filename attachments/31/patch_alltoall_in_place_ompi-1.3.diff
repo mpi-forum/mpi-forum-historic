@@ -1,0 +1,199 @@
+Index: ompi/mpi/c/alltoall.c
+===================================================================
+--- ompi/mpi/c/alltoall.c	(revision 20594)
++++ ompi/mpi/c/alltoall.c	(working copy)
+@@ -63,7 +63,7 @@
+         err = MPI_ERR_TYPE;
+       } else if (recvcount < 0) {
+         err = MPI_ERR_COUNT;
+-      } else if (MPI_IN_PLACE == sendbuf || MPI_IN_PLACE == recvbuf) {
++      } else if (MPI_IN_PLACE == recvbuf) {
+         err = MPI_ERR_ARG;
+       } else {
+         OMPI_CHECK_DATATYPE_FOR_SEND(err, sendtype, sendcount);
+Index: ompi/mca/coll/basic/coll_basic_alltoall.c
+===================================================================
+--- ompi/mca/coll/basic/coll_basic_alltoall.c	(revision 20612)
++++ ompi/mca/coll/basic/coll_basic_alltoall.c	(working copy)
+@@ -75,77 +75,130 @@
+     }
+     rcvinc *= rcount;
+ 
+-    /* simple optimization */
++    /* MPI_IN_PLACE case - use simple memory-saving algorithm */
++    if(sbuf == MPI_IN_PLACE) {
+ 
+-    psnd = ((char *) sbuf) + (rank * sndinc);
+-    prcv = ((char *) rbuf) + (rank * rcvinc);
++      int l;
++      for(l=0; l<size; l++) {
++        int peer = (l - rank+size)%size;
++        
++        psnd = ((char *) rbuf) + (peer * sndinc);
++        prcv = ((char *) rbuf) + (peer * rcvinc);
+ 
+-    err = ompi_ddt_sndrcv(psnd, scount, sdtype, prcv, rcount, rdtype);
+-    if (MPI_SUCCESS != err) {
+-        return err;
+-    }
++        if(peer != rank) {
++          ptrdiff_t true_lb, true_extent, lb, extent;
++          char *buffer = NULL;
++          MPI_Request req = MPI_REQUEST_NULL;
+ 
+-    /* If only one process, we're done. */
++          /* hmm, somebody implemented MPI_Sendrecv_replace() in the MPI
++           * layer *HMPF* - that's what we actually want to do but we 
++           * can't use the coll tag with this ... someone should clean
++           * this up 
++           MPI_Sendrecv_replace(psnd, scount, sdtype, peer, MCA_COLL_BASE_TAG_ALLTOALL, 
++                               rank, MCA_COLL_BASE_TAG_ALLTOALL, comm, MPI_STATUS_IGNORE);
++           * but instead, we have to do this: */
++          ompi_ddt_get_extent(rdtype, &lb, &extent);
++          ompi_ddt_get_true_extent(rdtype, &true_lb, &true_extent);
+ 
+-    if (1 == size) {
+-        return MPI_SUCCESS;
+-    }
++          buffer = (char*)malloc(true_extent + (rcount - 1) * extent);
++          if (NULL == buffer) return OMPI_ERR_OUT_OF_RESOURCE;
+ 
+-    /* Initiate all send/recv to/from others. */
++          /* start irecv */
++          err = MCA_PML_CALL(irecv(buffer, rcount, rdtype, peer,
++                                   MCA_COLL_BASE_TAG_ALLTOALL, comm, &req));
++          if (MPI_SUCCESS != err) { free(buffer); goto error; }
++          /* start send */
++          err = MCA_PML_CALL(send(psnd, scount, sdtype, peer,
++                                 MCA_COLL_BASE_TAG_ALLTOALL,
++                                 MCA_PML_BASE_SEND_STANDARD, comm));
++          if (MPI_SUCCESS != err) { free(buffer); goto error; }
+ 
+-    req = rreq = basic_module->mccb_reqs;
+-    sreq = rreq + size - 1;
++          /* wait for recv */
++          err = ompi_request_wait(&req, MPI_STATUS_IGNORE);
++          if (MPI_SUCCESS != err) { free(buffer); goto error; }
+ 
+-    prcv = (char *) rbuf;
+-    psnd = (char *) sbuf;
++          /* copy buffer to prcv (this interface is counter-intuitive)*/
++          err = ompi_ddt_copy_content_same_ddt(rdtype, rcount, prcv, (char*)buffer);
++          if (MPI_SUCCESS != err) { free(buffer); goto error; }
++          free(buffer);
++          /* end of self-made sendrecv_replace */
++        }
+ 
+-    /* Post all receives first -- a simple optimization */
++      }
++    } else {
+ 
+-    for (nreqs = 0, i = (rank + 1) % size; i != rank; i = (i + 1) % size, ++rreq, ++nreqs) {
+-        err =
+-            MCA_PML_CALL(irecv_init
+-                         (prcv + (i * rcvinc), rcount, rdtype, i,
+-                          MCA_COLL_BASE_TAG_ALLTOALL, comm, rreq));
+-        if (MPI_SUCCESS != err) {
+-            mca_coll_basic_free_reqs(req, nreqs);
+-            return err;
+-        }
+-    }
++      /* simple optimization */
+ 
+-    /* Now post all sends */
++      psnd = ((char *) sbuf) + (rank * sndinc);
++      prcv = ((char *) rbuf) + (rank * rcvinc);
+ 
+-    for (nreqs = 0, i = (rank + 1) % size; i != rank; i = (i + 1) % size, ++sreq, ++nreqs) {
+-        err =
+-            MCA_PML_CALL(isend_init
+-                         (psnd + (i * sndinc), scount, sdtype, i,
+-                          MCA_COLL_BASE_TAG_ALLTOALL,
+-                          MCA_PML_BASE_SEND_STANDARD, comm, sreq));
+-        if (MPI_SUCCESS != err) {
+-            mca_coll_basic_free_reqs(req, nreqs);
+-            return err;
+-        }
+-    }
++      err = ompi_ddt_sndrcv(psnd, scount, sdtype, prcv, rcount, rdtype);
++      if (MPI_SUCCESS != err) {
++          return err;
++      }
+ 
+-    nreqs = (size - 1) * 2;
+-    /* Start your engines.  This will never return an error. */
++      /* If only one process, we're done. */
+ 
+-    MCA_PML_CALL(start(nreqs, req));
++      if (1 == size) {
++          return MPI_SUCCESS;
++      }
+ 
+-    /* Wait for them all.  If there's an error, note that we don't
+-     * care what the error was -- just that there *was* an error.  The
+-     * PML will finish all requests, even if one or more of them fail.
+-     * i.e., by the end of this call, all the requests are free-able.
+-     * So free them anyway -- even if there was an error, and return
+-     * the error after we free everything. */
++      /* Initiate all send/recv to/from others. */
+ 
+-    err = ompi_request_wait_all(nreqs, req, MPI_STATUSES_IGNORE);
++      req = rreq = basic_module->mccb_reqs;
++      sreq = rreq + size - 1;
+ 
+-    /* Free the reqs */
++      prcv = (char *) rbuf;
++      psnd = (char *) sbuf;
+ 
+-    mca_coll_basic_free_reqs(req, nreqs);
++      /* Post all receives first -- a simple optimization */
+ 
++      for (nreqs = 0, i = (rank + 1) % size; i != rank; i = (i + 1) % size, ++rreq, ++nreqs) {
++          err =
++              MCA_PML_CALL(irecv_init
++                           (prcv + (i * rcvinc), rcount, rdtype, i,
++                            MCA_COLL_BASE_TAG_ALLTOALL, comm, rreq));
++          if (MPI_SUCCESS != err) {
++              mca_coll_basic_free_reqs(req, nreqs);
++              return err;
++          }
++      }
++
++      /* Now post all sends */
++
++      for (nreqs = 0, i = (rank + 1) % size; i != rank; i = (i + 1) % size, ++sreq, ++nreqs) {
++          err =
++              MCA_PML_CALL(isend_init
++                           (psnd + (i * sndinc), scount, sdtype, i,
++                            MCA_COLL_BASE_TAG_ALLTOALL,
++                            MCA_PML_BASE_SEND_STANDARD, comm, sreq));
++          if (MPI_SUCCESS != err) {
++              mca_coll_basic_free_reqs(req, nreqs);
++              return err;
++          }
++      }
++
++      nreqs = (size - 1) * 2;
++      /* Start your engines.  This will never return an error. */
++
++      MCA_PML_CALL(start(nreqs, req));
++
++      /* Wait for them all.  If there's an error, note that we don't
++       * care what the error was -- just that there *was* an error.  The
++       * PML will finish all requests, even if one or more of them fail.
++       * i.e., by the end of this call, all the requests are free-able.
++       * So free them anyway -- even if there was an error, and return
++       * the error after we free everything. */
++
++      err = ompi_request_wait_all(nreqs, req, MPI_STATUSES_IGNORE);
++
++      /* Free the reqs */
++
++      mca_coll_basic_free_reqs(req, nreqs);
++    }
++
+     /* All done */
+-
++error:
+     return err;
+ }

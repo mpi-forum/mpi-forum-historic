@@ -1,0 +1,282 @@
+Index: ompi/include/mpi.h.in
+===================================================================
+--- ompi/include/mpi.h.in	(revision 26506)
++++ ompi/include/mpi.h.in	(working copy)
+@@ -612,7 +612,8 @@
+   MPI_COMBINER_F90_REAL,
+   MPI_COMBINER_F90_COMPLEX,
+   MPI_COMBINER_F90_INTEGER,
+-  MPI_COMBINER_RESIZED
++  MPI_COMBINER_RESIZED,
++  MPI_COMBINER_HINDEXED_BLOCK
+ };
+ 
+ /* 
+@@ -1454,6 +1455,10 @@
+ OMPI_DECLSPEC  int MPI_Type_create_f90_complex(int p, int r, MPI_Datatype *newtype);
+ OMPI_DECLSPEC  int MPI_Type_create_f90_integer(int r, MPI_Datatype *newtype);
+ OMPI_DECLSPEC  int MPI_Type_create_f90_real(int p, int r, MPI_Datatype *newtype);
++OMPI_DECLSPEC  int MPI_Type_create_hindexed_block(int count, int blocklength,
++                                                  MPI_Aint array_of_displacements[],
++                                                  MPI_Datatype oldtype,
++                                                  MPI_Datatype *newtype);
+ OMPI_DECLSPEC  int MPI_Type_create_hindexed(int count, int array_of_blocklengths[],
+                                             MPI_Aint array_of_displacements[],
+                                             MPI_Datatype oldtype,
+@@ -2004,6 +2009,10 @@
+ OMPI_DECLSPEC  int PMPI_Type_create_keyval(MPI_Type_copy_attr_function *type_copy_attr_fn,
+                                            MPI_Type_delete_attr_function *type_delete_attr_fn,
+                                            int *type_keyval, void *extra_state);
++OMPI_DECLSPEC  int PMPI_Type_create_hindexed_block(int count, int blocklength,
++                                                   MPI_Aint array_of_displacements[],
++                                                   MPI_Datatype oldtype,
++                                                   MPI_Datatype *newtype);
+ OMPI_DECLSPEC  int PMPI_Type_create_indexed_block(int count, int blocklength,
+                                                   int array_of_displacements[],
+                                                   MPI_Datatype oldtype,
+Index: ompi/include/mpif-common.h.fin
+===================================================================
+--- ompi/include/mpif-common.h.fin	(revision 26506)
++++ ompi/include/mpif-common.h.fin	(working copy)
+@@ -354,6 +354,7 @@
+       integer MPI_COMBINER_F90_COMPLEX
+       integer MPI_COMBINER_F90_INTEGER
+       integer MPI_COMBINER_RESIZED
++      integer MPI_COMBINER_HINDEXED_BLOCK
+ 
+       parameter (MPI_COMBINER_NAMED=0)
+       parameter (MPI_COMBINER_DUP=1)
+@@ -373,6 +374,7 @@
+       parameter (MPI_COMBINER_F90_COMPLEX=15)
+       parameter (MPI_COMBINER_F90_INTEGER=16)
+       parameter (MPI_COMBINER_RESIZED=17)
++      parameter (MPI_COMBINER_INDEXED_BLOCK=18)
+ 
+ ! 
+ ! Communicator split type constants.
+Index: ompi/datatype/ompi_datatype_args.c
+===================================================================
+--- ompi/datatype/ompi_datatype_args.c	(revision 26506)
++++ ompi/datatype/ompi_datatype_args.c	(working copy)
+@@ -216,6 +216,12 @@
+     case MPI_COMBINER_RESIZED:
+         break;
+ 
++    case MPI_COMBINER_HINDEXED_BLOCK:
++        pArgs->i[0] = i[0][0];
++        pArgs->i[1] = i[1][0];
++        memcpy( pArgs->i + 2, i[2], i[0][0] * sizeof(int) );
++        break;
++
+     default:
+         break;
+     }
+@@ -744,8 +750,16 @@
+         /*ompi_datatype_set_args( datatype, 0, NULL, 2, a, 1, d, MPI_COMBINER_RESIZED );*/
+         break;
+         /******************************************************************/
+-    default:
++    case MPI_COMBINER_HINDEXED_BLOCK:
++        ompi_datatype_create_hindexed_block( i[0], i[1], a, d[0], &datatype );
++        {
++            int* a_i[2]; a_i[0] = &i[0]; a_i[1] = &i[1];
++            ompi_datatype_set_args( datatype, 2 + i[0], a_i, i[0], a, 1, d, MPI_COMBINER_HINDEXED_BLOCK );
++        }
+         break;
++        /******************************************************************/
++     default:
++        break;
+     }
+ 
+     return datatype;
+Index: ompi/datatype/ompi_datatype_create_indexed.c
+===================================================================
+--- ompi/datatype/ompi_datatype_create_indexed.c	(revision 26506)
++++ ompi/datatype/ompi_datatype_create_indexed.c	(working copy)
+@@ -142,3 +142,41 @@
+     *newType = pdt;
+     return OMPI_SUCCESS;
+ }
++
++int32_t ompi_datatype_create_hindexed_block( int count, int bLength, const OPAL_PTRDIFF_TYPE* pDisp,
++                                             const ompi_datatype_t* oldType, ompi_datatype_t** newType )
++{
++    ompi_datatype_t* pdt;
++    int i, dLength;
++    OPAL_PTRDIFF_TYPE extent, disp, endat;
++
++    ompi_datatype_type_extent( oldType, &extent );
++    if( (count == 0) || (bLength == 0) ) {
++        *newType = ompi_datatype_create(1);
++        if( 0 == count )
++            ompi_datatype_add( *newType, &ompi_mpi_datatype_null.dt, 0, 0, 0 );
++        else
++            ompi_datatype_add( *newType, oldType, 0, pDisp[0] * extent, extent );
++        return OMPI_SUCCESS;
++    }
++    pdt = ompi_datatype_create( count * (2 + oldType->super.desc.used) );
++    disp = pDisp[0];
++    dLength = bLength;
++    endat = disp + dLength;
++    for( i = 1; i < count; i++ ) {
++        if( endat == pDisp[i] ) {
++            /* contiguous with the previsious */
++            dLength += bLength;
++            endat += bLength;
++        } else {
++            ompi_datatype_add( pdt, oldType, dLength, disp, extent );
++            disp = pDisp[i];
++            dLength = bLength;
++            endat = disp + bLength;
++        }
++    }
++    ompi_datatype_add( pdt, oldType, dLength, disp, extent );
++
++    *newType = pdt;
++    return OMPI_SUCCESS;
++}
+Index: ompi/datatype/ompi_datatype.h
+===================================================================
+--- ompi/datatype/ompi_datatype.h	(revision 26506)
++++ ompi/datatype/ompi_datatype.h	(working copy)
+@@ -210,6 +210,8 @@
+                                                      const ompi_datatype_t* oldType, ompi_datatype_t** newType );
+ OMPI_DECLSPEC int32_t ompi_datatype_create_indexed_block( int count, int bLength, const int* pDisp,
+                                                           const ompi_datatype_t* oldType, ompi_datatype_t** newType );
++OMPI_DECLSPEC int32_t ompi_datatype_create_hindexed_block( int count, int bLength, const OPAL_PTRDIFF_TYPE* pDisp,
++                                                           const ompi_datatype_t* oldType, ompi_datatype_t** newType );
+ OMPI_DECLSPEC int32_t ompi_datatype_create_struct( int count, const int* pBlockLength, const OPAL_PTRDIFF_TYPE* pDisp,
+                                                    ompi_datatype_t* const* pTypes, ompi_datatype_t** newType );
+ OMPI_DECLSPEC int32_t ompi_datatype_create_darray( int size, int rank, int ndims, int const* gsize_array,
+Index: ompi/mpi/c/profile/defines.h
+===================================================================
+--- ompi/mpi/c/profile/defines.h	(revision 26506)
++++ ompi/mpi/c/profile/defines.h	(working copy)
+@@ -283,6 +283,7 @@
+ #define MPI_Type_create_hindexed PMPI_Type_create_hindexed
+ #define MPI_Type_create_hvector PMPI_Type_create_hvector
+ #define MPI_Type_create_indexed_block PMPI_Type_create_indexed_block
++#define MPI_Type_create_hindexed_block PMPI_Type_create_hindexed_block
+ #define MPI_Type_create_keyval PMPI_Type_create_keyval
+ #define MPI_Type_create_resized PMPI_Type_create_resized
+ #define MPI_Type_create_struct PMPI_Type_create_struct
+Index: ompi/mpi/c/profile/Makefile.am
+===================================================================
+--- ompi/mpi/c/profile/Makefile.am	(revision 26506)
++++ ompi/mpi/c/profile/Makefile.am	(working copy)
+@@ -235,6 +235,7 @@
+         ptype_create_hindexed.c \
+         ptype_create_hvector.c \
+         ptype_create_indexed_block.c \
++        ptype_create_hindexed_block.c \
+         ptype_create_keyval.c \
+         ptype_create_resized.c \
+         ptype_create_struct.c \
+Index: ompi/mpi/c/type_create_indexed_block.c
+===================================================================
+--- ompi/mpi/c/type_create_indexed_block.c	(revision 26506)
++++ ompi/mpi/c/type_create_indexed_block.c	(working copy)
+@@ -76,7 +76,8 @@
+       a_i[0] = &count;
+       a_i[1] = &blocklength;
+       a_i[2] = array_of_displacements;
+-      ompi_datatype_set_args( *newtype, 2 + count, a_i, 0, NULL, 1, &oldtype, MPI_COMBINER_INDEXED_BLOCK );
++      ompi_datatype_set_args( *newtype, 2 + count, a_i, 0, NULL, 1, &oldtype,
++                              MPI_COMBINER_INDEXED_BLOCK );
+    }
+ 
+    OPAL_CR_EXIT_LIBRARY();
+Index: ompi/mpi/c/Makefile.am
+===================================================================
+--- ompi/mpi/c/Makefile.am	(revision 26506)
++++ ompi/mpi/c/Makefile.am	(working copy)
+@@ -253,6 +253,7 @@
+         type_create_hindexed.c \
+         type_create_hvector.c \
+         type_create_indexed_block.c \
++        type_create_hindexed_block.c \
+         type_create_keyval.c \
+         type_create_resized.c \
+         type_create_struct.c \
+Index: ompi/mpi/c/type_create_hindexed_block.c
+===================================================================
+--- ompi/mpi/c/type_create_hindexed_block.c	(revision 0)
++++ ompi/mpi/c/type_create_hindexed_block.c	(working copy)
+@@ -0,0 +1,77 @@
++/*
++ * Copyright (c) 2012      The University of Tennessee and The University
++ *                         of Tennessee Research Foundation.  All rights
++ *                         reserved.
++ * $COPYRIGHT$
++ * 
++ * Additional copyrights may follow
++ * 
++ * $HEADER$
++ */
++
++#include "ompi_config.h"
++
++#include "ompi/mpi/c/bindings.h"
++#include "ompi/runtime/params.h"
++#include "ompi/communicator/communicator.h"
++#include "ompi/errhandler/errhandler.h"
++#include "ompi/datatype/ompi_datatype.h"
++#include "ompi/memchecker.h"
++
++#if OPAL_HAVE_WEAK_SYMBOLS && OMPI_PROFILING_DEFINES
++#pragma weak MPI_Type_create_hindexed_block = PMPI_Type_create_hindexed_block
++#endif
++
++#if OMPI_PROFILING_DEFINES
++#include "ompi/mpi/c/profile/defines.h"
++#endif
++
++static const char FUNC_NAME[] = "MPI_Type_create_hindexed_block";
++
++
++int MPI_Type_create_hindexed_block(int count,
++                                   int blocklength, 
++                                   MPI_Aint array_of_displacements[],
++                                   MPI_Datatype oldtype,
++                                   MPI_Datatype *newtype)
++{
++   int rc;
++
++   MEMCHECKER(
++      memchecker_datatype(oldtype);
++   );
++    
++   if( MPI_PARAM_CHECK ) {
++      OMPI_ERR_INIT_FINALIZE(FUNC_NAME);
++      if( count < 0 ) {
++        return OMPI_ERRHANDLER_INVOKE(MPI_COMM_WORLD, MPI_ERR_COUNT, 
++                                      FUNC_NAME);
++      } else if( (count > 0) && (blocklength < 0 || NULL == array_of_displacements) ) {
++        return OMPI_ERRHANDLER_INVOKE(MPI_COMM_WORLD, MPI_ERR_ARG,
++                                      FUNC_NAME );
++      } else if (NULL == oldtype || MPI_DATATYPE_NULL == oldtype ||
++                 NULL == newtype) {
++        return OMPI_ERRHANDLER_INVOKE(MPI_COMM_WORLD, MPI_ERR_TYPE,
++                                      FUNC_NAME );
++      }
++   }
++
++   OPAL_CR_ENTER_LIBRARY();
++
++   rc = ompi_datatype_create_hindexed_block( count, blocklength, array_of_displacements,
++                                             oldtype, newtype );
++   if( rc != MPI_SUCCESS ) {
++      ompi_datatype_destroy( newtype );
++      OMPI_ERRHANDLER_RETURN( rc, MPI_COMM_WORLD, rc, FUNC_NAME );
++   }
++   {
++      int* a_i[2];
++      a_i[0] = &count;
++      a_i[1] = &blocklength;
++      ompi_datatype_set_args( *newtype, 2 + count, a_i, count, array_of_displacements, 1, &oldtype,
++                              MPI_COMBINER_HINDEXED_BLOCK );
++   }
++
++   OPAL_CR_EXIT_LIBRARY();
++   return MPI_SUCCESS;
++}

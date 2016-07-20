@@ -1,0 +1,143 @@
+Location Microsoft, Chicago
+
+Asynch array problem (recv borders, work on interior, compiler uses vectorization)
+
+--------------
+First Example
+--------------
+
+real, dimension(100,300) :: A, B, C
+
+! send boundaries
+
+! non contiguous borders of the array
+call MPI_Isend(A, 1, , vector_datatype_for A(1,  1:300), rq1)
+call MPI_Isend(A, 1, , vector_datatype_for A(100,1:300), rq2)
+
+! work on interior
+do j = 1, 300
+  do i = 2, 99
+    A(i,j) = b1*B(i,j) + c1*C(i,j)
+  end do
+end do
+
+! wait for boundaries
+
+call MPI_Wait(rq1)
+call MPI_Wait(rq2)
+
+
+--------------
+First example, how it can be compiler
+----------------
+
+! the code above can be compiled by a Fortran compiler
+
+real, dimension(100,300) :: A, B, C
+
+! send boundaries
+
+! non contiguous borders of the array
+call MPI_Isend(A, 1, , vector_datatype_for A(1,  1:300), rq1)
+call MPI_Isend(A, 1, , vector_datatype_for A(100,1:300), rq2)
+
+! a scratch array
+real, dimension(300) :: scr1, scr2
+
+scr1 = A(1,:)
+scr2 = A(100,:)
+
+! work on interior
+do j = 1, 300
+  do i = 1, 100
+    A(i,j) = b1*B(i,j) + c1*C(i,j)
+  end do
+end do
+
+! compiler should fuse loops as it wants, as in
+
+A = b1*B + c1*C
+
+! copy back
+
+A(1,:) = scr1
+A(100,:) = scr2
+
+! wait for boundaries
+
+call MPI_Wait(rq1)
+call MPI_Wait(rq2)
+
+----------------
+Second Example
+----------------
+
+subroutine foo(A, B, C)
+real, dimension(100,300) :: A, B, C
+! work on interior
+do j = 1, 300
+  do i = 2, 99
+    A(i,j) = b1*B(i,j) + c1*C(i,j)
+  end do
+end do
+end subroutine
+
+program
+real, dimension(100,300) :: A, B, C
+
+! send non contiguous borders of the array
+call MPI_Isend(A, 1, , vector_datatype_for A(1,  1:300), rq1)
+call MPI_Isend(A, 1, , vector_datatype_for A(100,1:300), rq2)
+
+call foo(A, B, C)
+
+! wait for boundaries
+call MPI_Wait(rq1)
+call MPI_Wait(rq2)
+
+end program
+----------------
+
+----------------
+Second Example, can be compiled as
+----------------
+
+subroutine foo(A, B, C)
+real, dimension(100,300) :: A, B, C
+! a scratch array
+real, dimension(300) :: scr1, scr2
+
+scr1 = A(1,:)
+scr2 = A(100,:)
+
+! work on total array
+do j = 1, 300
+  do i = 1, 100
+    A(i,j) = b1*B(i,j) + c1*C(i,j)
+  end do
+end do
+
+! compiler should fuse loops as it wants, as in
+A = b1*B + c1*C
+
+! copy back
+A(1,:) = scr1
+A(100,:) = scr2
+
+end subroutine
+
+program
+real, dimension(100,300) :: A, B, C
+
+! send non contiguous borders of the array
+call MPI_Isend(A, 1, , vector_datatype_for A(1,  1:300), rq1)
+call MPI_Isend(A, 1, , vector_datatype_for A(100,1:300), rq2)
+
+call foo(A, B, C)
+
+! wait for boundaries
+
+call MPI_Wait(rq1)
+call MPI_Wait(rq2)
+
+----------------

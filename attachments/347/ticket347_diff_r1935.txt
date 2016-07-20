@@ -1,0 +1,12 @@
+Index: appLang-Const.tex
+===================================================================
+--- appLang-Const.tex	(Revision 1934)
++++ appLang-Const.tex	(Revision 1935)
+@@ -1471,6 +1471,7 @@
+ \infoskip{read\_once} \\
+ \infoskip{reverse\_sequential} \\
+ \infoskip{same\_op}\\
++\infoskip{same\_op\_no\_op}\\
+ \infoskip{sequential} \\
+ \infoskip{true} \\
+ \infoskip{war}\\

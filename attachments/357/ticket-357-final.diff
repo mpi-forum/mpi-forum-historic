@@ -1,0 +1,24 @@
+commit 36d819873a7531a431c492915cd7ebf1fd0a141b
+Author: Pavan Balaji <balaji@anl.gov>
+Date:   Sun Feb 1 03:44:21 2015 -0600
+
+    Changes for ticket #357.
+
+diff --git a/approved/MPI-3.1/chap-ei/ei-2.tex b/approved/MPI-3.1/chap-ei/ei-2.tex
+index 9a4c74b0..25dc0b8b 100644
+--- a/approved/MPI-3.1/chap-ei/ei-2.tex
++++ b/approved/MPI-3.1/chap-ei/ei-2.tex
+@@ -622,6 +622,13 @@ and defines functions that can
+ be used for initializing the thread environment.  
+ \MPI/ may be implemented in environments where threads
+ are not supported or perform poorly.  Therefore, \MPI/ implementations are not required to be thread compliant as defined in this section.
++\mpifunc{MPI\_INITIALIZED}, \mpifunc{MPI\_FINALIZED},
++\mpifunc{MPI\_QUERY\_THREAD}, \mpifunc{MPI\_IS\_THREAD\_MAIN},
++\mpifunc{MPI\_GET\_VERSION} and \mpifunc{MPI\_GET\_LIBRARY\_VERSION}
++are exceptions to this rule and must always be thread-safe.  When a
++thread is executing one of these routines, if another concurrently
++running thread also makes an MPI call, the outcome will be as if the
++calls executed in some order.
+ 
+ This section
+ generally assumes a thread package similar to 

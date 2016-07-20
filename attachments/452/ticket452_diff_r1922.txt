@@ -1,0 +1,13 @@
+Index: terms-2.tex
+===================================================================
+--- terms-2.tex	(Revision 1921)
++++ terms-2.tex	(Revision 1922)
+@@ -666,7 +666,7 @@
+ \mpiii/, these functions 
+ were given new names with
+ new bindings for the
+-address arguments.  The use of the old functions is deprecated.
++address arguments.  The use of the old functions was declared as deprecated.
+ For consistency, here and 
+ in 
+ a few other cases, new C

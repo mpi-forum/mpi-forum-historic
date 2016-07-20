@@ -1,0 +1,143 @@
+Index: one-side-2.tex
+===================================================================
+--- one-side-2.tex	(revision 1714)
++++ one-side-2.tex	(working copy)
+@@ -1773,8 +1773,6 @@
+ \mpifunc{MPI\_WIN\_UNLOCK}, or
+ \mpifunc{MPI\_WIN\_UNLOCK\_ALL} can be used.
+ 
+-
+-
+ \begin{funcdef}{MPI\_RGET(origin\_addr, origin\_count,
+     origin\_datatype, target\_rank, target\_disp, target\_count, \\
+     target\_datatype, win, request)} 
+@@ -1845,6 +1843,7 @@
+ completed at the target window.
+ 
+ 
++
+ \begin{funcdef2}{MPI\_RGET\_ACCUMULATE(origin\_addr, origin\_count,
+ origin\_datatype, result\_addr,}{result\_count, result\_datatype,
+ target\_rank, target\_disp, target\_count, \gb{}target\_datatype, op, win, request)}
+@@ -1880,6 +1879,121 @@
+ and the origin buffer is free to be updated. It does not indicate that
+ the operation has been completed at the target window.
+ 
++\MPIupdateBegin{3.1}{398}
++
++In some cases, users may want fine-grain remote completion of RMA operations.
++For this purpose, request-based completion is generalized to allow a request
++associated with the reuse of each buffer, which also exposes remote completion
++on a per-operation basis.
++
++\begin{funcdef}{MPI\_RRPUT(origin\_addr, origin\_count,
++    origin\_datatype, target\_rank, target\_disp, target\_count,
++    target\_datatype, win, origin\_request, target\_request)} 
++\funcarg{\IN}{origin\_addr}{initial address of origin buffer (choice)} 
++\funcarg{\IN}{origin\_count}{number of entries in origin buffer
++(non-negative integer)}
++\funcarg{\IN}{origin\_datatype}{datatype of each entry in origin buffer
++(handle)}
++\funcarg{\IN}{target\_rank}{rank of target (non-negative integer)}
++\funcarg{\IN}{target\_disp}{displacement from start of window to target
++buffer
++(non-negative integer)}
++\funcarg{\IN}{target\_count}{number of entries in target buffer
++(non-negative
++integer)}
++\funcarg{\IN}{target\_datatype}{datatype of each entry in target buffer
++(handle)}
++\funcarg{\IN}{win}{window object used for communication (handle)}
++\funcarg{\OUT}{origin\_request}{RMA request (handle) for local completion}
++\funcarg{\OUT}{target\_request}{RMA request (handle) for remote completion}
++
++\end{funcdef}
++
++
++\cdeclindex{MPI\_Win}%
++\cdeclindex{MPI\_Aint}%
++\mpibind{MPI\_Rrput(const~void *origin\_addr, int origin\_count, MPI\_Datatype~origin\_datatype, int~target\_rank, MPI\_Aint~target\_disp, int~target\_count, MPI\_Datatype~target\_datatype, MPI\_Win~win, MPI\_Request~*origin\_request, MPI\_Request~*target\_request)}
++
++\mpifnewbind{MPI\_Rrput(origin\_addr, origin\_count, origin\_datatype, target\_rank, target\_disp, target\_count, target\_datatype, win, origin\_request, target\_request, ierror) BIND(C) \fargs TYPE(*), DIMENSION(..), INTENT(IN), ASYNCHRONOUS :: origin\_addr \\ INTEGER, INTENT(IN) :: origin\_count, target\_rank, target\_count \\ TYPE(MPI\_Datatype), INTENT(IN) :: origin\_datatype, target\_datatype \\ INTEGER(KIND=MPI\_ADDRESS\_KIND), INTENT(IN) :: target\_disp \\ TYPE(MPI\_Win), INTENT(IN) :: win \\ TYPE(MPI\_Request), INTENT(OUT) :: origin\_request, target\_request \\ INTEGER, OPTIONAL, INTENT(OUT) :: ierror}
++\mpifbind{MPI\_RRPUT(ORIGIN\_ADDR, ORIGIN\_COUNT, ORIGIN\_DATATYPE, TARGET\_RANK, TARGET\_DISP, TARGET\_COUNT, TARGET\_DATATYPE, WIN, ORIGIN\_REQUEST, TARGET\_REQUEST, IERROR)\fargs <type> ORIGIN\_ADDR(*)\\ INTEGER(KIND=MPI\_ADDRESS\_KIND) TARGET\_DISP \\ INTEGER ORIGIN\_COUNT, ORIGIN\_DATATYPE, TARGET\_RANK, TARGET\_COUNT, TARGET\_DATATYPE,  WIN, ORIGIN\_REQUEST, TARGET\_REQUEST, IERROR}
++
++
++\begin{funcdef2}{MPI\_RRACCUMULATE(origin\_addr, origin\_count, origin\_datatype, target\_rank, target\_disp,}{target\_count,
++target\_datatype, op, win, origin\_request, target\_request)}
++\funcarg{\IN}{origin\_addr}{initial address of buffer (choice)} \funcarg{\IN}{origin\_count}{number of entries in buffer (non-negative
++integer)}
++\funcarg{\IN}{origin\_datatype}{datatype of each entry in origin buffer (handle)} \funcarg{\IN}{target\_rank}{rank of target (non-negative integer)} \funcarg{\IN}{target\_disp}{displacement from start of window to beginning
++of target buffer (non-negative integer)}
++\funcarg{\IN}{target\_count}{number of entries in target buffer
++(non-negative integer)}
++\funcarg{\IN}{target\_datatype}{datatype of each entry in target buffer (handle)}
++\funcarg{\IN}{op}{reduce operation (handle)}
++\funcarg{\IN}{win}{window object (handle)}
++\funcarg{\OUT}{origin\_request}{RMA request (handle) for local completion}
++\funcarg{\OUT}{target\_request}{RMA request (handle) for remote completion}
++\end{funcdef2}
++
++\cdeclindex{MPI\_Op}%
++\cdeclindex{MPI\_Win}%
++\cdeclindex{MPI\_Aint}%
++\mpibind{MPI\_Rraccumulate(const~void~*origin\_addr, int~origin\_count, MPI\_Datatype~origin\_datatype, int~target\_rank, MPI\_Aint~target\_disp, int~target\_count, MPI\_Datatype~target\_datatype,  MPI\_Op~op, MPI\_Win~win, MPI\_Request~*origin\_request, MPI\_Request~*target\_request)}
++
++\mpifnewbind{MPI\_Rraccumulate(origin\_addr, origin\_count, origin\_datatype, target\_rank, target\_disp, target\_count, target\_datatype, op, win, request, ierror) BIND(C) \fargs TYPE(*), DIMENSION(..), INTENT(IN), ASYNCHRONOUS :: origin\_addr \\ INTEGER, INTENT(IN) :: origin\_count, target\_rank, target\_count \\ TYPE(MPI\_Datatype), INTENT(IN) :: origin\_datatype, target\_datatype \\ INTEGER(KIND=MPI\_ADDRESS\_KIND), INTENT(IN) :: target\_disp \\ TYPE(MPI\_Op), INTENT(IN) :: op \\ TYPE(MPI\_Win), INTENT(IN) :: win \\ TYPE(MPI\_Request), INTENT(OUT) :: origin\_request, target\_request \\ INTEGER, OPTIONAL, INTENT(OUT) :: ierror}
++\mpifbind{MPI\_RRACCUMULATE(ORIGIN\_ADDR, ORIGIN\_COUNT, ORIGIN\_DATATYPE, TARGET\_RANK, TARGET\_DISP, TARGET\_COUNT, TARGET\_DATATYPE, OP, WIN, REQUEST, IERROR) \fargs <type> ORIGIN\_ADDR(*) \\ INTEGER(KIND=MPI\_ADDRESS\_KIND) TARGET\_DISP \\ INTEGER ORIGIN\_COUNT, ORIGIN\_DATATYPE, TARGET\_RANK, TARGET\_COUNT, TARGET\_DATATYPE, OP, WIN, ORIGIN\_REQUEST, TARGET\_REQUEST, IERROR}
++
++\mpifunc{MPI\_RRPUT} and \mpifunc{MPI\_RRACCUMULATE} extend 
++\mpifunc{MPI\_RPUT} and \mpifunc{MPI\_RACCUMULATE} by providing 
++request objects associated with both local and remote completion.
++Completion of the first request indicates that the origin buffer
++can be reused, i.e. local completion.
++Completion of the second request indicates that the data is 
++visible in the remote window.  This is equivalent to calling
++\mpifunc{MPI\_WIN\_FLUSH} or \mpifunc{MPI\_WIN\_UNLOCK}
++in the case where the message associated with this the request
++is the only outstanding RMA communication to a given window and
++target.  In the general case, it provides a mechanism for fine-grain
++remote completion of  RMA operations.
++
++\begin{funcdef2}{MPI\_RRRGET\_ACCUMULATE(origin\_addr, origin\_count,
++origin\_datatype, result\_addr,}{result\_count, result\_datatype,
++target\_rank, target\_disp, target\_count, \gb{}target\_datatype, op, win, 
++origin\_request, result\_request, target\_request)}
++\funcarg{\IN}{origin\_addr}{initial address of buffer (choice)} 
++\funcarg{\IN}{origin\_count}{number of entries in origin buffer (non-negative integer)}
++\funcarg{\IN}{origin\_datatype}{datatype of each entry in origin buffer (handle)} 
++\funcarg{\OUT}{result\_addr}{initial address of result buffer (choice)} 
++\funcarg{\IN}{result\_count}{number of entries in result buffer (non-negative integer)}
++\funcarg{\IN}{result\_datatype}{datatype of each entry in result buffer (handle)} 
++\funcarg{\IN}{target\_rank}{rank of target ({non-negative} integer)} 
++\funcarg{\IN}{target\_disp}{displacement from start of window to beginning of target buffer ({non-negative} integer)}
++\funcarg{\IN}{target\_count}{number of entries in target buffer (non-negative integer)}
++\funcarg{\IN}{target\_datatype}{datatype of each entry in target buffer (handle)} 
++\funcarg{\IN}{op}{reduce operation (handle)}
++\funcarg{\IN}{win}{window object (handle)}
++\funcarg{\OUT}{origin\_request}{RMA request (handle) for local completion}
++\funcarg{\OUT}{result\_request}{RMA request (handle) for round-trip completion}
++\funcarg{\OUT}{target\_request}{RMA request (handle) for remote completion}
++\end{funcdef2}
++
++\cdeclindex{MPI\_Op}%
++\cdeclindex{MPI\_Win}%
++\cdeclindex{MPI\_Aint}%
++\mpibind{MPI\_Rrrget\_accumulate(const~void~*origin\_addr, int~origin\_count, MPI\_Datatype~origin\_datatype, void~*result\_addr, int~result\_count, MPI\_Datatype~result\_datatype, int~target\_rank, MPI\_Aint~target\_disp, int~target\_count, MPI\_Datatype~target\_datatype, MPI\_Op~op, MPI\_Win~win, MPI\_Request~*origin\_request, MPI\_Request~*result\_request, MPI\_Request~*target\_request )}
++
++\mpifnewbind{MPI\_Rrrget\_accumulate(origin\_addr, origin\_count, origin\_datatype, result\_addr, result\_count, result\_datatype, target\_rank, target\_disp, target\_count, target\_datatype, op, win, origin\_request, result\_request, target\_request, ierror) BIND(C) \fargs TYPE(*), DIMENSION(..), INTENT(IN), ASYNCHRONOUS :: origin\_addr \\ TYPE(*), DIMENSION(..), ASYNCHRONOUS :: result\_addr \\ INTEGER, INTENT(IN) :: origin\_count, result\_count, target\_rank, target\_count \\ TYPE(MPI\_Datatype), INTENT(IN) :: origin\_datatype, target\_datatype, result\_datatype \\ INTEGER(KIND=MPI\_ADDRESS\_KIND), INTENT(IN) :: target\_disp \\ TYPE(MPI\_Op), INTENT(IN) :: op \\ TYPE(MPI\_Win), INTENT(IN) :: win \\ TYPE(MPI\_Request), INTENT(OUT) :: origin\_request, result\_request, target\_request \\ INTEGER, OPTIONAL, INTENT(OUT) :: ierror}
++\mpifbind{MPI\_RRRGET\_ACCUMULATE(ORIGIN\_ADDR, ORIGIN\_COUNT, ORIGIN\_DATATYPE, RESULT\_ADDR, RESULT\_COUNT, RESULT\_DATATYPE, TARGET\_RANK, TARGET\_DISP, TARGET\_COUNT, TARGET\_DATATYPE, OP, WIN, ORIGIN\_REQUEST, RESULT\_REQUEST, TARGET\_REQUEST, IERROR) \fargs <type> ORIGIN\_ADDR(*), RESULT\_ADDR(*) \\ INTEGER(KIND=MPI\_ADDRESS\_KIND) TARGET\_DISP \\ INTEGER ORIGIN\_COUNT, ORIGIN\_DATATYPE, RESULT\_COUNT, RESULT\_DATATYPE, TARGET\_RANK, TARGET\_COUNT, TARGET\_DATATYPE, OP, WIN, ORIGIN\_REQUEST, RESULT\_REQUEST, TARGET\_REQUEST, IERROR}
++
++\mpifunc{MPI\_RRRGET\_ACCUMULATE} returns a request object associated
++with reuse of the origin and result buffers as well as remote completion,
++similar to \mpifunc{MPI\_RR\_ACCUMULATE}.
++Completion of the first request indicates that the origin buffer
++can be reused, completion of the third request indicates that the data is
++visible in the remote window and completion and completion of the second
++request indicates the result buffer can be reused, that is, the round-trip
++operation has completed.
++
++\MPIupdateEnd{3.1}
++
+ \section{Memory Model}
+ \label{sec:1sided-memmodel}
+ 

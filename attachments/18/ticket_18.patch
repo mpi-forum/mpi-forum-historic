@@ -1,0 +1,829 @@
+commit 1d47ab494b4d60fa25d961245017c565bfff4dad
+Author: Dave Goodell <goodell@mcs.anl.gov>
+Date:   Fri Mar 20 17:27:20 2009 -0500
+
+    Implementation of MPI Forum ticket #18.
+    
+    These add three new categories of predefined MPI Datatypes:
+    - C99 fixed-width types (int8_t, uint32_t, etc)
+    - C99 complex types
+    - MPI_AINT and MPI_OFFSET corresponding to MPI_Aint and MPI_Offset
+
+diff --git a/configure.in b/configure.in
+index 00d7c51..bc8aa05 100644
+--- a/configure.in
++++ b/configure.in
+@@ -3388,9 +3388,20 @@ if test "$ac_cv_c_uint64_t" != no ; then
+     AC_DEFINE(HAVE_UINT64_T,1,[Define if uint64_t is supported by the C compiler])
+ fi
+ 
++# Other C99 types.  stdbool.h and complex.h are not needed for the raw _Bool
++# and _Complex types, only to get the macros "bool" and "complex".
++AC_CHECK_SIZEOF([_Bool])
++AC_CHECK_SIZEOF([float _Complex])
++AC_CHECK_SIZEOF([double _Complex])
++AC_CHECK_SIZEOF([long double _Complex])
++# we need really could just use the result of AC_CHECK_SIZEOF, but having a
++# HAVE_typename macro is useful for consistency
++AC_CHECK_TYPES([_Bool, float _Complex, double _Complex, long double _Complex])
++
+ # Generate a hex version of the size of each type
+ for type in short int long long_long float double long_double wchar_t \
+-    float_int double_int long_int short_int 2_int long_double_int ; do
++    float_int double_int long_int short_int 2_int long_double_int     \
++    _Bool float__Complex double__Complex long_double__Complex ; do
+     eval len=\$ac_cv_sizeof_$type
+     if test -z "$len" ; then 
+        len=0
+@@ -3400,8 +3411,13 @@ for type in short int long long_long float double long_double wchar_t \
+            len=$pclen
+        else
+            # check for a non-optional type
+-	   if test $type != long_long -a $type != long_double -a \
+-	           $type != long_double_int ; then 
++           if test $type != long_long -a \
++                   $type != long_double -a \
++                   $type != long_double_int -a \
++                   $type != _Bool \
++                   $type != float__Complex \
++                   $type != double__Complex \
++                   $type != long_double__Complex ; then
+                AC_MSG_ERROR([Configure was unable to determine the size of $type ; if cross compiling,
+ use the environment variables CROSS_SIZEOF_typename, e.g., CROSS_SIZEOF_SHORT,
+ or use the --with-cross=file configure option to specify a file containing
+@@ -3663,6 +3679,73 @@ if test -n "$MPIR_INTEGER16_CTYPE" ; then
+    AC_DEFINE_UNQUOTED(MPIR_INTEGER16_CTYPE,$MPIR_INTEGER16_CTYPE,[C type to use for MPI_INTEGER16])
+ fi
+ 
++
++# C99 types
++# The predefined types must be distinct types (as opposed to aliases to MPI_INT
++# or MPI_WHATEVER) in order to correctly support MPI_Type_{get,set}_name.
++#
++# FIXME the "basic id" portion should be automatically assigned.  It's too easy
++# to have a conflict when this is done by hand.
++#
++# Because we make up a matching type for the fixed-width types if one doesn't
++# exist, we don't ever set these to MPI_DATATYPE_NULL.  If we come across a
++# platform where 64-bit sizes aren't supported just add a test like the other
++# types.
++MPI_INT8_T=0x4c000137
++MPI_INT16_T=0x4c000238
++MPI_INT32_T=0x4c000439
++MPI_INT64_T=0x4c00083a
++MPI_UINT8_T=0x4c00013b
++MPI_UINT16_T=0x4c00023c
++MPI_UINT32_T=0x4c00043d
++MPI_UINT64_T=0x4c00083e
++
++# The compiler may or may not support these types, depending on its level of C99
++# compliance.  We check for each one individually before assigning a handle
++# number.
++MPI_C_BOOL=$MPI_DATATYPE_NULL
++MPI_C_FLOAT_COMPLEX=$MPI_DATATYPE_NULL
++MPI_C_DOUBLE_COMPLEX=$MPI_DATATYPE_NULL
++MPI_C_LONG_DOUBLE_COMPLEX=$MPI_DATATYPE_NULL
++if test ${len__Bool} != 0 ; then
++    MPI_C_BOOL=0x4c00${len__Bool}3f
++fi
++if test ${len_float__Complex} != 0 ; then
++    MPI_C_FLOAT_COMPLEX=0x4c00${len_float__Complex}40
++fi
++if test ${len_double__Complex} != 0 ; then
++    MPI_C_DOUBLE_COMPLEX=0x4c00${len_double__Complex}41
++fi
++if test ${len_long_double__Complex} != 0 ; then
++    MPI_C_LONG_DOUBLE_COMPLEX=0x4c00${len_long_double__Complex}42
++fi
++
++AC_SUBST(MPI_INT8_T)
++AC_SUBST(MPI_INT16_T)
++AC_SUBST(MPI_INT32_T)
++AC_SUBST(MPI_INT64_T)
++AC_SUBST(MPI_UINT8_T)
++AC_SUBST(MPI_UINT16_T)
++AC_SUBST(MPI_UINT32_T)
++AC_SUBST(MPI_UINT64_T)
++AC_SUBST(MPI_C_BOOL)
++AC_SUBST(MPI_C_FLOAT_COMPLEX)
++AC_SUBST(MPI_C_DOUBLE_COMPLEX)
++AC_SUBST(MPI_C_LONG_DOUBLE_COMPLEX)
++export MPI_INT8_T
++export MPI_INT16_T
++export MPI_INT32_T
++export MPI_INT64_T
++export MPI_UINT8_T
++export MPI_UINT16_T
++export MPI_UINT32_T
++export MPI_UINT64_T
++export MPI_C_BOOL
++export MPI_C_FLOAT_COMPLEX
++export MPI_C_DOUBLE_COMPLEX
++export MPI_C_LONG_DOUBLE_COMPLEX
++
++
+ # ----------------------------------------------------------------------------
+ # We can now create the Fortran versions of the datatype values, along with
+ # some of the other datatype-dependent sizes
+@@ -3677,7 +3760,7 @@ fi
+ #
+ # In addition, we need to look at a few additional constants that depend
+ # on how the compiler sizes some datatypes.  These are:
+-#    STATIS_SIZE, ADDRESS_KIND, and OFFSET_KIND
++#    STATUS_SIZE, ADDRESS_KIND, and OFFSET_KIND
+ # 
+ # ----------------------------------------------------------------------------
+ if test "$enable_f77" = yes ; then
+@@ -4185,14 +4268,17 @@ int main( int argc, char **argv ){
+     fi
+     AC_SUBST(MPI_STATUS_SIZE)
+ 
+-    #
+     # We must convert all hex values to decimal (!).
+     # This is for the C types so they are also available in Fortran
+     for var in CHAR SIGNED_CHAR UNSIGNED_CHAR WCHAR SHORT \
+ 		  UNSIGNED_SHORT INT UNSIGNED_INT LONG UNSIGNED_LONG \
+ 		  FLOAT DOUBLE LONG_DOUBLE LONG_LONG_INT \
+ 		  UNSIGNED_LONG_LONG LONG_LONG FLOAT_INT DOUBLE_INT \
+-		  LONG_INT SHORT_INT "2INT" LONG_DOUBLE_INT ; do
++		  LONG_INT SHORT_INT "2INT" LONG_DOUBLE_INT \
++                  INT8_T INT16_T INT32_T INT64_T            \
++                  UINT8_T UINT16_T UINT32_T UINT64_T        \
++                  C_BOOL C_FLOAT_COMPLEX C_DOUBLE_COMPLEX   \
++                  C_LONG_DOUBLE_COMPLEX ; do
+         fullvar="MPI_$var"
+ 	fullf77var="MPI_F77_$var"
+         eval fullvarvalue=\$$fullvar
+@@ -4260,6 +4346,22 @@ int main( int argc, char **argv ){
+     AC_SUBST(MPI_F77_SHORT_INT)
+     AC_SUBST(MPI_F77_2INT)
+     AC_SUBST(MPI_F77_LONG_DOUBLE_INT)
++    AC_SUBST(MPI_F77_INT8_T)
++    AC_SUBST(MPI_F77_INT16_T)
++    AC_SUBST(MPI_F77_INT32_T)
++    AC_SUBST(MPI_F77_INT64_T)
++    AC_SUBST(MPI_F77_UINT8_T)
++    AC_SUBST(MPI_F77_UINT16_T)
++    AC_SUBST(MPI_F77_UINT32_T)
++    AC_SUBST(MPI_F77_UINT64_T)
++    AC_SUBST(MPI_F77_C_BOOL)
++    AC_SUBST(MPI_F77_C_FLOAT_COMPLEX)
++    AC_SUBST(MPI_F77_C_DOUBLE_COMPLEX)
++    AC_SUBST(MPI_F77_C_LONG_DOUBLE_COMPLEX)
++    # these two are not yet defined, but AC_SUBST only cares about them at AC_OUTPUT-time
++    AC_SUBST(MPI_F77_AINT_DATATYPE)
++    AC_SUBST(MPI_F77_OFFSET_DATATYPE)
++
+     # Try and compute the values of .true. and .false. in Fortran
+     # This code has been removed because the Fortran binding code does
+     # not yet support it.  
+@@ -4400,9 +4502,13 @@ EOF
+     if test -n "$F90" ; then
+         PAC_LANG_PUSH_COMPILERS
+         PAC_LANG_FORTRAN90
++
+         # Offset kind should be for 8 bytes if possible (Romio prefers that)
+         # address should be sizeof void *
+-        # FIXME: make offset kind match the length of MPI_Offset.
++        # FIXME in the current configure implementation OFFSET_KIND and
++        # MPI_Offset won't always agree, but generally will.  The MPI Standard
++        # implies that these types must have identical size, so this is a bug
++        # waiting to happen.
+         testsize=$ac_cv_sizeof_void_p
+         if test "$testsize" = 0 ; then
+             # Set a default
+@@ -4719,7 +4825,6 @@ int main(int argc, char **argv )
+     fi
+ fi
+ 
+-
+ # ----------------------------------------------------------------------------
+ # Get the size for the bsendoverhead
+ rm -f conftestval
+@@ -5490,7 +5595,31 @@ for type in int long long_long short ; do
+ done
+ AC_DEFINE_UNQUOTED(MPIR_Pint,$MPIR_PINT,[MPIR_PINT is a pointer-sized integer])
+ AC_DEFINE_UNQUOTED(MPIR_Upint,unsigned $MPIR_PINT,[MPIR_PUINT is an unsigned pointer-sized integer])
+-#
++
++# ----------------------------------------------------------------------------
++# MPI_AINT datatype
++# ----------------------------------------------------------------------------
++# Must be done after MPI_Aint type determination but before subconfigures.
++
++# convert to 2-char hex size
++case "$MPI_SIZEOF_AINT" in
++    4)    len_mpi_aint=04 ;;
++    8)    len_mpi_aint=08 ;;
++    16)   len_mpi_aint=10 ;;
++    *)    AC_MSG_ERROR([Unable to convert MPI_SIZEOF_AINT to a hex string.  This is either because we are building on a very strange platform or there is a bug somewhere in configure.]) ;;
++esac
++# MPI_AINT and MPI_OFFSET are already taken, appending a _DATATYPE prefix
++MPI_AINT_DATATYPE=0x4c00${len_mpi_aint}43
++AC_SUBST(MPI_AINT_DATATYPE)
++export MPI_AINT_DATATYPE
++
++# 0x4c000043 is 1275068483 in decimal, add ($MPI_SIZEOF_AINT * 256) and you get
++# the decimal equivalent of the hex number
++MPI_F77_AINT_DATATYPE=`expr 1275068483 '+' '(' 256 '*' $MPI_SIZEOF_AINT ')'`
++AC_SUBST(MPI_F77_AINT_DATATYPE)
++export MPI_F77_AINT_DATATYPE
++# ----------------------------------------------------------------------------
++
+ # define MPIU_Size_t - used to express the size of objects
+ # This is used in src/include/mpitypedefs.h to define MPIU_SIZE_T, 
+ # and is used in various parts of ch3 and mpid/common/sock.  
+@@ -6043,15 +6172,15 @@ else
+         MPI_OFFSET="long"
+ 	# Make the size of this type available to other configures
+ 	MPI_SIZEOF_OFFSET=8
+-	export MPI_SIZEOF_OFFSET
+     elif test "$ac_cv_sizeof_long_long" = 8 ; then
+         MPI_OFFSET="long long"
+ 	# Make the size of this type available to other configures
+ 	MPI_SIZEOF_OFFSET=8
+-	export MPI_SIZEOF_OFFSET
+     else
+         MPI_OFFSET=long
++        MPI_SIZEOF_OFFSET=$ac_cv_sizeof_long
+     fi
++    export MPI_SIZEOF_OFFSET
+ fi
+ AC_SUBST(MPI_OFFSET)
+ #
+@@ -6093,6 +6222,28 @@ recommend that you set both F77 and F90 to the same compiler and reconfigure.])
+ fi
+ AC_SUBST(FORTRAN_MPI_OFFSET)
+ #
++
++# ----------------------------------------------------------------------------
++# MPI_OFFSET datatype
++# ----------------------------------------------------------------------------
++# must be done after ROMIO configure step
++case "$MPI_SIZEOF_OFFSET" in
++    4)    len_mpi_offset=04 ;;
++    8)    len_mpi_offset=08 ;;
++    16)   len_mpi_offset=10 ;;
++    *)    AC_MSG_ERROR([Unable to convert MPI_SIZEOF_OFFSET to a hex string.  This is either because we are building on a very strange platform or there is a bug somewhere in configure.]) ;;
++esac
++MPI_OFFSET_DATATYPE=0x4c00${len_mpi_offset}44
++AC_SUBST(MPI_OFFSET_DATATYPE)
++export MPI_OFFSET_DATATYPE
++
++# 0x4c000044 is 1275068484 in decimal, add ($MPI_SIZEOF_OFFSET * 256) and you get
++# the decimal equivalent of the hex number
++MPI_F77_OFFSET_DATATYPE=`expr 1275068483 '+' '(' 256 '*' $MPI_SIZEOF_OFFSET ')'`
++AC_SUBST(MPI_F77_OFFSET_DATATYPE)
++export MPI_F77_OFFSET_DATATYPE
++# ----------------------------------------------------------------------------
++
+ dnl Extra status information, from device subsystem, to be included in the
+ dnl declaration of MPI_Status in mpi.h.in
+ AC_SUBST(EXTRA_STATUS_DECL)
+diff --git a/src/include/mpi.h.in b/src/include/mpi.h.in
+index 2db881b..fdb5c0d 100644
+--- a/src/include/mpi.h.in
++++ b/src/include/mpi.h.in
+@@ -85,6 +85,27 @@ typedef int MPI_Datatype;
+ #define MPI_INTEGER8          ((MPI_Datatype)@MPI_INTEGER8@)
+ #define MPI_INTEGER16         ((MPI_Datatype)@MPI_INTEGER16@)
+ 
++/* C99 fixed-width datatypes */
++#define MPI_INT8_T            ((MPI_Datatype)@MPI_INT8_T@)
++#define MPI_INT16_T           ((MPI_Datatype)@MPI_INT16_T@)
++#define MPI_INT32_T           ((MPI_Datatype)@MPI_INT32_T@)
++#define MPI_INT64_T           ((MPI_Datatype)@MPI_INT64_T@)
++#define MPI_UINT8_T           ((MPI_Datatype)@MPI_UINT8_T@)
++#define MPI_UINT16_T          ((MPI_Datatype)@MPI_UINT16_T@)
++#define MPI_UINT32_T          ((MPI_Datatype)@MPI_UINT32_T@)
++#define MPI_UINT64_T          ((MPI_Datatype)@MPI_UINT64_T@)
++
++/* other C99 types */
++#define MPI_C_BOOL                 ((MPI_Datatype)@MPI_C_BOOL@)
++#define MPI_C_FLOAT_COMPLEX        ((MPI_Datatype)@MPI_C_FLOAT_COMPLEX@)
++#define MPI_C_COMPLEX              MPI_C_FLOAT_COMPLEX
++#define MPI_C_DOUBLE_COMPLEX       ((MPI_Datatype)@MPI_C_DOUBLE_COMPLEX@)
++#define MPI_C_LONG_DOUBLE_COMPLEX  ((MPI_Datatype)@MPI_C_LONG_DOUBLE_COMPLEX@)
++
++/* address/offset types */
++#define MPI_AINT          ((MPI_Datatype)@MPI_AINT_DATATYPE@)
++#define MPI_OFFSET        ((MPI_Datatype)@MPI_OFFSET_DATATYPE@)
++
+ /* typeclasses */
+ #define MPI_TYPECLASS_REAL 1
+ #define MPI_TYPECLASS_INTEGER 2
+diff --git a/src/mpi/coll/opprod.c b/src/mpi/coll/opprod.c
+index 2f0ab9c..8dc559c 100644
+--- a/src/mpi/coll/opprod.c
++++ b/src/mpi/coll/opprod.c
+@@ -39,7 +39,6 @@ void MPIR_PROD (
+         MPIR_OP_TYPE_GROUP(FLOATING_POINT_EXTRA)
+ 
+         /* complex multiplication is slightly different than scalar multiplication */
+-        /* adding the C99 {float,double} _Complex types will require redefining an additional macro */
+ #undef MPIR_OP_TYPE_MACRO
+ #define MPIR_OP_TYPE_MACRO(mpi_type_, c_type_)          \
+         case (mpi_type_): {                             \
+@@ -53,9 +52,14 @@ void MPIR_PROD (
+             }                                           \
+             break;                                      \
+         }
++#undef MPIR_OP_C_COMPLEX_TYPE_MACRO
++#define MPIR_OP_C_COMPLEX_TYPE_MACRO(mpi_type_,c_type_) MPIR_OP_TYPE_REDUCE_CASE(mpi_type_,c_type_,MPIR_LPROD)
+         MPIR_OP_TYPE_GROUP(COMPLEX)
+         MPIR_OP_TYPE_GROUP(COMPLEX_EXTRA)
++        /* put things back where we found them */
+ #undef MPIR_OP_TYPE_MACRO
++#undef MPIR_OP_C_COMPLEX_TYPE_MACRO
++#define MPIR_OP_C_COMPLEX_TYPE_MACRO(mpi_type_,c_type_) MPIR_OP_TYPE_MACRO(mpi_type_,c_type_)
+         /* --BEGIN ERROR HANDLING-- */
+         default: {
+             MPIU_THREADPRIV_DECL;
+diff --git a/src/mpi/coll/opsum.c b/src/mpi/coll/opsum.c
+index d90e9a4..7e7948c 100644
+--- a/src/mpi/coll/opsum.c
++++ b/src/mpi/coll/opsum.c
+@@ -38,8 +38,7 @@ void MPIR_SUM (
+         MPIR_OP_TYPE_GROUP(FORTRAN_INTEGER_EXTRA)
+         MPIR_OP_TYPE_GROUP(FLOATING_POINT_EXTRA)
+ 
+-        /* complex multiplication is slightly different than scalar multiplication */
+-        /* adding the C99 {float,double} _Complex types will require redefining an additional macro */
++        /* complex addition is slightly different than scalar addition */
+ #undef MPIR_OP_TYPE_MACRO
+ #define MPIR_OP_TYPE_MACRO(mpi_type_, c_type_)             \
+         case (mpi_type_): {                                \
+@@ -51,9 +50,15 @@ void MPIR_SUM (
+             }                                              \
+             break;                                         \
+         }
++        /* C complex types are just simple sums */
++#undef MPIR_OP_C_COMPLEX_TYPE_MACRO
++#define MPIR_OP_C_COMPLEX_TYPE_MACRO(mpi_type_,c_type_) MPIR_OP_TYPE_REDUCE_CASE(mpi_type_,c_type_,MPIR_LSUM)
+         MPIR_OP_TYPE_GROUP(COMPLEX)
+         MPIR_OP_TYPE_GROUP(COMPLEX_EXTRA)
++        /* put things back where we found them */
+ #undef MPIR_OP_TYPE_MACRO
++#undef MPIR_OP_C_COMPLEX_TYPE_MACRO
++#define MPIR_OP_C_COMPLEX_TYPE_MACRO(mpi_type_,c_type_) MPIR_OP_TYPE_MACRO(mpi_type_,c_type_)
+         /* --BEGIN ERROR HANDLING-- */
+         default: {
+             MPIU_THREADPRIV_DECL;
+diff --git a/src/mpi/coll/oputil.h b/src/mpi/coll/oputil.h
+index 14ac902..e4212bc 100644
+--- a/src/mpi/coll/oputil.h
++++ b/src/mpi/coll/oputil.h
+@@ -68,6 +68,18 @@ MPIR_OP_TYPE_GROUP(FORTRAN_INTEGER)
+ #define MPIR_OP_TYPE_MACRO_HAVE_REAL16_CTYPE(mpi_type_,c_type_)
+ #define MPIR_OP_TYPE_MACRO_HAVE_CXX_COMPLEX(mpi_type_,c_type_)
+ #define MPIR_OP_TYPE_MACRO_HAVE_CXX_LONG_DOUBLE_COMPLEX(mpi_type_,c_type_)
++#define MPIR_OP_TYPE_MACRO_HAVE_INT8_T(mpi_type_,c_type_)
++#define MPIR_OP_TYPE_MACRO_HAVE_INT16_T(mpi_type_,c_type_)
++#define MPIR_OP_TYPE_MACRO_HAVE_INT32_T(mpi_type_,c_type_)
++#define MPIR_OP_TYPE_MACRO_HAVE_INT64_T(mpi_type_,c_type_)
++#define MPIR_OP_TYPE_MACRO_HAVE_UINT8_T(mpi_type_,c_type_)
++#define MPIR_OP_TYPE_MACRO_HAVE_UINT16_T(mpi_type_,c_type_)
++#define MPIR_OP_TYPE_MACRO_HAVE_UINT32_T(mpi_type_,c_type_)
++#define MPIR_OP_TYPE_MACRO_HAVE_UINT64_T(mpi_type_,c_type_)
++#define MPIR_OP_TYPE_MACRO_HAVE_C_BOOL(mpi_type_,c_type_)
++#define MPIR_OP_TYPE_MACRO_HAVE_C_FLOAT_COMPLEX(mpi_type_,c_type_)
++#define MPIR_OP_TYPE_MACRO_HAVE_C_DOUBLE_COMPLEX(mpi_type_,c_type_)
++#define MPIR_OP_TYPE_MACRO_HAVE_C_LONG_DOUBLE_COMPLEX(mpi_type_,c_type_)
+ 
+ /* then redefine them to be valid based on other preprocessor definitions */
+ #if defined(HAVE_FORTRAN_BINDING)
+@@ -137,6 +149,66 @@ MPIR_OP_TYPE_GROUP(FORTRAN_INTEGER)
+ #  define MPIR_OP_TYPE_MACRO_HAVE_CXX_LONG_DOUBLE_COMPLEX(mpi_type_,c_type_) MPIR_OP_TYPE_MACRO(mpi_type_,c_type_)
+ #endif
+ 
++/* C99 fixed-width types */
++#if defined(HAVE_INT8_T)
++#  undef MPIR_OP_TYPE_MACRO_HAVE_INT8_T(mpi_type_,c_type_)
++#  define MPIR_OP_TYPE_MACRO_HAVE_INT8_T(mpi_type_,c_type_) MPIR_OP_TYPE_MACRO(mpi_type_,c_type_)
++#endif
++#if defined(HAVE_INT16_T)
++#  undef MPIR_OP_TYPE_MACRO_HAVE_INT16_T(mpi_type_,c_type_)
++#  define MPIR_OP_TYPE_MACRO_HAVE_INT16_T(mpi_type_,c_type_) MPIR_OP_TYPE_MACRO(mpi_type_,c_type_)
++#endif
++#if defined(HAVE_INT32_T)
++#  undef MPIR_OP_TYPE_MACRO_HAVE_INT32_T(mpi_type_,c_type_)
++#  define MPIR_OP_TYPE_MACRO_HAVE_INT32_T(mpi_type_,c_type_) MPIR_OP_TYPE_MACRO(mpi_type_,c_type_)
++#endif
++#if defined(HAVE_INT64_T)
++#  undef MPIR_OP_TYPE_MACRO_HAVE_INT64_T(mpi_type_,c_type_)
++#  define MPIR_OP_TYPE_MACRO_HAVE_INT64_T(mpi_type_,c_type_) MPIR_OP_TYPE_MACRO(mpi_type_,c_type_)
++#endif
++#if defined(HAVE_UINT8_T)
++#  undef MPIR_OP_TYPE_MACRO_HAVE_UINT8_T(mpi_type_,c_type_)
++#  define MPIR_OP_TYPE_MACRO_HAVE_UINT8_T(mpi_type_,c_type_) MPIR_OP_TYPE_MACRO(mpi_type_,c_type_)
++#endif
++#if defined(HAVE_UINT16_T)
++#  undef MPIR_OP_TYPE_MACRO_HAVE_UINT16_T(mpi_type_,c_type_)
++#  define MPIR_OP_TYPE_MACRO_HAVE_UINT16_T(mpi_type_,c_type_) MPIR_OP_TYPE_MACRO(mpi_type_,c_type_)
++#endif
++#if defined(HAVE_UINT32_T)
++#  undef MPIR_OP_TYPE_MACRO_HAVE_UINT32_T(mpi_type_,c_type_)
++#  define MPIR_OP_TYPE_MACRO_HAVE_UINT32_T(mpi_type_,c_type_) MPIR_OP_TYPE_MACRO(mpi_type_,c_type_)
++#endif
++#if defined(HAVE_UINT64_T)
++#  undef MPIR_OP_TYPE_MACRO_HAVE_UINT64_T(mpi_type_,c_type_)
++#  define MPIR_OP_TYPE_MACRO_HAVE_UINT64_T(mpi_type_,c_type_) MPIR_OP_TYPE_MACRO(mpi_type_,c_type_)
++#endif
++
++/* C boolean */
++#if defined(HAVE__BOOL)
++#undef MPIR_OP_TYPE_MACRO_HAVE_C_BOOL
++#define MPIR_OP_TYPE_MACRO_HAVE_C_BOOL(mpi_type_,c_type_) MPIR_OP_TYPE_MACRO(mpi_type_,c_type_)
++#endif
++
++/* C complex types */
++/* Add another layer of indirection and make all of these macros evaluate to a
++   common MPIR_OP_C_COMPLEX_TYPE_MACRO macro which in turn evaluates to the
++   standard MPIR_OP_TYPE_MACRO.  This lets us override behavior for these
++   natively handled types with a single macro redefinition instead of 3. */
++#undef MPIR_OP_C_COMPLEX_TYPE_MACRO
++#define MPIR_OP_C_COMPLEX_TYPE_MACRO(mpi_type_,c_type_) MPIR_OP_TYPE_MACRO(mpi_type_,c_type_)
++#if defined(HAVE_FLOAT__COMPLEX)
++#  undef MPIR_OP_TYPE_MACRO_HAVE_C_FLOAT_COMPLEX(mpi_type_,c_type_)
++#  define MPIR_OP_TYPE_MACRO_HAVE_C_FLOAT_COMPLEX(mpi_type_,c_type_) MPIR_OP_C_COMPLEX_TYPE_MACRO(mpi_type_,c_type_)
++#endif
++#if defined(HAVE_DOUBLE__COMPLEX)
++#  undef MPIR_OP_TYPE_MACRO_HAVE_C_DOUBLE_COMPLEX(mpi_type_,c_type_)
++#  define MPIR_OP_TYPE_MACRO_HAVE_C_DOUBLE_COMPLEX(mpi_type_,c_type_) MPIR_OP_C_COMPLEX_TYPE_MACRO(mpi_type_,c_type_)
++#endif
++#if defined(HAVE_LONG_DOUBLE__COMPLEX)
++#  undef MPIR_OP_TYPE_MACRO_HAVE_C_LONG_DOUBLE_COMPLEX(mpi_type_,c_type_)
++#  define MPIR_OP_TYPE_MACRO_HAVE_C_LONG_DOUBLE_COMPLEX(mpi_type_,c_type_) MPIR_OP_C_COMPLEX_TYPE_MACRO(mpi_type_,c_type_)
++#endif
++
+ /* C types needed to support some of the complex types.
+ 
+    FIXME These are a hack in most cases, but they seem to work in practice
+@@ -167,17 +239,25 @@ typedef struct {
+    in this list are not a problem. */
+ 
+ /* c integer group */
+-#define MPIR_OP_TYPE_GROUP_C_INTEGER                       \
+-    MPIR_OP_TYPE_MACRO(MPI_INT, int)                       \
+-    MPIR_OP_TYPE_MACRO(MPI_LONG, long)                     \
+-    MPIR_OP_TYPE_MACRO(MPI_SHORT, short)                   \
+-    MPIR_OP_TYPE_MACRO(MPI_UNSIGNED_SHORT, unsigned short) \
+-    MPIR_OP_TYPE_MACRO(MPI_UNSIGNED, unsigned)             \
+-    MPIR_OP_TYPE_MACRO(MPI_UNSIGNED_LONG, unsigned long)   \
+-    MPIR_OP_TYPE_MACRO_HAVE_LONG_LONG(MPI_LONG_LONG, long long) \
++#define MPIR_OP_TYPE_GROUP_C_INTEGER                                              \
++    MPIR_OP_TYPE_MACRO(MPI_INT, int)                                              \
++    MPIR_OP_TYPE_MACRO(MPI_LONG, long)                                            \
++    MPIR_OP_TYPE_MACRO(MPI_SHORT, short)                                          \
++    MPIR_OP_TYPE_MACRO(MPI_UNSIGNED_SHORT, unsigned short)                        \
++    MPIR_OP_TYPE_MACRO(MPI_UNSIGNED, unsigned)                                    \
++    MPIR_OP_TYPE_MACRO(MPI_UNSIGNED_LONG, unsigned long)                          \
++    MPIR_OP_TYPE_MACRO_HAVE_LONG_LONG(MPI_LONG_LONG, long long)                   \
+     MPIR_OP_TYPE_MACRO_HAVE_LONG_LONG(MPI_UNSIGNED_LONG_LONG, unsigned long long) \
+-    MPIR_OP_TYPE_MACRO(MPI_SIGNED_CHAR, signed char)       \
+-    MPIR_OP_TYPE_MACRO(MPI_UNSIGNED_CHAR, unsigned char)
++    MPIR_OP_TYPE_MACRO(MPI_SIGNED_CHAR, signed char)                              \
++    MPIR_OP_TYPE_MACRO(MPI_UNSIGNED_CHAR, unsigned char)                          \
++    MPIR_OP_TYPE_MACRO_HAVE_INT8_T(MPI_INT8_T, int8_t)                            \
++    MPIR_OP_TYPE_MACRO_HAVE_INT16_T(MPI_INT16_T, int16_t)                         \
++    MPIR_OP_TYPE_MACRO_HAVE_INT32_T(MPI_INT32_T, int32_t)                         \
++    MPIR_OP_TYPE_MACRO_HAVE_INT64_T(MPI_INT64_T, int64_t)                         \
++    MPIR_OP_TYPE_MACRO_HAVE_UINT8_T(MPI_UINT8_T, uint8_t)                         \
++    MPIR_OP_TYPE_MACRO_HAVE_UINT16_T(MPI_UINT16_T, uint16_t)                      \
++    MPIR_OP_TYPE_MACRO_HAVE_UINT32_T(MPI_UINT32_T, uint32_t)                      \
++    MPIR_OP_TYPE_MACRO_HAVE_UINT64_T(MPI_UINT64_T, uint64_t)                      \
+ /* The MPI Standard doesn't include these types in the C integer group for
+    predefined operations but MPICH2 supports them when possible. */
+ #define MPIR_OP_TYPE_GROUP_C_INTEGER_EXTRA                  \
+@@ -185,7 +265,9 @@ typedef struct {
+ 
+ /* fortran integer group */
+ #define MPIR_OP_TYPE_GROUP_FORTRAN_INTEGER                 \
+-    MPIR_OP_TYPE_MACRO_HAVE_FORTRAN(MPI_INTEGER, MPI_Fint)
++    MPIR_OP_TYPE_MACRO_HAVE_FORTRAN(MPI_INTEGER, MPI_Fint) \
++    MPIR_OP_TYPE_MACRO(MPI_AINT, MPI_Aint)                 \
++    MPIR_OP_TYPE_MACRO(MPI_OFFSET, MPI_Offset)
+ /* The MPI Standard doesn't include these types in the Fortran integer group for
+    predefined operations but MPICH2 supports them when possible. */
+ #define MPIR_OP_TYPE_GROUP_FORTRAN_INTEGER_EXTRA                                 \
+@@ -213,12 +295,16 @@ typedef struct {
+ /* logical group */
+ /* FIXME Is MPI_Fint really OK here? */
+ #define MPIR_OP_TYPE_GROUP_LOGICAL                         \
+-    MPIR_OP_TYPE_MACRO_HAVE_FORTRAN(MPI_LOGICAL, MPI_Fint)
++    MPIR_OP_TYPE_MACRO_HAVE_FORTRAN(MPI_LOGICAL, MPI_Fint) \
++    MPIR_OP_TYPE_MACRO_HAVE_C_BOOL(MPI_C_BOOL, _Bool)
+ #define MPIR_OP_TYPE_GROUP_LOGICAL_EXTRA /* empty, provided for consistency */
+ 
+ /* complex group */
+ #define MPIR_OP_TYPE_GROUP_COMPLEX                          \
+-    MPIR_OP_TYPE_MACRO_HAVE_FORTRAN(MPI_COMPLEX, s_complex)
++    MPIR_OP_TYPE_MACRO_HAVE_FORTRAN(MPI_COMPLEX, s_complex) \
++    MPIR_OP_TYPE_MACRO_HAVE_C_FLOAT_COMPLEX(MPI_C_FLOAT_COMPLEX, float _Complex)                    \
++    MPIR_OP_TYPE_MACRO_HAVE_C_DOUBLE_COMPLEX(MPI_C_DOUBLE_COMPLEX, double _Complex)                 \
++    MPIR_OP_TYPE_MACRO_HAVE_C_LONG_DOUBLE_COMPLEX(MPI_C_LONG_DOUBLE_COMPLEX, long double _Complex)
+ #define MPIR_OP_TYPE_GROUP_COMPLEX_EXTRA                                                            \
+     MPIR_OP_TYPE_MACRO_HAVE_FORTRAN(MPI_DOUBLE_COMPLEX, d_complex)                                  \
+     MPIR_OP_TYPE_MACRO_HAVE_COMPLEX8(MPI_COMPLEX8, s_complex)                                       \
+diff --git a/src/mpi/datatype/type_get_name.c b/src/mpi/datatype/type_get_name.c
+index f709f71..dc64820 100644
+--- a/src/mpi/datatype/type_get_name.c
++++ b/src/mpi/datatype/type_get_name.c
+@@ -92,6 +92,24 @@ static mpi_names_t mpi_names[] = {
+     type_name_entry(MPI_INTEGER8),
+     type_name_entry(MPI_INTEGER16),
+ 
++    /* C99 types */
++    type_name_entry(MPI_INT8_T),
++    type_name_entry(MPI_INT16_T),
++    type_name_entry(MPI_INT32_T),
++    type_name_entry(MPI_INT64_T),
++    type_name_entry(MPI_UINT8_T),
++    type_name_entry(MPI_UINT16_T),
++    type_name_entry(MPI_UINT32_T),
++    type_name_entry(MPI_UINT64_T),
++    type_name_entry(MPI_C_BOOL),
++    type_name_entry(MPI_C_FLOAT_COMPLEX),
++    type_name_entry(MPI_C_DOUBLE_COMPLEX),
++    type_name_entry(MPI_C_LONG_DOUBLE_COMPLEX),
++
++    /* address/offset types */
++    type_name_entry(MPI_AINT),
++    type_name_entry(MPI_OFFSET),
++
+     { 0, (char *) 0 },  /* Sentinel used to indicate the last element */
+ };
+ 
+diff --git a/src/mpi/datatype/typeutil.c b/src/mpi/datatype/typeutil.c
+index 3f5cb32..b5699b5 100644
+--- a/src/mpi/datatype/typeutil.c
++++ b/src/mpi/datatype/typeutil.c
+@@ -33,6 +33,10 @@ static int MPIR_DatatypeAttrFinalizeCallback(void *dummy );
+    (character string, set with MPI_Type_set_name) associated with a
+    predefined name, then the structures must be allocated.
+ */
++/* FIXME does the order of this list need to correspond to anything in
++   particular?  There are several lists of predefined types sprinkled throughout
++   the codebase and it's unclear which (if any) of them must match exactly.
++   [goodell@ 2009-03-17] */
+ static MPI_Datatype mpi_dtypes[] = {
+     MPI_CHAR,
+     MPI_UNSIGNED_CHAR,
+@@ -54,7 +58,26 @@ static MPI_Datatype mpi_dtypes[] = {
+     MPI_LB,
+     MPI_UB,
+     MPI_2INT,
+-/* Fortran types */
++
++    /* C99 types */
++    MPI_INT8_T,
++    MPI_INT16_T,
++    MPI_INT32_T,
++    MPI_INT64_T,
++    MPI_UINT8_T,
++    MPI_UINT16_T,
++    MPI_UINT32_T,
++    MPI_UINT64_T,
++    MPI_C_BOOL,
++    MPI_C_FLOAT_COMPLEX,
++    MPI_C_DOUBLE_COMPLEX,
++    MPI_C_LONG_DOUBLE_COMPLEX,
++
++    /* address/offset types */
++    MPI_AINT,
++    MPI_OFFSET,
++
++    /* Fortran types */
+     MPI_COMPLEX,
+     MPI_DOUBLE_COMPLEX,
+     MPI_LOGICAL,
+@@ -68,9 +91,9 @@ static MPI_Datatype mpi_dtypes[] = {
+     MPI_2DOUBLE_PRECISION,
+     MPI_CHARACTER,
+ #ifdef HAVE_FORTRAN_BINDING
+-/* Size-specific types; these are in section 10.2.4 (Extended Fortran Support)
+-   as well as optional in MPI-1
+-*/
++    /* Size-specific types; these are in section 10.2.4 (Extended Fortran Support)
++       as well as optional in MPI-1
++    */
+     MPI_REAL4,
+     MPI_REAL8,
+     MPI_REAL16,
+diff --git a/src/mpi/romio/adio/include/adio.h b/src/mpi/romio/adio/include/adio.h
+index 0631d86..3f0f478 100644
+--- a/src/mpi/romio/adio/include/adio.h
++++ b/src/mpi/romio/adio/include/adio.h
+@@ -112,16 +112,6 @@
+ #  define ADIO_OFFSET MPI_LONG
+ #endif
+ 
+-#ifndef SX4
+-#   define MPI_AINT MPI_LONG    /* may need to change this later */
+-#else
+-#   if (defined(_SX) && !defined(_LONG64))
+-#       define MPI_AINT MPI_LONG_LONG_INT
+-#   else
+-#       define MPI_AINT MPI_LONG
+-#   endif
+-#endif
+-
+ #define ADIO_Status MPI_Status   
+ 
+ #ifndef MPIO_INCLUDE
+diff --git a/src/mpid/common/datatype/mpid_datatype.h b/src/mpid/common/datatype/mpid_datatype.h
+index 99edf9a..051a8a4 100644
+--- a/src/mpid/common/datatype/mpid_datatype.h
++++ b/src/mpid/common/datatype/mpid_datatype.h
+@@ -422,9 +422,13 @@ typedef struct MPID_Datatype {
+ extern MPIU_Object_alloc_t MPID_Datatype_mem;
+ 
+ /* Preallocated datatype objects */
+-/* The C++ types BOOL, COMPLEX, DOUBLE_COMPLEX, and LONG_DOUBLE_COMPLEX 
+-   added a few more builtin types */
+-#define MPID_DATATYPE_N_BUILTIN 55
++/* This value should be set to greatest value used as the type index suffix in
++ * the predefined handles.  That is, look at the last two hex digits of all
++ * predefined datatype handles, take the greatest one, and convert it to decimal
++ * here. */
++/* FIXME calculating this value this way is foolish, we should make this more
++ * automatic and less error prone */
++#define MPID_DATATYPE_N_BUILTIN 68
+ extern MPID_Datatype MPID_Datatype_builtin[MPID_DATATYPE_N_BUILTIN + 1];
+ extern MPID_Datatype MPID_Datatype_direct[];
+ 
+diff --git a/src/mpid/common/datatype/mpid_ext32_datatype.c b/src/mpid/common/datatype/mpid_ext32_datatype.c
+index 0a357ef..6154474 100644
+--- a/src/mpid/common/datatype/mpid_ext32_datatype.c
++++ b/src/mpid/common/datatype/mpid_ext32_datatype.c
+@@ -35,9 +35,21 @@ static external32_basic_size_t external32_basic_size_array[] =
+     { MPI_DOUBLE, 8 },
+     { MPI_LONG_DOUBLE, 16 },
+     { MPI_CHARACTER, 1 },
++    { MPI_INT8_T, 1 },
++    { MPI_INT16_T, 2 },
++    { MPI_INT32_T, 4 },
++    { MPI_INT64_T, 8 },
++    { MPI_UINT8_T, 1 },
++    { MPI_UINT16_T, 2 },
++    { MPI_UINT32_T, 4 },
++    { MPI_UINT64_T, 8 },
++    { MPI_C_BOOL, 4 },
++    { MPI_C_FLOAT_COMPLEX, 2*4 },
++    { MPI_C_DOUBLE_COMPLEX, 2*8 },
++    { MPI_C_LONG_DOUBLE_COMPLEX, 2*16 },
+     { MPI_LOGICAL, 4 },
+     { MPI_INTEGER, 4 },
+-    { MPI_REAL, 4 }, 
++    { MPI_REAL, 4 },
+     { MPI_DOUBLE_PRECISION, 8 },
+     { MPI_COMPLEX, 8 },
+     { MPI_DOUBLE_COMPLEX, 16 },
+diff --git a/test/mpi/coll/allred.c b/test/mpi/coll/allred.c
+index 176f3e1..eb29f92 100644
+--- a/test/mpi/coll/allred.c
++++ b/test/mpi/coll/allred.c
+@@ -7,6 +7,7 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
++#include <stdint.h>
+ #include "mpi.h"
+ 
+ int count, size, rank;
+@@ -18,22 +19,6 @@ struct short_test { short a; int b; };
+ struct float_test { float a; int b; };
+ struct double_test { double a; int b; };
+ 
+-#define mpi_type2str(type)                                 \
+-    ((type == MPI_INT) ? "MPI_INT" :                       \
+-     (type == MPI_LONG) ? "MPI_LONG" :                     \
+-     (type == MPI_SHORT) ? "MPI_SHORT" :                   \
+-     (type == MPI_UNSIGNED_SHORT) ? "MPI_UNSIGNED_SHORT" : \
+-     (type == MPI_UNSIGNED) ? "MPI_UNSIGNED" :             \
+-     (type == MPI_UNSIGNED_LONG) ? "MPI_UNSIGNED_LONG" :   \
+-     (type == MPI_FLOAT) ? "MPI_FLOAT" :                   \
+-     (type == MPI_DOUBLE) ? "MPI_DOUBLE" :                 \
+-     (type == MPI_2INT) ? "MPI_2INT" :                     \
+-     (type == MPI_LONG_INT) ? "MPI_LONG_INT" :             \
+-     (type == MPI_SHORT_INT) ? "MPI_SHORT_INT" :           \
+-     (type == MPI_FLOAT_INT) ? "MPI_FLOAT_INT" :           \
+-     (type == MPI_DOUBLE_INT) ? "MPI_DOUBLE_INT" :         \
+-     "MPI_NULL_DATATYPE")
+-
+ #define mpi_op2str(op)                   \
+     ((op == MPI_SUM) ? "MPI_SUM" :       \
+      (op == MPI_PROD) ? "MPI_PROD" :     \
+@@ -87,13 +72,16 @@ struct double_test { double a; int b; };
+     }
+ 
+ #define ERROR_CHECK_AND_FREE(lerrcnt, mpi_type, mpi_op)                 \
+-    {                                                                   \
++    do {                                                                \
++        char name[MPI_MAX_OBJECT_NAME] = {0};                           \
++        int len = 0;                                                    \
+         if (lerrcnt) {                                                  \
++            MPI_Type_get_name(mpi_type, name, &len);                    \
+             fprintf(stderr, "(%d) Error for type %s and op %s\n",       \
+-                    rank, mpi_type2str(mpi_type), mpi_op2str(mpi_op));  \
++                    rank, name, mpi_op2str(mpi_op));                    \
+         }                                                               \
+         free(in); free(out); free(sol);                                 \
+-    }
++    } while(0)
+ 
+ #define ALLREDUCE_AND_FREE(mpi_type, mpi_op, in, out, sol)              \
+     {                                                                   \
+@@ -264,6 +252,16 @@ struct double_test { double a; int b; };
+         op##_test##post(unsigned, MPI_UNSIGNED);                    \
+         op##_test##post(unsigned long, MPI_UNSIGNED_LONG);          \
+         op##_test##post(unsigned char, MPI_UNSIGNED_CHAR);          \
++        op##_test##post(int8_t, MPI_INT8_T);                        \
++        op##_test##post(int16_t, MPI_INT16_T);                      \
++        op##_test##post(int32_t, MPI_INT32_T);                      \
++        op##_test##post(int64_t, MPI_INT64_T);                      \
++        op##_test##post(uint8_t, MPI_UINT8_T);                      \
++        op##_test##post(uint16_t, MPI_UINT16_T);                    \
++        op##_test##post(uint32_t, MPI_UINT32_T);                    \
++        op##_test##post(uint64_t, MPI_UINT64_T);                    \
++        op##_test##post(MPI_Aint, MPI_AINT);                        \
++        op##_test##post(MPI_Offset, MPI_OFFSET);                    \
+     }
+ 
+ #define test_types_set2(op, post)               \
+@@ -278,6 +276,18 @@ struct double_test { double a; int b; };
+         op##_test##post(unsigned char, MPI_BYTE);                   \
+     }
+ 
++#define test_types_set4(op, post)                                         \
++    do {                                                                  \
++        op##_test##post(float _Complex, MPI_C_FLOAT_COMPLEX);             \
++        op##_test##post(double _Complex, MPI_C_DOUBLE_COMPLEX);           \
++        op##_test##post(long double _Complex, MPI_C_LONG_DOUBLE_COMPLEX); \
++    } while (0)
++
++#define test_types_set5(op, post)           \
++    do {                                    \
++        op##_test##post(_Bool, MPI_C_BOOL); \
++    } while (0)
++
+ int main( int argc, char **argv )
+ {
+     MPI_Init(&argc, &argv);
+@@ -317,6 +327,17 @@ int main( int argc, char **argv )
+     test_types_set3(bxor, 2);
+     test_types_set3(bxor, 3);
+ 
++    test_types_set4(sum, 1);
++    test_types_set4(prod, 1);
++
++    test_types_set5(lor, 1);
++    test_types_set5(lor, 2);
++    test_types_set5(lxor, 1);
++    test_types_set5(lxor, 2);
++    test_types_set5(lxor, 3);
++    test_types_set5(land, 1);
++    test_types_set5(land, 2);
++
+     maxloc_test(struct int_test, MPI_2INT);
+     maxloc_test(struct long_test, MPI_LONG_INT);
+     maxloc_test(struct short_test, MPI_SHORT_INT);
+diff --git a/test/mpi/datatype/typename.c b/test/mpi/datatype/typename.c
+index fb43ffc..96ffed2 100644
+--- a/test/mpi/datatype/typename.c
++++ b/test/mpi/datatype/typename.c
+@@ -30,6 +30,8 @@ static mpi_names_t mpi_names[] = {
+     { MPI_UNSIGNED_LONG, "MPI_UNSIGNED_LONG" },
+     { MPI_FLOAT, "MPI_FLOAT" },
+     { MPI_DOUBLE, "MPI_DOUBLE" },
++    { MPI_AINT, "MPI_AINT" },
++    { MPI_OFFSET, "MPI_OFFSET" },
+ 
+     { MPI_PACKED, "MPI_PACKED" },
+     { MPI_LB, "MPI_LB" },
+@@ -79,6 +81,17 @@ static mpi_names_t mpi_names[] = {
+        this ifdef allows the test to be built and run. */
+     { MPI_INTEGER16, "MPI_INTEGER16" },
+ #endif
++    { MPI_INT8_T,   "MPI_INT8_T"   },
++    { MPI_INT16_T,  "MPI_INT16_T"  },
++    { MPI_INT32_T,  "MPI_INT32_T"  },
++    { MPI_INT64_T,  "MPI_INT64_T"  },
++    { MPI_UINT8_T,  "MPI_UINT8_T"  },
++    { MPI_UINT16_T, "MPI_UINT16_T" },
++    { MPI_UINT32_T, "MPI_UINT32_T" },
++    { MPI_UINT64_T, "MPI_UINT64_T" },
++    { MPI_C_BOOL, "MPI_C_BOOL" },
++    { MPI_C_FLOAT_COMPLEX,  "MPI_C_FLOAT_COMPLEX"  },
++    { MPI_C_DOUBLE_COMPLEX, "MPI_C_DOUBLE_COMPLEX" },
+     /* Semi-optional types - if the compiler doesn't support long double
+        of long long, these might be MPI_DATATYPE_NULL */
+     { MPI_LONG_DOUBLE, "MPI_LONG_DOUBLE" },
+@@ -86,6 +99,7 @@ static mpi_names_t mpi_names[] = {
+     { MPI_LONG_LONG, "MPI_LONG_LONG" },
+     { MPI_UNSIGNED_LONG_LONG, "MPI_UNSIGNED_LONG_LONG" }, 
+     { MPI_LONG_DOUBLE_INT, "MPI_LONG_DOUBLE_INT" },
++    { MPI_C_LONG_DOUBLE_COMPLEX, "MPI_C_LONG_DOUBLE_COMPLEX" },
+     { 0, (char *)0 },  /* Sentinal used to indicate the last element */
+ };
+ 

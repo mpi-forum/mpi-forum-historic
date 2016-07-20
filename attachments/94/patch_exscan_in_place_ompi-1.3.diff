@@ -1,0 +1,152 @@
+Index: ompi/mca/coll/basic/coll_basic_exscan.c
+===================================================================
+--- ompi/mca/coll/basic/coll_basic_exscan.c	(revision 20612)
++++ ompi/mca/coll/basic/coll_basic_exscan.c	(working copy)
+@@ -60,6 +60,7 @@
+     /* If we're rank 0, then we send our sbuf to the next rank */
+ 
+     if (0 == rank) {
++        if(MPI_IN_PLACE == sbuf) sbuf = rbuf;
+         return MCA_PML_CALL(send(sbuf, count, dtype, rank + 1,
+                                  MCA_COLL_BASE_TAG_EXSCAN,
+                                  MCA_PML_BASE_SEND_STANDARD, comm));
+@@ -76,70 +77,93 @@
+ 
+     /* Otherwise, get the result from the prior rank, combine it with my
+      * data, and send it to the next rank */
++    if(sbuf == MPI_IN_PLACE) {
++      /* Get a temporary buffer to receive and perform the reduction into.  Rationale
++       * for malloc'ing this size is provided in coll_basic_reduce.c. */
+ 
+-    /* Start the receive for the prior rank's answer */
++      ompi_ddt_get_extent(dtype, &lb, &extent);
++      ompi_ddt_get_true_extent(dtype, &true_lb, &true_extent);
+ 
+-    err = MCA_PML_CALL(irecv(rbuf, count, dtype, rank - 1,
+-                             MCA_COLL_BASE_TAG_EXSCAN, comm, &req));
+-    if (MPI_SUCCESS != err) {
+-        goto error;
+-    }
++      free_buffer = (char*)malloc(true_extent + (count - 1) * extent);
++      if (NULL == free_buffer) return OMPI_ERR_OUT_OF_RESOURCE;
++      reduce_buffer = free_buffer - lb;
+ 
+-    /* Get a temporary buffer to perform the reduction into.  Rationale
+-     * for malloc'ing this size is provided in coll_basic_reduce.c. */
++      /* copy data to reducebuffer */
++      err = ompi_ddt_copy_content_same_ddt(dtype, count, reduce_buffer, (char*)rbuf);
++      if (MPI_SUCCESS != err) goto error;
+ 
+-    ompi_ddt_get_extent(dtype, &lb, &extent);
+-    ompi_ddt_get_true_extent(dtype, &true_lb, &true_extent);
++      /* Receive the prior rank's answer */
++      err = MCA_PML_CALL(recv(rbuf, count, dtype, rank - 1,
++                              MCA_COLL_BASE_TAG_EXSCAN, comm, MPI_STATUS_IGNORE));
++      if (MPI_SUCCESS != err) goto error;
+ 
+-    free_buffer = (char*)malloc(true_extent + (count - 1) * extent);
+-    if (NULL == free_buffer) {
+-        return OMPI_ERR_OUT_OF_RESOURCE;
+-    }
+-    reduce_buffer = free_buffer - lb;
++      source = (char*)rbuf;
+ 
+-    if (ompi_op_is_commute(op)) {
++    } else {
++      /* Start the receive for the prior rank's answer */
+ 
+-        /* If we're commutative, we can copy my sbuf into the reduction
+-         * buffer before the receive completes */
++      err = MCA_PML_CALL(irecv(rbuf, count, dtype, rank - 1,
++                               MCA_COLL_BASE_TAG_EXSCAN, comm, &req));
++      if (MPI_SUCCESS != err) {
++          goto error;
++      }
+ 
+-        err = ompi_ddt_copy_content_same_ddt(dtype, count, 
+-                                             reduce_buffer, (char*)sbuf);
+-        if (MPI_SUCCESS != err) {
+-            goto error;
+-        }
++      /* Get a temporary buffer to perform the reduction into.  Rationale
++       * for malloc'ing this size is provided in coll_basic_reduce.c. */
+ 
+-        /* Now setup the reduction */
++      ompi_ddt_get_extent(dtype, &lb, &extent);
++      ompi_ddt_get_true_extent(dtype, &true_lb, &true_extent);
+ 
+-        source = (char*)rbuf;
++      free_buffer = (char*)malloc(true_extent + (count - 1) * extent);
++      if (NULL == free_buffer) {
++          return OMPI_ERR_OUT_OF_RESOURCE;
++      }
++      reduce_buffer = free_buffer - lb;
+ 
+-        /* Finally, wait for the receive to complete (so that we can do
+-         * the reduction).  */
++      if (ompi_op_is_commute(op)) {
+ 
+-        err = ompi_request_wait(&req, MPI_STATUS_IGNORE);
+-        if (MPI_SUCCESS != err) {
+-            goto error;
+-        }
+-    } else {
++          /* If we're commutative, we can copy my sbuf into the reduction
++           * buffer before the receive completes */
+ 
+-        /* Setup the reduction */
++          err = ompi_ddt_copy_content_same_ddt(dtype, count, 
++                                               reduce_buffer, (char*)sbuf);
++          if (MPI_SUCCESS != err) {
++              goto error;
++          }
+ 
+-        source = (char*)sbuf;
++          /* Now setup the reduction */
+ 
+-        /* If we're not commutative, we have to wait for the receive to
+-         * complete and then copy it into the reduce buffer */
++          source = (char*)rbuf;
+ 
+-        err = ompi_request_wait(&req, MPI_STATUS_IGNORE);
+-        if (MPI_SUCCESS != err) {
+-            goto error;
+-        }
++          /* Finally, wait for the receive to complete (so that we can do
++           * the reduction).  */
+ 
+-        err = ompi_ddt_copy_content_same_ddt(dtype, count, 
+-                                             reduce_buffer, (char*)rbuf);
+-        if (MPI_SUCCESS != err) {
+-            goto error;
+-        }
+-    }
++          err = ompi_request_wait(&req, MPI_STATUS_IGNORE);
++          if (MPI_SUCCESS != err) {
++              goto error;
++          }
++      } else {
+ 
++          /* Setup the reduction */
++
++          source = (char*)sbuf;
++
++          /* If we're not commutative, we have to wait for the receive to
++           * complete and then copy it into the reduce buffer */
++
++          err = ompi_request_wait(&req, MPI_STATUS_IGNORE);
++          if (MPI_SUCCESS != err) {
++              goto error;
++          }
++
++          err = ompi_ddt_copy_content_same_ddt(dtype, count, 
++                                               reduce_buffer, (char*)rbuf);
++          if (MPI_SUCCESS != err) {
++              goto error;
++          }
++      }
++    } 
++
+     /* Now reduce the received answer with my source into the answer
+      * that we send off to the next rank */
+ 

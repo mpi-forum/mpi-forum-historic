@@ -1,0 +1,12 @@
+Index: appLang-Const.tex
+===================================================================
+--- appLang-Const.tex	(Revision 1935)
++++ appLang-Const.tex	(Revision 1936)
+@@ -1453,6 +1453,7 @@
+ \infoskip{no\_locks} \\
+ \infoskip{num\_io\_nodes} \\
+ \infoskip{path} \\
++\infoskip{same\_disp\_unit}\\
+ \infoskip{same\_size}\\
+ \infoskip{soft} \\
+ \infoskip{striping\_factor} \\

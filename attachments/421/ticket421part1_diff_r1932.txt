@@ -1,0 +1,16 @@
+Index: terms-2.tex
+===================================================================
+--- terms-2.tex	(Revision 1931)
++++ terms-2.tex	(Revision 1932)
+@@ -864,7 +864,10 @@
+ 
+ An implementation is allowed to implement \mpifunc{MPI\_WTIME},
+ \mpifunc{MPI\_WTICK}, \mpifunc{PMPI\_WTIME},
+-\mpifunc{PMPI\_WTICK}, and the handle-conversion functions
++\mpifunc{PMPI\_WTICK}, 
++\mpifunc{MPI\_AINT\_ADD}, \mpifunc{MPI\_AINT\_DIFF}, 
++\mpifunc{PMPI\_AINT\_ADD}, \mpifunc{PMPI\_AINT\_DIFF}, 
++and the handle-conversion functions
+ (\cfunc{MPI\_Group\_f2c}, etc.) in Section~\ref{sec:misc-handleconvert}, and
+ no others, as macros in C.
+ 
